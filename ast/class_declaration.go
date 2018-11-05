@@ -7,9 +7,17 @@ type Position struct {
 }
 
 type ClassDeclaration struct {
-	Modifiers []Modifier
-	Name      string
-	Position  *Position
+	Annotations      []Annotation
+	Modifiers        []Modifier
+	Name             string
+	SuperClass       []interface{}
+	ImplementClasses []string
+	InstanceFields   []map[string]string
+	InstanceMethods  []map[string]string
+	StaticFields     []map[string]string
+	StaticMethods    []map[string]string
+	InnerClasses     []string
+	Position         *Position
 }
 
 type Modifier struct {
@@ -18,13 +26,13 @@ type Modifier struct {
 }
 
 type Annotation struct {
-	Name       string
-	Parameters []interface{}
+	Name       Name
+	Parameters []Parameter
 	Position   *Position
 }
 
 type Interface struct {
-	Annotations     []interface{}
+	Annotations     []Annotation
 	Modifiers       []Modifier
 	Name            string
 	SuperClass      []interface{}
@@ -101,4 +109,9 @@ type Catch struct {
 }
 
 type ConstructorDeclaration struct {
+}
+
+type Name struct {
+	Value    []string
+	Position *Position
 }

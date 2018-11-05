@@ -17,16 +17,25 @@ func (v *AstBuilder) VisitCompilationUnit(ctx *parser.CompilationUnitContext) in
 
 func (v *AstBuilder) VisitTypeDeclaration(ctx *parser.TypeDeclarationContext) interface{} {
 	classOrInterfaceModifiers := ctx.AllClassOrInterfaceModifier()
-	modifiers := make([]ast.Modifier, len(classOrInterfaceModifiers))
-	for i, modifier := range classOrInterfaceModifiers {
-		m := modifier.Accept(v)
-		modifiers[i], _ = m.(ast.Modifier)
+	modifiers := []ast.Modifier{}
+	annotations := []ast.Annotation{}
+	for _, classOrInterfaceModifier := range classOrInterfaceModifiers {
+		r := classOrInterfaceModifier.Accept(v)
+		m, ok := r.(ast.Modifier)
+		if ok {
+			modifiers = append(modifiers, m)
+		}
+		a, ok := r.(ast.Annotation)
+		if ok {
+			annotations = append(annotations, a)
+		}
 	}
 
 	if ctx.ClassDeclaration() != nil {
 		cd := ctx.ClassDeclaration().Accept(v)
 		classDeclaration, _ := cd.(ast.ClassDeclaration)
 		classDeclaration.Modifiers = modifiers
+		classDeclaration.Annotations = annotations
 		return classDeclaration
 	}
 	return nil
@@ -49,7 +58,8 @@ func (v *AstBuilder) VisitModifier(ctx *parser.ModifierContext) interface{} {
 }
 
 func (v *AstBuilder) VisitClassOrInterfaceModifier(ctx *parser.ClassOrInterfaceModifierContext) interface{} {
-	if ctx.Annotation() != nil {
+	annotation := ctx.Annotation()
+	if annotation != nil {
 		return ctx.Annotation().Accept(v)
 	}
 	return ast.Modifier{
@@ -226,7 +236,16 @@ func (v *AstBuilder) VisitConstructorBody(ctx *parser.ConstructorBodyContext) in
 }
 
 func (v *AstBuilder) VisitQualifiedName(ctx *parser.QualifiedNameContext) interface{} {
-	return v.VisitChildren(ctx)
+	allIdentifiers := ctx.AllApexIdentifier()
+	identifiers := make([]string, len(allIdentifiers))
+	for i, identifier := range allIdentifiers {
+		ident := identifier.Accept(v)
+		identifiers[i], _ = ident.(string)
+	}
+	return ast.Name{
+		Value:    identifiers,
+		Position: v.newPosition(ctx),
+	}
 }
 
 func (v *AstBuilder) VisitLiteral(ctx *parser.LiteralContext) interface{} {
@@ -234,11 +253,15 @@ func (v *AstBuilder) VisitLiteral(ctx *parser.LiteralContext) interface{} {
 }
 
 func (v *AstBuilder) VisitAnnotation(ctx *parser.AnnotationContext) interface{} {
-	return v.VisitChildren(ctx)
+	name := ctx.AnnotationName().Accept(v)
+	annotation := ast.Annotation{}
+	annotation.Name, _ = name.(ast.Name)
+	annotation.Position = v.newPosition(ctx)
+	return annotation
 }
 
 func (v *AstBuilder) VisitAnnotationName(ctx *parser.AnnotationNameContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.QualifiedName().Accept(v)
 }
 
 func (v *AstBuilder) VisitElementValuePairs(ctx *parser.ElementValuePairsContext) interface{} {
@@ -570,6 +593,10 @@ func (v *AstBuilder) VisitSoslReturningObject(ctx *parser.SoslReturningObjectCon
 }
 
 func (v *AstBuilder) VisitApexIdentifier(ctx *parser.ApexIdentifierContext) interface{} {
+	ident := ctx.Identifier()
+	if ident != nil {
+		return ident.GetText()
+	}
 	return v.VisitChildren(ctx)
 }
 

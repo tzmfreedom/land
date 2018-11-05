@@ -1,4 +1,4 @@
 vendor/
 example.cls
 .idea/
-.js
+*.js

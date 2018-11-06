@@ -42,19 +42,46 @@ func (v *AstBuilder) VisitTypeDeclaration(ctx *parser.TypeDeclarationContext) in
 }
 
 func (v *AstBuilder) VisitTriggerDeclaration(ctx *parser.TriggerDeclarationContext) interface{} {
-	return v.VisitChildren(ctx)
+	timings := ctx.TriggerTimings().Accept(v)
+
+	name := ctx.ApexIdentifier(0).GetText()
+	object := ctx.ApexIdentifier(1).GetText()
+	block := ctx.Block().Accept(v)
+	return ast.Trigger{
+		Name:           name,
+		TriggerTimings: timings.([]ast.TriggerTiming),
+		Object:         object,
+		Statements:     block.([]ast.Node),
+		Position:       v.newPosition(ctx),
+	}
 }
 
 func (v *AstBuilder) VisitTriggerTimings(ctx *parser.TriggerTimingsContext) interface{} {
-	return v.VisitChildren(ctx)
+	allTimings := ctx.AllTriggerTiming()
+	timings := make([]ast.Node, len(allTimings))
+	for i, timing := range allTimings {
+		timings[i] = timing.Accept(v).(ast.Node)
+	}
+	return timings
 }
 
 func (v *AstBuilder) VisitTriggerTiming(ctx *parser.TriggerTimingContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ast.TriggerTiming{
+		Timing:   ctx.GetTiming().GetText(),
+		Dml:      ctx.GetDml().GetText(),
+		Position: v.newPosition(ctx),
+	}
 }
 
 func (v *AstBuilder) VisitModifier(ctx *parser.ModifierContext) interface{} {
-	return v.VisitChildren(ctx)
+	m := ctx.ClassOrInterfaceModifier()
+	if m != nil {
+		return m.Accept(v)
+	}
+	return ast.Modifier{
+		Name:     ctx.GetText(),
+		Position: v.newPosition(ctx),
+	}
 }
 
 func (v *AstBuilder) VisitClassOrInterfaceModifier(ctx *parser.ClassOrInterfaceModifierContext) interface{} {

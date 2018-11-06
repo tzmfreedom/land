@@ -157,7 +157,7 @@ type If struct {
 }
 
 type MethodDeclaration struct {
-	Name           Name
+	Name           string
 	Modifiers      []Modifier
 	ReturnType     Node
 	Parameters     []Parameter
@@ -425,6 +425,8 @@ type Visitor interface {
 	VisitName(Node) interface{}
 	VisitConstructorDeclaration(Node) interface{}
 }
+
+const VoidType Node = &Type{Name: "void"}
 
 type Node interface {
 	Accept(Visitor) interface{}

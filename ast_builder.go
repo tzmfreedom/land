@@ -127,27 +127,79 @@ func (v *AstBuilder) VisitInterfaceDeclaration(ctx *parser.InterfaceDeclarationC
 }
 
 func (v *AstBuilder) VisitTypeList(ctx *parser.TypeListContext) interface{} {
-	return v.VisitChildren(ctx)
+	apexTypes := ctx.AllApexType()
+	types := make([]ast.Node, len(apexTypes))
+	for i, t := range apexTypes {
+		types[i] = t.Accept(v).(ast.Node)
+	}
+	return types
 }
 
 func (v *AstBuilder) VisitClassBody(ctx *parser.ClassBodyContext) interface{} {
-	return v.VisitChildren(ctx)
+	bodyDeclarations := ctx.AllClassBodyDeclaration()
+	declarations := make([]ast.Node, len(bodyDeclarations))
+	for i, d := range declarations {
+		declarations[i] = d.Accept(v).(ast.Node)
+	}
+	return declarations
 }
 
 func (v *AstBuilder) VisitInterfaceBody(ctx *parser.InterfaceBodyContext) interface{} {
-	return v.VisitChildren(ctx)
+	bodyDeclarations := ctx.AllInterfaceBodyDeclaration()
+	declarations := make([]ast.Node, len(bodyDeclarations))
+	for i, d := range bodyDeclarations {
+		declarations[i] = d.Accept(v).(ast.Node)
+	}
+	return declarations
 }
 
 func (v *AstBuilder) VisitClassBodyDeclaration(ctx *parser.ClassBodyDeclarationContext) interface{} {
-	return v.VisitChildren(ctx)
+	memberDeclaration := ctx.MemberDeclaration()
+	if memberDeclaration != nil {
+		declaration := memberDeclaration.Accept(v)
+
+		modifiers := ctx.AllModifier()
+		declarationModifiers := make([]ast.Node, len(modifiers))
+		for i, m := range modifiers {
+			declarationModifiers[i] = m.Accept(v).(ast.Node)
+		}
+		declaration.Modifiers = declarationModifiers
+		return declaration
+	}
 }
 
 func (v *AstBuilder) VisitMemberDeclaration(ctx *parser.MemberDeclarationContext) interface{} {
-	return v.VisitChildren(ctx)
+	return v.VisitChildren(ctx).([]interface{})[0]
 }
 
 func (v *AstBuilder) VisitMethodDeclaration(ctx *parser.MethodDeclarationContext) interface{} {
-	return v.VisitChildren(ctx)
+	methodName := ctx.ApexIdentifier().GetText()
+	var returnType ast.Node
+	if ctx.ApexType() != nil {
+		returnType = ctx.ApexType().Accept(v).(ast.Node)
+	} else {
+		returnType = ast.VoidType
+	}
+	parameters := ctx.FormalParameters().Accept(v).([]ast.Parameter)
+	var throws []ast.Node
+	if ctx.QualifiedNameList() != nil {
+		throws = ctx.QualifiedNameList().Accept(v).([]ast.Node)
+	} else {
+		throws = []ast.Node{}
+	}
+	var statements []ast.Node
+	if ctx.MethodBody() != nil {
+		statements = ctx.MethodBody().Accept(v).([]ast.Node)
+	} else {
+		statements = []ast.Node{}
+	}
+	return ast.MethodDeclaration{
+		Name:       methodName,
+		ReturnType: returnType,
+		Parameters: parameters,
+		Throws:     throws,
+		Statements: statements,
+	}
 }
 
 func (v *AstBuilder) VisitConstructorDeclaration(ctx *parser.ConstructorDeclarationContext) interface{} {

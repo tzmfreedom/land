@@ -34,14 +34,14 @@ type Annotation struct {
 type Interface struct {
 	Annotations     []Annotation
 	Modifiers       []Modifier
-	Name            stribng
+	Name            Name
 	SuperClass      []Node
 	InstanceMethods []map[string]string
 	StaticMethods   []map[string]string
 	Position        *Position
 }
 
-type Integer struct {
+type IntegerLiteral struct {
 	Value    int
 	Position *Position
 }
@@ -59,7 +59,7 @@ type ArrayAccess struct {
 	Position *Position
 }
 
-type Boolean struct {
+type BooleanLiteral struct {
 	Value    bool
 	Position *Position
 }
@@ -79,7 +79,7 @@ type Dml struct {
 	Position   *Position
 }
 
-type Double struct {
+type DoubleLiteral struct {
 	Value    float32
 	Position *Position
 }
@@ -101,9 +101,9 @@ type FieldVariable struct {
 }
 
 type Try struct {
-	Block        Node
-	CatchClause  Node
-	FinallyBlock Node
+	Block        Block
+	CatchClause  []Node
+	FinallyBlock Block
 	Position     *Position
 }
 
@@ -111,7 +111,7 @@ type Catch struct {
 	Modifiers  []Modifier
 	Type       Type
 	Identifier string
-	Block      Node
+	Block      Block
 	Position   *Position
 }
 
@@ -179,7 +179,7 @@ type New struct {
 	Position   *Position
 }
 
-type Null struct {
+type NullLiteral struct {
 	Position *Position
 }
 
@@ -193,7 +193,7 @@ type Object struct {
 type UnaryOperator struct {
 	Op         string
 	Expression Node
-	IsPrefix   Node
+	IsPrefix   bool
 	Position   *Position
 }
 
@@ -288,7 +288,7 @@ type NothingStatement struct{}
 
 type CastExpression struct {
 	CastType   Type
-	Expression []Node
+	Expression Node
 	Position   *Position
 }
 
@@ -353,9 +353,13 @@ type TernalyExpression struct {
 	Position        *Position
 }
 
-type MapCreator struct{}
+type MapCreator struct {
+	Position *Position
+}
 
-type SetCreator struct{}
+type SetCreator struct {
+	Position *Position
+}
 
 type Name struct {
 	Value    []string
@@ -381,14 +385,14 @@ type Visitor interface {
 	VisitModifier(Node) interface{}
 	VisitAnnotation(Node) interface{}
 	VisitInterface(Node) interface{}
-	VisitInteger(Node) interface{}
+	VisitIntegerLiteral(Node) interface{}
 	VisitParameter(Node) interface{}
 	VisitArrayAccess(Node) interface{}
-	VisitBoolean(Node) interface{}
+	VisitBooleanLiteral(Node) interface{}
 	VisitBreak(Node) interface{}
 	VisitContinue(Node) interface{}
 	VisitDml(Node) interface{}
-	VisitDouble(Node) interface{}
+	VisitDoubleLiteral(Node) interface{}
 	VisitFieldDeclaration(Node) interface{}
 	VisitFieldVariable(Node) interface{}
 	VisitTry(Node) interface{}
@@ -402,7 +406,7 @@ type Visitor interface {
 	VisitMethodDeclaration(Node) interface{}
 	VisitMethodInvocation(Node) interface{}
 	VisitNew(Node) interface{}
-	VisitNull(Node) interface{}
+	VisitNullLiteral(Node) interface{}
 	VisitObject(Node) interface{}
 	VisitUnaryOperator(Node) interface{}
 	VisitBinaryOperator(Node) interface{}
@@ -459,8 +463,8 @@ func (n *Interface) Accept(v Visitor) interface{} {
 	return v.VisitInterface(n)
 }
 
-func (n *Integer) Accept(v Visitor) interface{} {
-	return v.VisitInteger(n)
+func (n *IntegerLiteral) Accept(v Visitor) interface{} {
+	return v.VisitIntegerLiteral(n)
 }
 
 func (n *Parameter) Accept(v Visitor) interface{} {
@@ -471,8 +475,8 @@ func (n *ArrayAccess) Accept(v Visitor) interface{} {
 	return v.VisitArrayAccess(n)
 }
 
-func (n *Boolean) Accept(v Visitor) interface{} {
-	return v.VisitBoolean(n)
+func (n *BooleanLiteral) Accept(v Visitor) interface{} {
+	return v.VisitBooleanLiteral(n)
 }
 
 func (n *Break) Accept(v Visitor) interface{} {
@@ -487,8 +491,8 @@ func (n *Dml) Accept(v Visitor) interface{} {
 	return v.VisitDml(n)
 }
 
-func (n *Double) Accept(v Visitor) interface{} {
-	return v.VisitDouble(n)
+func (n *DoubleLiteral) Accept(v Visitor) interface{} {
+	return v.VisitDoubleLiteral(n)
 }
 
 func (n *FieldDeclaration) Accept(v Visitor) interface{} {
@@ -543,8 +547,8 @@ func (n *New) Accept(v Visitor) interface{} {
 	return v.VisitNew(n)
 }
 
-func (n *Null) Accept(v Visitor) interface{} {
-	return v.VisitNull(n)
+func (n *NullLiteral) Accept(v Visitor) interface{} {
+	return v.VisitNullLiteral(n)
 }
 
 func (n *Object) Accept(v Visitor) interface{} {

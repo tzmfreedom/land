@@ -1,10 +1,11 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/parser"
-	"github.com/golang/go/src/cmd/go/testdata/testinternal3"
 )
 
 type AstBuilder struct {
@@ -197,11 +198,11 @@ func (v *AstBuilder) VisitMemberDeclaration(ctx *parser.MemberDeclarationContext
 
 func (v *AstBuilder) VisitMethodDeclaration(ctx *parser.MethodDeclarationContext) interface{} {
 	methodName := ctx.ApexIdentifier().GetText()
-	var returnType ast.Node
+	var returnType ast.Type
 	if ctx.ApexType() != nil {
-		returnType = ctx.ApexType().Accept(v).(ast.Node)
+		returnType = ctx.ApexType().Accept(v).(ast.Type)
 	} else {
-		returnType = ast.VoidType
+		returnType = *ast.VoidType
 	}
 	parameters := ctx.FormalParameters().Accept(v).([]ast.Parameter)
 	var throws []ast.Node
@@ -243,7 +244,7 @@ func (v *AstBuilder) VisitConstructorDeclaration(ctx *parser.ConstructorDeclarat
 }
 
 func (v *AstBuilder) VisitFieldDeclaration(ctx *parser.FieldDeclarationContext) interface{} {
-	t := ctx.ApexType().Accept(v)
+	t := ctx.ApexType().Accept(v).(ast.Type)
 	d := ctx.VariableDeclarators().Accept(v).([]ast.Node)
 	return ast.FieldDeclaration{
 		Type:        t,
@@ -335,7 +336,7 @@ func (v *AstBuilder) VisitVariableDeclarators(ctx *parser.VariableDeclaratorsCon
 func (v *AstBuilder) VisitVariableDeclarator(ctx *parser.VariableDeclaratorContext) interface{} {
 	decl := ast.VariableDeclarator{Position: v.newPosition(ctx)}
 	if init := ctx.VariableInitializer(); init != nil {
-		decl.Expression = init.Accept(v)
+		decl.Expression = init.Accept(v).([]ast.Node)
 	} else {
 		// TODO: implement NULL
 	}
@@ -357,7 +358,7 @@ func (v *AstBuilder) VisitArrayInitializer(ctx *parser.ArrayInitializerContext) 
 	if inits := ctx.AllVariableInitializer(); len(inits) != 0 {
 		initializers := make([]ast.Node, len(inits))
 		for i, init := range inits {
-			initializers[i] = init.Accept(v)
+			initializers[i] = init.Accept(v).(ast.Node)
 		}
 		return initializers
 	}
@@ -391,7 +392,7 @@ func (v *AstBuilder) VisitClassOrInterfaceType(ctx *parser.ClassOrInterfaceTypeC
 		// TODO: implement name
 		return t
 	}
-	t := ast.Type{ Position: v.newPosition(ctx) }
+	t := ast.Type{Position: v.newPosition(ctx)}
 	t.Name = ctx.SET().GetText()
 	arguments := ctx.AllTypeArguments()
 	t.Parameters = make([]ast.Node, len(arguments))
@@ -403,7 +404,7 @@ func (v *AstBuilder) VisitClassOrInterfaceType(ctx *parser.ClassOrInterfaceTypeC
 
 func (v *AstBuilder) VisitPrimitiveType(ctx *parser.PrimitiveTypeContext) interface{} {
 	return ast.Type{
-		Name: ctx.GetText(),
+		Name:     ctx.GetText(),
 		Position: v.newPosition(ctx),
 	}
 }
@@ -422,19 +423,40 @@ func (v *AstBuilder) VisitTypeArgument(ctx *parser.TypeArgumentContext) interfac
 }
 
 func (v *AstBuilder) VisitQualifiedNameList(ctx *parser.QualifiedNameListContext) interface{} {
-	return v.VisitChildren(ctx)
+	qualifiedNames := ctx.AllQualifiedName()
+	names := make([]ast.Node, len(qualifiedNames))
+	for i, qn := range qualifiedNames {
+		names[i] = qn.Accept(v).(ast.Node)
+	}
+	return names
 }
 
 func (v *AstBuilder) VisitFormalParameters(ctx *parser.FormalParametersContext) interface{} {
-	return v.VisitChildren(ctx)
+	if p := ctx.FormalParameterList(); p != nil {
+		return p.Accept(v)
+	}
+	return []ast.Parameter{}
 }
 
 func (v *AstBuilder) VisitFormalParameterList(ctx *parser.FormalParameterListContext) interface{} {
-	return v.VisitChildren(ctx)
+	formalParameters := ctx.AllFormalParameter()
+	parameters := make([]ast.Node, len(formalParameters))
+	for i, p := range formalParameters {
+		parameters[i] = p.Accept(v).(ast.Node)
+	}
+	return parameters
 }
 
 func (v *AstBuilder) VisitFormalParameter(ctx *parser.FormalParameterContext) interface{} {
-	return v.VisitChildren(ctx)
+	p := ast.Parameter{Position: v.newPosition(ctx)}
+	modifiers := ctx.AllVariableModifier()
+	p.Modifiers = make([]ast.Modifier, len(modifiers))
+	for i, m := range modifiers {
+		p.Modifiers[i] = m.Accept(v).(ast.Modifier)
+	}
+	p.Type = ctx.ApexType().Accept(v).(ast.Type)
+	p.Name = ctx.VariableDeclaratorId().Accept(v).(string)
+	return p
 }
 
 func (v *AstBuilder) VisitLastFormalParameter(ctx *parser.LastFormalParameterContext) interface{} {
@@ -442,11 +464,11 @@ func (v *AstBuilder) VisitLastFormalParameter(ctx *parser.LastFormalParameterCon
 }
 
 func (v *AstBuilder) VisitMethodBody(ctx *parser.MethodBodyContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.Block().Accept(v)
 }
 
 func (v *AstBuilder) VisitConstructorBody(ctx *parser.ConstructorBodyContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.Block().Accept(v)
 }
 
 func (v *AstBuilder) VisitQualifiedName(ctx *parser.QualifiedNameContext) interface{} {
@@ -463,7 +485,18 @@ func (v *AstBuilder) VisitQualifiedName(ctx *parser.QualifiedNameContext) interf
 }
 
 func (v *AstBuilder) VisitLiteral(ctx *parser.LiteralContext) interface{} {
-	return v.VisitChildren(ctx)
+	if lit := ctx.IntegerLiteral(); lit != nil {
+		return ast.IntegerLiteral{Value: lit.Accept(v).(int), Position: v.newPosition(ctx)}
+	} else if lit := ctx.FloatingPointLiteral(); lit != nil {
+		return ast.DoubleLiteral{Value: lit.Accept(v).(float32), Position: v.newPosition(ctx)}
+	} else if lit := ctx.StringLiteral(); lit != nil {
+		return ast.StringLiteral{Value: lit.Accept(v).(string), Position: v.newPosition(ctx)}
+	} else if lit := ctx.BooleanLiteral(); lit != nil {
+		return ast.BooleanLiteral{Value: lit.Accept(v).(bool), Position: v.newPosition(ctx)}
+	} else if lit := ctx.NullLiteral(); lit != nil {
+		return ast.NullLiteral{Position: v.newPosition(ctx)}
+	}
+	return nil
 }
 
 func (v *AstBuilder) VisitAnnotation(ctx *parser.AnnotationContext) interface{} {
@@ -479,15 +512,30 @@ func (v *AstBuilder) VisitAnnotationName(ctx *parser.AnnotationNameContext) inte
 }
 
 func (v *AstBuilder) VisitElementValuePairs(ctx *parser.ElementValuePairsContext) interface{} {
-	return v.VisitChildren(ctx)
+	elementValuePairs := ctx.AllElementValuePair()
+	pairs := make([]ast.Node, len(elementValuePairs))
+	for i, p := range elementValuePairs {
+		pairs[i] = p.Accept(v).(ast.Node)
+	}
+	return pairs
 }
 
 func (v *AstBuilder) VisitElementValuePair(ctx *parser.ElementValuePairContext) interface{} {
-	return v.VisitChildren(ctx)
+	ctx.ApexIdentifier().GetText()
+	ctx.ElementValue().Accept(v)
+	// TODO: implement
+	return nil
 }
 
 func (v *AstBuilder) VisitElementValue(ctx *parser.ElementValueContext) interface{} {
-	return v.VisitChildren(ctx)
+	if e := ctx.Expression(); e != nil {
+		return e.Accept(v)
+	} else if a := ctx.Annotation(); a != nil {
+		return a.Accept(v)
+	} else if init := ctx.ElementValueArrayInitializer(); init != nil {
+		return init.Accept(v)
+	}
+	return nil
 }
 
 func (v *AstBuilder) VisitElementValueArrayInitializer(ctx *parser.ElementValueArrayInitializerContext) interface{} {
@@ -495,151 +543,313 @@ func (v *AstBuilder) VisitElementValueArrayInitializer(ctx *parser.ElementValueA
 }
 
 func (v *AstBuilder) VisitBlock(ctx *parser.BlockContext) interface{} {
-	return v.VisitChildren(ctx)
+	blk := ast.Block{Position: v.newPosition(ctx)}
+	statements := ctx.AllBlockStatement()
+	blk.Statements = make([]ast.Node, len(statements))
+	for i, b := range statements {
+		blk.Statements[i] = b.Accept(v).(ast.Node)
+	}
+	return blk
 }
 
 func (v *AstBuilder) VisitBlockStatement(ctx *parser.BlockStatementContext) interface{} {
-	return v.VisitChildren(ctx)
+	if s := ctx.Statement(); s != nil {
+		return s.Accept(v)
+	} else if s := ctx.LocalVariableDeclarationStatement(); s != nil {
+		return s.Accept(v)
+	} else if t := ctx.TypeDeclaration(); t != nil {
+		return t.Accept(v)
+	}
+	return nil
 }
 
 func (v *AstBuilder) VisitLocalVariableDeclarationStatement(ctx *parser.LocalVariableDeclarationStatementContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.LocalVariableDeclaration().Accept(v)
 }
 
 func (v *AstBuilder) VisitLocalVariableDeclaration(ctx *parser.LocalVariableDeclarationContext) interface{} {
-	return v.VisitChildren(ctx)
+	decl := ast.VariableDeclaration{Position: v.newPosition(ctx)}
+	modifiers := ctx.AllVariableModifier()
+	decl.Modifiers = make([]ast.Modifier, len(modifiers))
+	for i, m := range modifiers {
+		decl.Modifiers[i] = m.Accept(v).(ast.Modifier)
+	}
+	decl.Type = ctx.ApexType().Accept(v).(ast.Type)
+	decl.Declarators = ctx.VariableDeclarators().Accept(v).([]ast.VariableDeclarator)
+	return decl
 }
 
 func (v *AstBuilder) VisitStatement(ctx *parser.StatementContext) interface{} {
-	return v.VisitChildren(ctx)
+	if t := ctx.TRY(); t != nil {
+		try := ast.Try{}
+		try.Block = ctx.Block().Accept(v).(ast.Block)
+		if clauses := ctx.AllCatchClause(); len(clauses) != 0 {
+			try.CatchClause = make([]ast.Node, len(clauses))
+			for i, c := range clauses {
+				try.CatchClause[i] = c.Accept(v).(ast.Node)
+			}
+		} else {
+			try.CatchClause = []ast.Node{}
+		}
+		if b := ctx.FinallyBlock(); b != nil {
+			try.FinallyBlock = b.Accept(v).(ast.Block)
+		}
+		return try
+	} else if t := ctx.IF(); t != nil {
+
+	}
+	return nil
 }
 
+// goal
+
 func (v *AstBuilder) VisitPropertyBlock(ctx *parser.PropertyBlockContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := ast.GetterSetter{Position: v.newPosition(ctx)}
+	if ctx.Getter() != nil {
+		n.Type = ctx.Getter().Accept(v).(ast.Type)
+	} else {
+		n.Type = ctx.Setter().Accept(v).(ast.Type)
+	}
+	modifiers := ctx.AllModifier()
+	n.Modifiers = make([]ast.Modifier, len(modifiers))
+	for i, m := range modifiers {
+		n.Modifiers[i] = m.Accept(v).(ast.Modifier)
+	}
+	return n
 }
 
 func (v *AstBuilder) VisitGetter(ctx *parser.GetterContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ast.Type{Name: ctx.GetText(), Position: v.newPosition(ctx)}
 }
 
 func (v *AstBuilder) VisitSetter(ctx *parser.SetterContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ast.Type{Name: ctx.GetText(), Position: v.newPosition(ctx)}
 }
 
 func (v *AstBuilder) VisitCatchClause(ctx *parser.CatchClauseContext) interface{} {
-	return v.VisitChildren(ctx)
+	c := ast.Catch{Position: v.newPosition(ctx)}
+	c.Type = ctx.CatchType().Accept(v).(ast.Type)
+	c.Identifier = ctx.ApexIdentifier().GetText()
+	modifiers := ctx.AllVariableModifier()
+	c.Modifiers = make([]ast.Modifier, len(modifiers))
+	for i, m := range modifiers {
+		c.Modifiers[i] = m.Accept(v).(ast.Modifier)
+	}
+	return c
 }
 
 func (v *AstBuilder) VisitCatchType(ctx *parser.CatchTypeContext) interface{} {
-	return v.VisitChildren(ctx)
+	names := ctx.AllQualifiedName()
+	types := make([]ast.Node, len(names))
+	for i, n := range names {
+		types[i] = n.Accept(v).(ast.Node)
+	}
+	return types
 }
 
 func (v *AstBuilder) VisitFinallyBlock(ctx *parser.FinallyBlockContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.Block().Accept(v)
 }
 
 func (v *AstBuilder) VisitWhenStatements(ctx *parser.WhenStatementsContext) interface{} {
-	return v.VisitChildren(ctx)
+	_ = ctx.AllWhenStatement()
+	_ = ctx.Block().Accept(v)
+	// TODO: implement
+	return nil
 }
 
 func (v *AstBuilder) VisitWhenStatement(ctx *parser.WhenStatementContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := ast.When{Position: v.newPosition(ctx)}
+	n.Condition = ctx.WhenExpression().Accept(v).(ast.Node)
+	n.Statements = ctx.Block().Accept(v).([]ast.Node)
+	return n
 }
 
 func (v *AstBuilder) VisitWhenExpression(ctx *parser.WhenExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	if literals := ctx.AllLiteral(); len(literals) != 0 {
+		expressions := make([]ast.Node, len(literals))
+		for i, l := range literals {
+			expressions[i] = l.Accept(v).(ast.Node)
+		}
+		return expressions
+	}
+	n := ast.WhenType{Position: v.newPosition(ctx)}
+	n.Type = ctx.ApexType().Accept(v).(ast.Type)
+	n.Identifier = ctx.ApexIdentifier().GetText()
+	return n
 }
 
 func (v *AstBuilder) VisitForControl(ctx *parser.ForControlContext) interface{} {
-	return v.VisitChildren(ctx)
+	if c := ctx.EnhancedForControl(); c != nil {
+		return c.Accept(v)
+	}
+	c := ast.ForControl{Position: v.newPosition(ctx)}
+	if f := ctx.ForInit(); f != nil {
+		c.ForInit = f.Accept(v).(ast.Node)
+	}
+	if e := ctx.Expression(); e != nil {
+		c.Expression = e.Accept(v).(ast.Node)
+	}
+	if u := ctx.ForUpdate(); u != nil {
+		c.ForUpdate = u.Accept(v).(ast.Node)
+	}
+	return c
 }
 
 func (v *AstBuilder) VisitForInit(ctx *parser.ForInitContext) interface{} {
-	return v.VisitChildren(ctx)
+	if d := ctx.LocalVariableDeclaration(); d != nil {
+		return d.Accept(v)
+	}
+	return ctx.ExpressionList().Accept(v)
 }
 
 func (v *AstBuilder) VisitEnhancedForControl(ctx *parser.EnhancedForControlContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := ast.EnhancedForControl{Position: v.newPosition(ctx)}
+	n.Type = ctx.ApexType().Accept(v).(ast.Type)
+	n.VariableDeclaratorId = ctx.VariableDeclaratorId().Accept(v).(ast.Node)
+	n.Expression = ctx.Expression().Accept(v).(ast.Node)
+	modifiers := ctx.AllVariableModifier()
+	n.Modifiers = make([]ast.Modifier, len(modifiers))
+	for i, m := range modifiers {
+		n.Modifiers[i] = m.Accept(v).(ast.Modifier)
+	}
+	return n
 }
 
 func (v *AstBuilder) VisitForUpdate(ctx *parser.ForUpdateContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.ExpressionList().Accept(v)
 }
 
 func (v *AstBuilder) VisitParExpression(ctx *parser.ParExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.Expression().Accept(v)
 }
 
 func (v *AstBuilder) VisitExpressionList(ctx *parser.ExpressionListContext) interface{} {
-	return v.VisitChildren(ctx)
+	expressions := ctx.AllExpression()
+	nodes := make([]ast.Node, len(expressions))
+	for i, e := range expressions {
+		nodes[i] = e.Accept(v).(ast.Node)
+	}
+	return nodes
 }
 
 func (v *AstBuilder) VisitStatementExpression(ctx *parser.StatementExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.Expression().Accept(v)
 }
 
 func (v *AstBuilder) VisitConstantExpression(ctx *parser.ConstantExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.Expression().Accept(v)
 }
 
 func (v *AstBuilder) VisitApexDbExpressionShort(ctx *parser.ApexDbExpressionShortContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := ast.Dml{Position: v.newPosition(ctx)}
+	n.Type = ast.Type{Name: ctx.GetDml().GetText(), Position: v.newPosition(ctx)}
+	if ident := ctx.ApexIdentifier(); ident != nil {
+		n.UpsertKey = ident.Accept(v).(string)
+	}
+	n.Expression = ctx.Expression().Accept(v).(ast.Node)
+	return n
 }
 
 func (v *AstBuilder) VisitApexDbExpression(ctx *parser.ApexDbExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.ApexDbExpressionShort().Accept(v)
 }
 
 func (v *AstBuilder) VisitTernalyExpression(ctx *parser.TernalyExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := ast.TernalyExpression{Position: v.newPosition(ctx)}
+	n.Condition = ctx.Expression(0).Accept(v).(ast.Node)
+	n.TrueExpression = ctx.Expression(1).Accept(v).(ast.Node)
+	n.FalseExpression = ctx.Expression(2).Accept(v).(ast.Node)
+	return n
 }
 
 func (v *AstBuilder) VisitPreUnaryExpression(ctx *parser.PreUnaryExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := ast.UnaryOperator{Position: v.newPosition(ctx)}
+	n.Op = ctx.GetOp().GetText()
+	n.Expression = ctx.Expression().Accept(v).(ast.Node)
+	n.IsPrefix = true
+	return n
 }
 
 func (v *AstBuilder) VisitArrayAccess(ctx *parser.ArrayAccessContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := ast.ArrayAccess{Position: v.newPosition(ctx)}
+	n.Receiver = ctx.Expression(0).Accept(v).(ast.Node)
+	n.Key = ctx.Expression(1).Accept(v).(ast.Node)
+	return n
 }
 
 func (v *AstBuilder) VisitPostUnaryExpression(ctx *parser.PostUnaryExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := ast.UnaryOperator{Position: v.newPosition(ctx)}
+	n.Op = ctx.GetOp().GetText()
+	n.Expression = ctx.Expression().Accept(v).(ast.Node)
+	n.IsPrefix = false
+	return n
 }
 
 func (v *AstBuilder) VisitPrimaryExpression(ctx *parser.PrimaryExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.Primary().Accept(v)
 }
 
 func (v *AstBuilder) VisitOpExpression(ctx *parser.OpExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := ast.BinaryOperator{Position: v.newPosition(ctx)}
+	n.Op = ctx.GetOp().GetText()
+	n.Left = ctx.Expression(0).Accept(v).(ast.Node)
+	n.Right = ctx.Expression(1).Accept(v).(ast.Node)
+	return n
 }
 
 func (v *AstBuilder) VisitNewExpression(ctx *parser.NewObjectExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.Creator().Accept(v)
 }
 
 func (v *AstBuilder) VisitUnaryExpression(ctx *parser.UnaryExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := ast.UnaryOperator{Position: v.newPosition(ctx)}
+	n.Op = ctx.GetOp().GetText()
+	n.Expression = ctx.Expression().Accept(v).(ast.Node)
+	return n
 }
 
 func (v *AstBuilder) VisitMethodInvocation(ctx *parser.MethodInvocationContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := ast.MethodInvocation{Position: v.newPosition(ctx)}
+	n.NameOrExpression = ctx.Expression().Accept(v).(ast.Node)
+	if list := ctx.ExpressionList(); list != nil {
+		n.Parameters = list.Accept(v).([]ast.Parameter)
+	}
+	return n
 }
 
 func (v *AstBuilder) VisitCastExpression(ctx *parser.CastExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := ast.CastExpression{Position: v.newPosition(ctx)}
+	n.CastType = ctx.ApexType().Accept(v).(ast.Type)
+	n.Expression = ctx.Expression().Accept(v).(ast.Node)
+	return n
 }
 
 func (v *AstBuilder) VisitShiftExpression(ctx *parser.ShiftExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := ast.BinaryOperator{Position: v.newPosition(ctx)}
+	ops := []string{}
+	for i, o := range ctx.GetOp() {
+		ops[i] = o.GetText()
+	}
+	n.Op = strings.Join(ops, "")
+	n.Left = ctx.Expression(0).Accept(v).(ast.Node)
+	n.Right = ctx.Expression(1).Accept(v).(ast.Node)
+	return n
 }
 
 func (v *AstBuilder) VisitFieldAccess(ctx *parser.FieldAccessContext) interface{} {
-	return v.VisitChildren(ctx)
+	expression := ctx.Expression().Accept(v).(ast.Node)
+	fieldName := ctx.ApexIdentifier().Accept(v).(string)
+	return ast.FieldAccess{
+		Expression: expression,
+		FieldName:  fieldName,
+		Position:   v.newPosition(ctx),
+	}
 }
 
 func (v *AstBuilder) VisitPrimary(ctx *parser.PrimaryContext) interface{} {
-	return v.VisitChildren(ctx)
+	// TODO: implement
+	return nil
 }
 
 func (v *AstBuilder) VisitCreator(ctx *parser.CreatorContext) interface{} {
@@ -647,7 +857,19 @@ func (v *AstBuilder) VisitCreator(ctx *parser.CreatorContext) interface{} {
 }
 
 func (v *AstBuilder) VisitCreatedName(ctx *parser.CreatedNameContext) interface{} {
-	return v.VisitChildren(ctx)
+	if identifiers := ctx.AllApexIdentifier(); len(identifiers) != 0 {
+		n := ast.Type{Position: v.newPosition(ctx)}
+		if types := ctx.AllTypeArgumentsOrDiamond(); len(types) != 0 {
+			// n.Parameters = ctx.TypeArgumentsOrDiamond(0).Accept(v)
+		}
+		names := make([]ast.Node, len(identifiers))
+		for i, ident := range identifiers {
+			names[i] = ident.Accept(v).(ast.Node)
+		}
+		// TODO: implement
+		return n
+	}
+	return nil
 }
 
 func (v *AstBuilder) VisitInnerCreator(ctx *parser.InnerCreatorContext) interface{} {
@@ -655,19 +877,29 @@ func (v *AstBuilder) VisitInnerCreator(ctx *parser.InnerCreatorContext) interfac
 }
 
 func (v *AstBuilder) VisitArrayCreatorRest(ctx *parser.ArrayCreatorRestContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := ast.ArrayCreator{Position: v.newPosition(ctx)}
+	n.Dim = len(ctx.AllTypedArray())
+	if init := ctx.ArrayInitializer(); init != nil {
+		n.ArrayInitializer = init.Accept(v).(ast.Node)
+	}
+	expressions := ctx.AllExpression()
+	n.Expressions = make([]ast.Node, len(expressions))
+	for i, e := range expressions {
+		n.Expressions[i] = e.Accept(v).(ast.Node)
+	}
+	return n
 }
 
 func (v *AstBuilder) VisitMapCreatorRest(ctx *parser.MapCreatorRestContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ast.MapCreator{Position: v.newPosition(ctx)}
 }
 
 func (v *AstBuilder) VisitSetCreatorRest(ctx *parser.SetCreatorRestContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ast.SetCreator{Position: v.newPosition(ctx)}
 }
 
 func (v *AstBuilder) VisitClassCreatorRest(ctx *parser.ClassCreatorRestContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.Arguments().Accept(v)
 }
 
 func (v *AstBuilder) VisitExplicitGenericInvocation(ctx *parser.ExplicitGenericInvocationContext) interface{} {
@@ -675,11 +907,11 @@ func (v *AstBuilder) VisitExplicitGenericInvocation(ctx *parser.ExplicitGenericI
 }
 
 func (v *AstBuilder) VisitNonWildcardTypeArguments(ctx *parser.NonWildcardTypeArgumentsContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.TypeList().Accept(v)
 }
 
 func (v *AstBuilder) VisitTypeArgumentsOrDiamond(ctx *parser.TypeArgumentsOrDiamondContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.TypeArguments().Accept(v)
 }
 
 func (v *AstBuilder) VisitNonWildcardTypeArgumentsOrDiamond(ctx *parser.NonWildcardTypeArgumentsOrDiamondContext) interface{} {
@@ -695,9 +927,27 @@ func (v *AstBuilder) VisitExplicitGenericInvocationSuffix(ctx *parser.ExplicitGe
 }
 
 func (v *AstBuilder) VisitArguments(ctx *parser.ArgumentsContext) interface{} {
+	if list := ctx.ExpressionList(); list != nil {
+		return list.Accept(v)
+	}
+	return []ast.Node{}
+}
+
+func (v *AstBuilder) VisitApexIdentifier(ctx *parser.ApexIdentifierContext) interface{} {
+	ident := ctx.Identifier()
+	if ident != nil {
+		return ident.GetText()
+	}
 	return v.VisitChildren(ctx)
 }
 
+func (v *AstBuilder) VisitTypeIdentifier(ctx *parser.TypeIdentifierContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+/**
+ * SOQL
+ */
 func (v *AstBuilder) VisitSoqlLiteral(ctx *parser.SoqlLiteralContext) interface{} {
 	return v.VisitChildren(ctx)
 }
@@ -803,18 +1053,6 @@ func (v *AstBuilder) VisitSoslQuery(ctx *parser.SoslQueryContext) interface{} {
 }
 
 func (v *AstBuilder) VisitSoslReturningObject(ctx *parser.SoslReturningObjectContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *AstBuilder) VisitApexIdentifier(ctx *parser.ApexIdentifierContext) interface{} {
-	ident := ctx.Identifier()
-	if ident != nil {
-		return ident.GetText()
-	}
-	return v.VisitChildren(ctx)
-}
-
-func (v *AstBuilder) VisitTypeIdentifier(ctx *parser.TypeIdentifierContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 

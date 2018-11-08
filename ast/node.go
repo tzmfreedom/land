@@ -10,13 +10,10 @@ type ClassDeclaration struct {
 	Annotations      []Annotation
 	Modifiers        []Modifier
 	Name             string
-	SuperClass       []Node
-	ImplementClasses []string
-	InstanceFields   []map[string]string
-	InstanceMethods  []map[string]string
-	StaticFields     []map[string]string
-	StaticMethods    []map[string]string
-	InnerClasses     []string
+	SuperClass       Type
+	ImplementClasses []Type
+	Declarations     []Node
+	InnerClasses     []ClassDeclaration
 	Position         *Position
 }
 
@@ -26,19 +23,18 @@ type Modifier struct {
 }
 
 type Annotation struct {
-	Name       Name
+	Name       string
 	Parameters []Parameter
 	Position   *Position
 }
 
 type Interface struct {
-	Annotations     []Annotation
-	Modifiers       []Modifier
-	Name            Name
-	SuperClass      []Node
-	InstanceMethods []map[string]string
-	StaticMethods   []map[string]string
-	Position        *Position
+	Annotations []Annotation
+	Modifiers   []Modifier
+	Name        Name
+	SuperClass  []Node
+	Methods     map[string][]MethodDeclaration
+	Position    *Position
 }
 
 type IntegerLiteral struct {
@@ -73,21 +69,21 @@ type Continue struct {
 }
 
 type Dml struct {
-	Type       Type
+	Type       string
 	Expression Node
 	UpsertKey  string
 	Position   *Position
 }
 
 type DoubleLiteral struct {
-	Value    float32
+	Value    float64
 	Position *Position
 }
 
 type FieldDeclaration struct {
 	Type        Type
 	Modifiers   []Modifier
-	Declarators []Node
+	Declarators []VariableDeclarator
 	Position    *Position
 }
 
@@ -162,7 +158,7 @@ type MethodDeclaration struct {
 	ReturnType     Type
 	Parameters     []Parameter
 	Throws         []Node
-	Statements     []Node
+	Statements     Block
 	NativeFunction Node
 	Position       *Position
 }
@@ -260,7 +256,7 @@ type VariableDeclaration struct {
 
 type VariableDeclarator struct {
 	Name       string
-	Expression []Node
+	Expression Node
 	Position   *Position
 }
 
@@ -299,7 +295,7 @@ type FieldAccess struct {
 }
 
 type Type struct {
-	Name       string
+	Name       []string
 	Parameters []Node
 	Position   *Position
 }
@@ -310,7 +306,7 @@ type Block struct {
 }
 
 type GetterSetter struct {
-	Type       Type
+	Type       string
 	Modifiers  []Modifier
 	MethodBody Block
 	Position   *Position
@@ -362,7 +358,7 @@ type SetCreator struct {
 }
 
 type Name struct {
-	Value    []string
+	Value    string
 	Position *Position
 }
 
@@ -441,7 +437,7 @@ type Visitor interface {
 	VisitConstructorDeclaration(Node) interface{}
 }
 
-var VoidType = &Type{Name: "void"}
+var VoidType = &Type{}
 
 type Node interface {
 	Accept(Visitor) interface{}

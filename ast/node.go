@@ -7,13 +7,13 @@ type Position struct {
 }
 
 type ClassDeclaration struct {
-	Annotations      []Annotation
-	Modifiers        []Modifier
+	Annotations      []*Annotation
+	Modifiers        []*Modifier
 	Name             string
-	SuperClass       Type
-	ImplementClasses []Type
+	SuperClass       *Type
+	ImplementClasses []*Type
 	Declarations     []Node
-	InnerClasses     []ClassDeclaration
+	InnerClasses     []*ClassDeclaration
 	Position         *Position
 }
 
@@ -24,13 +24,13 @@ type Modifier struct {
 
 type Annotation struct {
 	Name       string
-	Parameters []Parameter
+	Parameters []*Parameter
 	Position   *Position
 }
 
 type Interface struct {
-	Annotations []Annotation
-	Modifiers   []Modifier
+	Annotations []*Annotation
+	Modifiers   []*Modifier
 	Name        Name
 	SuperClass  []Node
 	Methods     map[string][]MethodDeclaration
@@ -43,8 +43,8 @@ type IntegerLiteral struct {
 }
 
 type Parameter struct {
-	Modifiers []Modifier
-	Type      Type
+	Modifiers []*Modifier
+	Type      *Type
 	Name      string
 	Position  *Position
 }
@@ -81,15 +81,15 @@ type DoubleLiteral struct {
 }
 
 type FieldDeclaration struct {
-	Type        Type
-	Modifiers   []Modifier
-	Declarators []VariableDeclarator
+	Type        *Type
+	Modifiers   []*Modifier
+	Declarators []*VariableDeclarator
 	Position    *Position
 }
 
 type FieldVariable struct {
-	Type       Type
-	Modifiers  []Modifier
+	Type       *Type
+	Modifiers  []*Modifier
 	Expression Node
 	Position   *Position
 	Getter     Node
@@ -97,17 +97,17 @@ type FieldVariable struct {
 }
 
 type Try struct {
-	Block        Block
+	Block        *Block
 	CatchClause  []Node
-	FinallyBlock Block
+	FinallyBlock *Block
 	Position     *Position
 }
 
 type Catch struct {
-	Modifiers  []Modifier
-	Type       Type
+	Modifiers  []*Modifier
+	Type       *Type
 	Identifier string
-	Block      Block
+	Block      *Block
 	Position   *Position
 }
 
@@ -117,13 +117,13 @@ type Finally struct {
 }
 
 type For struct {
-	Control    ForControl
-	Statements []Node
+	Control    *ForControl
+	Statements Node
 	Position   *Position
 }
 
 type ForEnum struct {
-	Type           Type
+	Type           *Type
 	Identifier     Node
 	ListExpression Node
 	Statements     []Node
@@ -138,9 +138,9 @@ type ForControl struct {
 }
 
 type EnhancedForControl struct {
-	Modifiers            []Modifier
-	Type                 Type
-	VariableDeclaratorId Node
+	Modifiers            []*Modifier
+	Type                 *Type
+	VariableDeclaratorId string
 	Expression           Node
 	Position             *Position
 }
@@ -154,24 +154,24 @@ type If struct {
 
 type MethodDeclaration struct {
 	Name           string
-	Modifiers      []Modifier
-	ReturnType     Type
-	Parameters     []Parameter
+	Modifiers      []*Modifier
+	ReturnType     *Type
+	Parameters     []*Parameter
 	Throws         []Node
-	Statements     Block
+	Statements     *Block
 	NativeFunction Node
 	Position       *Position
 }
 
 type MethodInvocation struct {
 	NameOrExpression Node
-	Parameters       []Parameter
+	Parameters       []*Parameter
 	Position         *Position
 }
 
 type New struct {
-	Type       Type
-	Parameters []Parameter
+	Type       *Type
+	Parameters []*Parameter
 	Position   *Position
 }
 
@@ -180,7 +180,7 @@ type NullLiteral struct {
 }
 
 type Object struct {
-	ClassType      Type
+	ClassType      *Type
 	InstanceFields []Node
 	GenericType    string
 	Position       *Position
@@ -236,7 +236,7 @@ type Switch struct {
 type Trigger struct {
 	Name           string
 	Object         string
-	TriggerTimings []TriggerTiming
+	TriggerTimings []*TriggerTiming
 	Statements     []Node
 	Position       *Position
 }
@@ -248,9 +248,9 @@ type TriggerTiming struct {
 }
 
 type VariableDeclaration struct {
-	Modifiers   []Modifier
-	Type        Type
-	Declarators []VariableDeclarator
+	Modifiers   []*Modifier
+	Type        *Type
+	Declarators []*VariableDeclarator
 	Position    *Position
 }
 
@@ -267,7 +267,7 @@ type When struct {
 }
 
 type WhenType struct {
-	Type       Type
+	Type       *Type
 	Identifier string
 	Position   *Position
 }
@@ -280,10 +280,12 @@ type While struct {
 }
 
 // TOTO: when to use?
-type NothingStatement struct{}
+type NothingStatement struct {
+	Position *Position
+}
 
 type CastExpression struct {
-	CastType   Type
+	CastType   *Type
 	Expression Node
 	Position   *Position
 }
@@ -307,14 +309,14 @@ type Block struct {
 
 type GetterSetter struct {
 	Type       string
-	Modifiers  []Modifier
-	MethodBody Block
+	Modifiers  []*Modifier
+	MethodBody *Block
 	Position   *Position
 }
 
 type PropertyDeclaration struct {
-	Modifiers     []Modifier
-	Type          Type
+	Modifiers     []*Modifier
+	Type          *Type
 	Identifier    string
 	GetterSetters Node
 	Position      *Position
@@ -363,9 +365,9 @@ type Name struct {
 }
 
 type ConstructorDeclaration struct {
-	Modifiers      []Modifier
-	ReturnType     Type
-	Parameters     []Parameter
+	Modifiers      []*Modifier
+	ReturnType     *Type
+	Parameters     []*Parameter
 	Throws         []Node
 	Statements     []Node
 	NativeFunction Node
@@ -373,7 +375,7 @@ type ConstructorDeclaration struct {
 }
 
 type InterfaceDeclaration struct {
-	Modifiers []Modifier
+	Modifiers []*Modifier
 }
 
 type Visitor interface {

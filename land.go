@@ -38,8 +38,8 @@ func parse(input antlr.CharStream, f string) *ast.ClassDeclaration {
 	t := tree.Accept(&AstBuilder{
 		CurrentFile: f,
 	})
-	if cd, ok := t.(ast.ClassDeclaration); ok {
-		return &cd
+	if cd, ok := t.(*ast.ClassDeclaration); ok {
+		return cd
 	}
 	return nil
 }

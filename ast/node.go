@@ -165,13 +165,13 @@ type MethodDeclaration struct {
 
 type MethodInvocation struct {
 	NameOrExpression Node
-	Parameters       []*Parameter
+	Parameters       []Node
 	Position         *Position
 }
 
 type New struct {
 	Type       *Type
-	Parameters []*Parameter
+	Parameters []Node
 	Position   *Position
 }
 

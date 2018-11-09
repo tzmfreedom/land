@@ -755,6 +755,7 @@ i = (1 + 2) * 3;
 public void action(){
 foo.bar.baz;
 foo.bar.baz();
+foo(1, s, false);
 }
 }`,
 			createExpectedClass([]ast.Node{
@@ -807,11 +808,52 @@ foo.bar.baz();
 							Line:     4,
 						},
 					},
-					Parameters: []*ast.Parameter{},
+					Parameters: []ast.Node{},
 					Position: &ast.Position{
 						FileName: "",
 						Column:   0,
 						Line:     4,
+					},
+				},
+				&ast.MethodInvocation{
+					NameOrExpression: &ast.Name{
+						Value: "foo",
+						Position: &ast.Position{
+							FileName: "",
+							Column:   0,
+							Line:     5,
+						},
+					},
+					Parameters: []ast.Node{
+						&ast.IntegerLiteral{
+							Value: 1,
+							Position: &ast.Position{
+								FileName: "",
+								Column:   4,
+								Line:     5,
+							},
+						},
+						&ast.Name{
+							Value: "s",
+							Position: &ast.Position{
+								FileName: "",
+								Column:   7,
+								Line:     5,
+							},
+						},
+						&ast.BooleanLiteral{
+							Value: false,
+							Position: &ast.Position{
+								FileName: "",
+								Column:   10,
+								Line:     5,
+							},
+						},
+					},
+					Position: &ast.Position{
+						FileName: "",
+						Column:   0,
+						Line:     5,
 					},
 				},
 			}),

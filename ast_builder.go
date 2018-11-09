@@ -897,9 +897,9 @@ func (v *AstBuilder) VisitMethodInvocation(ctx *parser.MethodInvocationContext) 
 	n := &ast.MethodInvocation{Position: v.newPosition(ctx)}
 	n.NameOrExpression = ctx.Expression().Accept(v).(ast.Node)
 	if list := ctx.ExpressionList(); list != nil {
-		n.Parameters = list.Accept(v).([]*ast.Parameter)
+		n.Parameters = list.Accept(v).([]ast.Node)
 	} else {
-		n.Parameters = []*ast.Parameter{}
+		n.Parameters = []ast.Node{}
 	}
 	return n
 }

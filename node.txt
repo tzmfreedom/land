@@ -2,14 +2,14 @@ ClassDeclaration
 Modifier
 Annotation
 Interface
-Integer
+IntegerLiteral
 Parameter
 ArrayAccess
-Boolean
+BooleanLiteral
 Break
 Continue
 Dml
-Double
+DoubleLiteral
 FieldDeclaration
 FieldVariable
 Try
@@ -23,7 +23,7 @@ If
 MethodDeclaration
 MethodInvocation
 New
-Null
+NullLiteral
 Object
 UnaryOperator
 BinaryOperator

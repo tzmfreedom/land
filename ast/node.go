@@ -1,5 +1,11 @@
 package ast
 
+import (
+	"fmt"
+	"reflect"
+	"strings"
+)
+
 type Position struct {
 	FileName string
 	Column   int
@@ -7,13 +13,13 @@ type Position struct {
 }
 
 type ClassDeclaration struct {
-	Annotations      []*Annotation
-	Modifiers        []*Modifier
+	Annotations      []Node
+	Modifiers        []Node
 	Name             string
-	SuperClass       *Type
-	ImplementClasses []*Type
+	SuperClass       Node
+	ImplementClasses []Node
 	Declarations     []Node
-	InnerClasses     []*ClassDeclaration
+	InnerClasses     []Node
 	Position         *Position
 }
 
@@ -29,8 +35,8 @@ type Annotation struct {
 }
 
 type Interface struct {
-	Annotations []*Annotation
-	Modifiers   []*Modifier
+	Annotations []Node
+	Modifiers   []Node
 	Name        Name
 	SuperClass  []Node
 	Methods     map[string][]MethodDeclaration
@@ -43,8 +49,8 @@ type IntegerLiteral struct {
 }
 
 type Parameter struct {
-	Modifiers []*Modifier
-	Type      *Type
+	Modifiers []Node
+	Type      Node
 	Name      string
 	Position  *Position
 }
@@ -81,15 +87,15 @@ type DoubleLiteral struct {
 }
 
 type FieldDeclaration struct {
-	Type        *Type
-	Modifiers   []*Modifier
-	Declarators []*VariableDeclarator
+	Type        Node
+	Modifiers   []Node
+	Declarators []Node
 	Position    *Position
 }
 
 type FieldVariable struct {
-	Type       *Type
-	Modifiers  []*Modifier
+	Type       Node
+	Modifiers  []Node
 	Expression Node
 	Position   *Position
 	Getter     Node
@@ -104,8 +110,8 @@ type Try struct {
 }
 
 type Catch struct {
-	Modifiers  []*Modifier
-	Type       *Type
+	Modifiers  []Node
+	Type       Node
 	Identifier string
 	Block      *Block
 	Position   *Position
@@ -123,7 +129,7 @@ type For struct {
 }
 
 type ForEnum struct {
-	Type           *Type
+	Type           Node
 	Identifier     Node
 	ListExpression Node
 	Statements     []Node
@@ -138,8 +144,8 @@ type ForControl struct {
 }
 
 type EnhancedForControl struct {
-	Modifiers            []*Modifier
-	Type                 *Type
+	Modifiers            []Node
+	Type                 Node
 	VariableDeclaratorId string
 	Expression           Node
 	Position             *Position
@@ -154,8 +160,8 @@ type If struct {
 
 type MethodDeclaration struct {
 	Name           string
-	Modifiers      []*Modifier
-	ReturnType     *Type
+	Modifiers      []Node
+	ReturnType     Node
 	Parameters     []*Parameter
 	Throws         []Node
 	Statements     *Block
@@ -170,7 +176,7 @@ type MethodInvocation struct {
 }
 
 type New struct {
-	Type       *Type
+	Type       Node
 	Parameters []Node
 	Position   *Position
 }
@@ -180,7 +186,7 @@ type NullLiteral struct {
 }
 
 type Object struct {
-	ClassType      *Type
+	ClassType      Node
 	InstanceFields []Node
 	GenericType    string
 	Position       *Position
@@ -248,9 +254,9 @@ type TriggerTiming struct {
 }
 
 type VariableDeclaration struct {
-	Modifiers   []*Modifier
-	Type        *Type
-	Declarators []*VariableDeclarator
+	Modifiers   []Node
+	Type        Node
+	Declarators []Node
 	Position    *Position
 }
 
@@ -267,7 +273,7 @@ type When struct {
 }
 
 type WhenType struct {
-	Type       *Type
+	Type       Node
 	Identifier string
 	Position   *Position
 }
@@ -285,7 +291,7 @@ type NothingStatement struct {
 }
 
 type CastExpression struct {
-	CastType   *Type
+	CastType   Node
 	Expression Node
 	Position   *Position
 }
@@ -309,14 +315,14 @@ type Block struct {
 
 type GetterSetter struct {
 	Type       string
-	Modifiers  []*Modifier
+	Modifiers  []Node
 	MethodBody *Block
 	Position   *Position
 }
 
 type PropertyDeclaration struct {
-	Modifiers     []*Modifier
-	Type          *Type
+	Modifiers     []Node
+	Type          Node
 	Identifier    string
 	GetterSetters Node
 	Position      *Position
@@ -365,8 +371,8 @@ type Name struct {
 }
 
 type ConstructorDeclaration struct {
-	Modifiers      []*Modifier
-	ReturnType     *Type
+	Modifiers      []Node
+	ReturnType     Node
 	Parameters     []*Parameter
 	Throws         []Node
 	Statements     []Node
@@ -375,7 +381,7 @@ type ConstructorDeclaration struct {
 }
 
 type InterfaceDeclaration struct {
-	Modifiers []*Modifier
+	Modifiers []Node
 }
 
 type Visitor interface {
@@ -444,6 +450,7 @@ var VoidType = &Type{}
 type Node interface {
 	Accept(Visitor) interface{}
 	GetChildren() []interface{}
+	GetType() string
 }
 
 func (n *ClassDeclaration) Accept(v Visitor) interface{} {
@@ -1088,4 +1095,215 @@ func (n *ConstructorDeclaration) GetChildren() []interface{} {
 		n.Throws,
 		n.Statements,
 	}
+}
+
+func (n *ClassDeclaration) GetType() string {
+	return "ClassDeclaration"
+}
+func (n *Modifier) GetType() string {
+	return "Modifier"
+}
+func (n *Annotation) GetType() string {
+	return "Annotation"
+}
+func (n *Interface) GetType() string {
+	return "Interface"
+}
+func (n *IntegerLiteral) GetType() string {
+	return "Integer"
+}
+func (n *Parameter) GetType() string {
+	return "Parameter"
+}
+func (n *ArrayAccess) GetType() string {
+	return "ArrayAccess"
+}
+func (n *BooleanLiteral) GetType() string {
+	return "Boolean"
+}
+func (n *Break) GetType() string {
+	return "Break"
+}
+func (n *Continue) GetType() string {
+	return "Continue"
+}
+func (n *Dml) GetType() string {
+	return "Dml"
+}
+func (n *DoubleLiteral) GetType() string {
+	return "Double"
+}
+func (n *FieldDeclaration) GetType() string {
+	return "FieldDeclaration"
+}
+func (n *FieldVariable) GetType() string {
+	return "FieldVariable"
+}
+func (n *Try) GetType() string {
+	return "Try"
+}
+func (n *Catch) GetType() string {
+	return "Catch"
+}
+func (n *Finally) GetType() string {
+	return "Finally"
+}
+func (n *For) GetType() string {
+	return "For"
+}
+func (n *ForEnum) GetType() string {
+	return "ForEnum"
+}
+func (n *ForControl) GetType() string {
+	return "ForControl"
+}
+func (n *EnhancedForControl) GetType() string {
+	return "EnhancedForControl"
+}
+func (n *If) GetType() string {
+	return "If"
+}
+func (n *MethodDeclaration) GetType() string {
+	return "MethodDeclaration"
+}
+func (n *MethodInvocation) GetType() string {
+	return "MethodInvocation"
+}
+func (n *New) GetType() string {
+	return "New"
+}
+func (n *NullLiteral) GetType() string {
+	return "Null"
+}
+func (n *Object) GetType() string {
+	return "Object"
+}
+func (n *UnaryOperator) GetType() string {
+	return "UnaryOperator"
+}
+func (n *BinaryOperator) GetType() string {
+	return "BinaryOperator"
+}
+func (n *Return) GetType() string {
+	return "Return"
+}
+func (n *Throw) GetType() string {
+	return "Throw"
+}
+func (n *Soql) GetType() string {
+	return "Soql"
+}
+func (n *Sosl) GetType() string {
+	return "Sosl"
+}
+func (n *StringLiteral) GetType() string {
+	return "StringLiteral"
+}
+func (n *Switch) GetType() string {
+	return "Switch"
+}
+func (n *Trigger) GetType() string {
+	return "Trigger"
+}
+func (n *TriggerTiming) GetType() string {
+	return "TriggerTiming"
+}
+func (n *VariableDeclaration) GetType() string {
+	return "VariableDeclaration"
+}
+func (n *VariableDeclarator) GetType() string {
+	return "VariableDeclarator"
+}
+func (n *When) GetType() string {
+	return "When"
+}
+func (n *WhenType) GetType() string {
+	return "WhenType"
+}
+func (n *While) GetType() string {
+	return "While"
+}
+func (n *NothingStatement) GetType() string {
+	return "NothingStatement"
+}
+func (n *CastExpression) GetType() string {
+	return "CastExpression"
+}
+func (n *FieldAccess) GetType() string {
+	return "FieldAccess"
+}
+func (n *Type) GetType() string {
+	return "Type"
+}
+func (n *Block) GetType() string {
+	return "Block"
+}
+func (n *GetterSetter) GetType() string {
+	return "GetterSetter"
+}
+func (n *PropertyDeclaration) GetType() string {
+	return "PropertyDeclaration"
+}
+func (n *ArrayInitializer) GetType() string {
+	return "ArrayInitializer"
+}
+func (n *ArrayCreator) GetType() string {
+	return "ArrayCreator"
+}
+func (n *Blob) GetType() string {
+	return "Blob"
+}
+func (n *SoqlBindVariable) GetType() string {
+	return "SoqlBindVariable"
+}
+func (n *TernalyExpression) GetType() string {
+	return "TernalyExpression"
+}
+func (n *MapCreator) GetType() string {
+	return "MapCreator"
+}
+func (n *SetCreator) GetType() string {
+	return "SetCreator"
+}
+func (n *Name) GetType() string {
+	return "Name"
+}
+func (n *ConstructorDeclaration) GetType() string {
+	return "ConstructorDeclaration"
+}
+
+func Dump(n Node, ident int) string {
+	if n == nil || reflect.ValueOf(n).IsNil() {
+		return "nil"
+	}
+	children := n.GetChildren()
+	if len(children) != 0 {
+		properties := make([]string, len(children))
+		for i, child := range children {
+			if nodes, ok := child.([]Node); ok {
+				properties[i] = DumpArray(nodes, ident+2)
+			} else if node, ok := child.(Node); ok {
+				properties[i] = Dump(node, ident+2)
+			} else {
+				properties[i] = strings.Repeat(" ", ident) +
+					fmt.Sprintf("%v", child)
+			}
+		}
+		return strings.Repeat(" ", ident) +
+			"(" +
+			n.GetType() + "\n" +
+			strings.Repeat(" ", ident+2) +
+			strings.Join(properties, "\n") +
+			")"
+	}
+	return strings.Repeat(" ", ident) + "(" + n.GetType() + ")"
+}
+
+func DumpArray(nodes []Node, ident int) string {
+	properties := make([]string, len(nodes))
+	for i, n := range nodes {
+		properties[i] = Dump(n, 0)
+	}
+	return strings.Repeat(" ", ident) +
+		"[" + strings.Join(properties, ",") + "]"
 }

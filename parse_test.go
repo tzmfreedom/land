@@ -15,15 +15,15 @@ func TestParse(t *testing.T) {
 		{
 			`@foo public without sharing class Foo extends Bar implements Baz {}`,
 			&ast.ClassDeclaration{
-				Modifiers: []*ast.Modifier{
-					{
+				Modifiers: []ast.Node{
+					&ast.Modifier{
 						Name: "public",
 						Position: &ast.Position{
 							Column: 5,
 							Line:   1,
 						},
 					},
-					{
+					&ast.Modifier{
 						Name: "without sharing",
 						Position: &ast.Position{
 							Column: 12,
@@ -31,8 +31,8 @@ func TestParse(t *testing.T) {
 						},
 					},
 				},
-				Annotations: []*ast.Annotation{
-					{
+				Annotations: []ast.Node{
+					&ast.Annotation{
 						Name: "foo",
 						Position: &ast.Position{
 							Column: 0,
@@ -56,8 +56,8 @@ func TestParse(t *testing.T) {
 						Line:     1,
 					},
 				},
-				ImplementClasses: []*ast.Type{
-					{
+				ImplementClasses: []ast.Node{
+					&ast.Type{
 						Name: []string{
 							"Baz",
 						},
@@ -82,8 +82,8 @@ public static String static_method(Boolean p1) { }
 public void method(){ }
 }`,
 			&ast.ClassDeclaration{
-				Modifiers:   []*ast.Modifier{},
-				Annotations: []*ast.Annotation{},
+				Modifiers:   []ast.Node{},
+				Annotations: []ast.Node{},
 				Name:        "Foo",
 				Position: &ast.Position{
 					Column: 0,
@@ -102,8 +102,8 @@ public void method(){ }
 								Line:     2,
 							},
 						},
-						Modifiers: []*ast.Modifier{
-							{
+						Modifiers: []ast.Node{
+							&ast.Modifier{
 								Name: "public",
 								Position: &ast.Position{
 									FileName: "",
@@ -112,8 +112,8 @@ public void method(){ }
 								},
 							},
 						},
-						Declarators: []*ast.VariableDeclarator{
-							{
+						Declarators: []ast.Node{
+							&ast.VariableDeclarator{
 								Name: "field",
 								Expression: &ast.NullLiteral{
 									Position: &ast.Position{
@@ -143,8 +143,8 @@ public void method(){ }
 								Line:     3,
 							},
 						},
-						Modifiers: []*ast.Modifier{
-							{
+						Modifiers: []ast.Node{
+							&ast.Modifier{
 								Name: "public",
 								Position: &ast.Position{
 									FileName: "",
@@ -153,8 +153,8 @@ public void method(){ }
 								},
 							},
 						},
-						Declarators: []*ast.VariableDeclarator{
-							{
+						Declarators: []ast.Node{
+							&ast.VariableDeclarator{
 								Name: "field_with_init",
 								Expression: &ast.IntegerLiteral{
 									Value: 2,
@@ -185,8 +185,8 @@ public void method(){ }
 								Line:     4,
 							},
 						},
-						Modifiers: []*ast.Modifier{
-							{
+						Modifiers: []ast.Node{
+							&ast.Modifier{
 								Name: "public",
 								Position: &ast.Position{
 									FileName: "",
@@ -194,7 +194,7 @@ public void method(){ }
 									Line:     4,
 								},
 							},
-							{
+							&ast.Modifier{
 								Name: "static",
 								Position: &ast.Position{
 									FileName: "",
@@ -203,8 +203,8 @@ public void method(){ }
 								},
 							},
 						},
-						Declarators: []*ast.VariableDeclarator{
-							{
+						Declarators: []ast.Node{
+							&ast.VariableDeclarator{
 								Name: "static_field",
 								Expression: &ast.NullLiteral{
 									Position: &ast.Position{
@@ -234,8 +234,8 @@ public void method(){ }
 								Line:     5,
 							},
 						},
-						Modifiers: []*ast.Modifier{
-							{
+						Modifiers: []ast.Node{
+							&ast.Modifier{
 								Name: "public",
 								Position: &ast.Position{
 									FileName: "",
@@ -243,7 +243,7 @@ public void method(){ }
 									Line:     5,
 								},
 							},
-							{
+							&ast.Modifier{
 								Name: "static",
 								Position: &ast.Position{
 									FileName: "",
@@ -252,8 +252,8 @@ public void method(){ }
 								},
 							},
 						},
-						Declarators: []*ast.VariableDeclarator{
-							{
+						Declarators: []ast.Node{
+							&ast.VariableDeclarator{
 								Name: "static_field_with_init",
 								Expression: &ast.IntegerLiteral{
 									Value: 1,
@@ -274,8 +274,8 @@ public void method(){ }
 					},
 					&ast.MethodDeclaration{
 						Name: "static_method",
-						Modifiers: []*ast.Modifier{
-							{
+						Modifiers: []ast.Node{
+							&ast.Modifier{
 								Name: "public",
 								Position: &ast.Position{
 									FileName: "",
@@ -283,7 +283,7 @@ public void method(){ }
 									Line:     6,
 								},
 							},
-							{
+							&ast.Modifier{
 								Name: "static",
 								Position: &ast.Position{
 									FileName: "",
@@ -305,7 +305,7 @@ public void method(){ }
 						},
 						Parameters: []*ast.Parameter{
 							{
-								Modifiers: []*ast.Modifier{},
+								Modifiers: []ast.Node{},
 								Type: &ast.Type{
 									Name: []string{
 										"Boolean",
@@ -343,8 +343,8 @@ public void method(){ }
 					},
 					&ast.MethodDeclaration{
 						Name: "method",
-						Modifiers: []*ast.Modifier{
-							{
+						Modifiers: []ast.Node{
+							&ast.Modifier{
 								Name: "public",
 								Position: &ast.Position{
 									FileName: "",
@@ -386,7 +386,7 @@ Integer i;
 }`,
 			createExpectedClass([]ast.Node{
 				&ast.VariableDeclaration{
-					Modifiers: []*ast.Modifier{},
+					Modifiers: []ast.Node{},
 					Type: &ast.Type{
 						Name: []string{
 							"Integer",
@@ -398,8 +398,8 @@ Integer i;
 							Line:     3,
 						},
 					},
-					Declarators: []*ast.VariableDeclarator{
-						{
+					Declarators: []ast.Node{
+						&ast.VariableDeclarator{
 							Name: "i",
 							Expression: &ast.IntegerLiteral{
 								Value: 0,
@@ -423,7 +423,7 @@ Integer i;
 					},
 				},
 				&ast.VariableDeclaration{
-					Modifiers: []*ast.Modifier{},
+					Modifiers: []ast.Node{},
 					Type: &ast.Type{
 						Name: []string{
 							"String",
@@ -435,8 +435,8 @@ Integer i;
 							Line:     4,
 						},
 					},
-					Declarators: []*ast.VariableDeclarator{
-						{
+					Declarators: []ast.Node{
+						&ast.VariableDeclarator{
 							Name: "s",
 							Expression: &ast.StringLiteral{
 								Value: "'ab",
@@ -460,7 +460,7 @@ Integer i;
 					},
 				},
 				&ast.VariableDeclaration{
-					Modifiers: []*ast.Modifier{},
+					Modifiers: []ast.Node{},
 					Type: &ast.Type{
 						Name: []string{
 							"Double",
@@ -472,8 +472,8 @@ Integer i;
 							Line:     5,
 						},
 					},
-					Declarators: []*ast.VariableDeclarator{
-						{
+					Declarators: []ast.Node{
+						&ast.VariableDeclarator{
 							Name: "d",
 							Expression: &ast.DoubleLiteral{
 								Value: 1.230000,
@@ -497,7 +497,7 @@ Integer i;
 					},
 				},
 				&ast.VariableDeclaration{
-					Modifiers: []*ast.Modifier{},
+					Modifiers: []ast.Node{},
 					Type: &ast.Type{
 						Name: []string{
 							"Boolean",
@@ -509,7 +509,7 @@ Integer i;
 							Line:     6,
 						},
 					},
-					Declarators: []*ast.VariableDeclarator{
+					Declarators: []ast.Node{
 						&ast.VariableDeclarator{
 							Name: "b",
 							Expression: &ast.BooleanLiteral{
@@ -534,7 +534,7 @@ Integer i;
 					},
 				},
 				&ast.VariableDeclaration{
-					Modifiers: []*ast.Modifier{},
+					Modifiers: []ast.Node{},
 					Type: &ast.Type{
 						Name: []string{
 							"Integer",
@@ -546,8 +546,8 @@ Integer i;
 							Line:     7,
 						},
 					},
-					Declarators: []*ast.VariableDeclarator{
-						{
+					Declarators: []ast.Node{
+						&ast.VariableDeclarator{
 							Name: "i",
 							Expression: &ast.NullLiteral{
 								Position: &ast.Position{
@@ -1176,7 +1176,7 @@ public void action(){
 				&ast.For{
 					Control: &ast.ForControl{
 						ForInit: &ast.VariableDeclaration{
-							Modifiers: []*ast.Modifier{},
+							Modifiers: []ast.Node{},
 							Type: &ast.Type{
 								Name: []string{
 									"Integer",
@@ -1188,7 +1188,7 @@ public void action(){
 									Line:     3,
 								},
 							},
-							Declarators: []*ast.VariableDeclarator{
+							Declarators: []ast.Node{
 								&ast.VariableDeclarator{
 									Name: "i",
 									Expression: &ast.IntegerLiteral{
@@ -1354,7 +1354,7 @@ public void action(){
 				},
 				&ast.For{
 					Control: &ast.EnhancedForControl{
-						Modifiers: []*ast.Modifier{},
+						Modifiers: []ast.Node{},
 						Type: &ast.Type{
 							Name: []string{
 								"Account",
@@ -1453,7 +1453,7 @@ try {
 					},
 					CatchClause: []ast.Node{
 						&ast.Catch{
-							Modifiers: []*ast.Modifier{},
+							Modifiers: []ast.Node{},
 							Type: &ast.Type{
 								Name: []string{
 									"Exception",
@@ -1526,8 +1526,8 @@ try {
 
 func createExpectedClass(statements []ast.Node) *ast.ClassDeclaration {
 	return &ast.ClassDeclaration{
-		Modifiers:   []*ast.Modifier{},
-		Annotations: []*ast.Annotation{},
+		Modifiers:   []ast.Node{},
+		Annotations: []ast.Node{},
 		Name:        "Foo",
 		Position: &ast.Position{
 			Column: 0,
@@ -1536,8 +1536,8 @@ func createExpectedClass(statements []ast.Node) *ast.ClassDeclaration {
 		Declarations: []ast.Node{
 			&ast.MethodDeclaration{
 				Name: "action",
-				Modifiers: []*ast.Modifier{
-					{
+				Modifiers: []ast.Node{
+					&ast.Modifier{
 						Name: "public",
 						Position: &ast.Position{
 							FileName: "",

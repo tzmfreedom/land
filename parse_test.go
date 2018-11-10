@@ -858,6 +858,577 @@ foo(1, s, false);
 				},
 			}),
 		},
+		{
+			`class Foo {
+public void action(){
+  if (i == 1) {
+    true;
+  } else if (i == 2) {
+    true;
+  } else {
+    false;
+  }
+  switch ON i {
+    when 1 {
+      true;
+    }
+    when 2, 3 {
+      false;
+    }
+    when Account a {
+      false;
+    }
+    else {
+      1;
+    }
+  }
+}
+}`,
+			createExpectedClass([]ast.Node{
+				&ast.If{
+					Condition: &ast.BinaryOperator{
+						Op: "==",
+						Left: &ast.Name{
+							Value: "i",
+							Position: &ast.Position{
+								FileName: "",
+								Column:   6,
+								Line:     3,
+							},
+						},
+						Right: &ast.IntegerLiteral{
+							Value: 1,
+							Position: &ast.Position{
+								FileName: "",
+								Column:   11,
+								Line:     3,
+							},
+						},
+						Position: &ast.Position{
+							FileName: "",
+							Column:   6,
+							Line:     3,
+						},
+					},
+					IfStatement: &ast.Block{
+						Statements: []ast.Node{
+							&ast.BooleanLiteral{
+								Value: true,
+								Position: &ast.Position{
+									FileName: "",
+									Column:   4,
+									Line:     4,
+								},
+							},
+						},
+						Position: &ast.Position{
+							FileName: "",
+							Column:   14,
+							Line:     3,
+						},
+					},
+					ElseStatement: &ast.If{
+						Condition: &ast.BinaryOperator{
+							Op: "==",
+							Left: &ast.Name{
+								Value: "i",
+								Position: &ast.Position{
+									FileName: "",
+									Column:   13,
+									Line:     5,
+								},
+							},
+							Right: &ast.IntegerLiteral{
+								Value: 2,
+								Position: &ast.Position{
+									FileName: "",
+									Column:   18,
+									Line:     5,
+								},
+							},
+							Position: &ast.Position{
+								FileName: "",
+								Column:   13,
+								Line:     5,
+							},
+						},
+						IfStatement: &ast.Block{
+							Statements: []ast.Node{
+								&ast.BooleanLiteral{
+									Value: true,
+									Position: &ast.Position{
+										FileName: "",
+										Column:   4,
+										Line:     6,
+									},
+								},
+							},
+							Position: &ast.Position{
+								FileName: "",
+								Column:   21,
+								Line:     5,
+							},
+						},
+						ElseStatement: &ast.Block{
+							Statements: []ast.Node{
+								&ast.BooleanLiteral{
+									Value: false,
+									Position: &ast.Position{
+										FileName: "",
+										Column:   4,
+										Line:     8,
+									},
+								},
+							},
+							Position: &ast.Position{
+								FileName: "",
+								Column:   9,
+								Line:     7,
+							},
+						},
+						Position: &ast.Position{
+							FileName: "",
+							Column:   9,
+							Line:     5,
+						},
+					},
+					Position: &ast.Position{
+						FileName: "",
+						Column:   2,
+						Line:     3,
+					},
+				},
+				&ast.Switch{
+					Expression: &ast.Name{
+						Value: "i",
+						Position: &ast.Position{
+							FileName: "",
+							Column:   12,
+							Line:     10,
+						},
+					},
+					WhenStatements: []ast.Node{
+						&ast.When{
+							Condition: []ast.Node{
+								&ast.IntegerLiteral{
+									Value: 1,
+									Position: &ast.Position{
+										FileName: "",
+										Column:   9,
+										Line:     11,
+									},
+								},
+							},
+							Statements: &ast.Block{
+								Statements: []ast.Node{
+									&ast.BooleanLiteral{
+										Value: true,
+										Position: &ast.Position{
+											FileName: "",
+											Column:   6,
+											Line:     12,
+										},
+									},
+								},
+								Position: &ast.Position{
+									FileName: "",
+									Column:   11,
+									Line:     11,
+								},
+							},
+							Position: &ast.Position{
+								FileName: "",
+								Column:   4,
+								Line:     11,
+							},
+						},
+						&ast.When{
+							Condition: []ast.Node{
+								&ast.IntegerLiteral{
+									Value: 2,
+									Position: &ast.Position{
+										FileName: "",
+										Column:   9,
+										Line:     14,
+									},
+								},
+								&ast.IntegerLiteral{
+									Value: 3,
+									Position: &ast.Position{
+										FileName: "",
+										Column:   12,
+										Line:     14,
+									},
+								},
+							},
+							Statements: &ast.Block{
+								Statements: []ast.Node{
+									&ast.BooleanLiteral{
+										Value: false,
+										Position: &ast.Position{
+											FileName: "",
+											Column:   6,
+											Line:     15,
+										},
+									},
+								},
+								Position: &ast.Position{
+									FileName: "",
+									Column:   14,
+									Line:     14,
+								},
+							},
+							Position: &ast.Position{
+								FileName: "",
+								Column:   4,
+								Line:     14,
+							},
+						},
+						&ast.When{
+							Condition: []ast.Node{
+								&ast.WhenType{
+									Type: &ast.Type{
+										Name: []string{
+											"Account",
+										},
+										Parameters: []ast.Node{},
+										Position: &ast.Position{
+											FileName: "",
+											Column:   9,
+											Line:     17,
+										},
+									},
+									Identifier: "a",
+									Position: &ast.Position{
+										FileName: "",
+										Column:   9,
+										Line:     17,
+									},
+								},
+							},
+							Statements: &ast.Block{
+								Statements: []ast.Node{
+									&ast.BooleanLiteral{
+										Value: false,
+										Position: &ast.Position{
+											FileName: "",
+											Column:   6,
+											Line:     18,
+										},
+									},
+								},
+								Position: &ast.Position{
+									FileName: "",
+									Column:   19,
+									Line:     17,
+								},
+							},
+							Position: &ast.Position{
+								FileName: "",
+								Column:   4,
+								Line:     17,
+							},
+						},
+					},
+					ElseStatement: &ast.Block{
+						Statements: []ast.Node{
+							&ast.IntegerLiteral{
+								Value: 1,
+								Position: &ast.Position{
+									FileName: "",
+									Column:   6,
+									Line:     21,
+								},
+							},
+						},
+						Position: &ast.Position{
+							FileName: "",
+							Column:   9,
+							Line:     20,
+						},
+					},
+					Position: &ast.Position{
+						FileName: "",
+						Column:   2,
+						Line:     10,
+					},
+				},
+			}),
+		},
+		{
+			`class Foo {
+public void action(){
+  for (Integer i = 0; i < imax; i++) {
+    continue;
+  }
+  while (true) {
+    break;
+  }
+  do {
+    return;
+  } while (false)
+  for (Account acc : accounts) {
+    return 1;
+  }
+  throw a;
+}
+}`,
+			createExpectedClass([]ast.Node{
+				&ast.For{
+					Control: &ast.ForControl{
+						ForInit: &ast.VariableDeclaration{
+							Modifiers: []*ast.Modifier{},
+							Type: &ast.Type{
+								Name: []string{
+									"Integer",
+								},
+								Parameters: []ast.Node{},
+								Position: &ast.Position{
+									FileName: "",
+									Column:   7,
+									Line:     3,
+								},
+							},
+							Declarators: []*ast.VariableDeclarator{
+								&ast.VariableDeclarator{
+									Name: "i",
+									Expression: &ast.IntegerLiteral{
+										Value: 0,
+										Position: &ast.Position{
+											FileName: "",
+											Column:   19,
+											Line:     3,
+										},
+									},
+									Position: &ast.Position{
+										FileName: "",
+										Column:   15,
+										Line:     3,
+									},
+								},
+							},
+							Position: &ast.Position{
+								FileName: "",
+								Column:   7,
+								Line:     3,
+							},
+						},
+						Expression: &ast.BinaryOperator{
+							Op: "<",
+							Left: &ast.Name{
+								Value: "i",
+								Position: &ast.Position{
+									FileName: "",
+									Column:   22,
+									Line:     3,
+								},
+							},
+							Right: &ast.Name{
+								Value: "imax",
+								Position: &ast.Position{
+									FileName: "",
+									Column:   26,
+									Line:     3,
+								},
+							},
+							Position: &ast.Position{
+								FileName: "",
+								Column:   22,
+								Line:     3,
+							},
+						},
+						ForUpdate: []ast.Node{
+							&ast.UnaryOperator{
+								Op: "++",
+								Expression: &ast.Name{
+									Value: "i",
+									Position: &ast.Position{
+										FileName: "",
+										Column:   32,
+										Line:     3,
+									},
+								},
+								IsPrefix: false,
+								Position: &ast.Position{
+									FileName: "",
+									Column:   32,
+									Line:     3,
+								},
+							},
+						},
+						Position: &ast.Position{
+							FileName: "",
+							Column:   7,
+							Line:     3,
+						},
+					},
+					Statements: &ast.Block{
+						Statements: []ast.Node{
+							&ast.Continue{
+								Position: &ast.Position{
+									FileName: "",
+									Column:   4,
+									Line:     4,
+								},
+							},
+						},
+						Position: &ast.Position{
+							FileName: "",
+							Column:   37,
+							Line:     3,
+						},
+					},
+					Position: &ast.Position{
+						FileName: "",
+						Column:   2,
+						Line:     3,
+					},
+				},
+				&ast.While{
+					Condition: &ast.BooleanLiteral{
+						Value: true,
+						Position: &ast.Position{
+							FileName: "",
+							Column:   9,
+							Line:     6,
+						},
+					},
+					Statements: []ast.Node{
+						&ast.Block{
+							Statements: []ast.Node{
+								&ast.Break{
+									Position: &ast.Position{
+										FileName: "",
+										Column:   4,
+										Line:     7,
+									},
+								},
+							},
+							Position: &ast.Position{
+								FileName: "",
+								Column:   15,
+								Line:     6,
+							},
+						},
+					},
+					IsDo: false,
+					Position: &ast.Position{
+						FileName: "",
+						Column:   2,
+						Line:     6,
+					},
+				},
+				&ast.While{
+					Condition: &ast.BooleanLiteral{
+						Value: false,
+						Position: &ast.Position{
+							FileName: "",
+							Column:   11,
+							Line:     11,
+						},
+					},
+					Statements: []ast.Node{
+						&ast.Block{
+							Statements: []ast.Node{
+								&ast.Return{
+									Expression: nil,
+									Position: &ast.Position{
+										FileName: "",
+										Column:   4,
+										Line:     10,
+									},
+								},
+							},
+							Position: &ast.Position{
+								FileName: "",
+								Column:   5,
+								Line:     9,
+							},
+						},
+					},
+					IsDo: true,
+					Position: &ast.Position{
+						FileName: "",
+						Column:   2,
+						Line:     9,
+					},
+				},
+				&ast.For{
+					Control: &ast.EnhancedForControl{
+						Modifiers: []*ast.Modifier{},
+						Type: &ast.Type{
+							Name: []string{
+								"Account",
+							},
+							Parameters: []ast.Node{},
+							Position: &ast.Position{
+								FileName: "",
+								Column:   7,
+								Line:     12,
+							},
+						},
+						VariableDeclaratorId: "acc",
+						Expression: &ast.Name{
+							Value: "accounts",
+							Position: &ast.Position{
+								FileName: "",
+								Column:   21,
+								Line:     12,
+							},
+						},
+						Position: &ast.Position{
+							FileName: "",
+							Column:   7,
+							Line:     12,
+						},
+					},
+					Statements: &ast.Block{
+						Statements: []ast.Node{
+							&ast.Return{
+								Expression: &ast.IntegerLiteral{
+									Value: 1,
+									Position: &ast.Position{
+										FileName: "",
+										Column:   11,
+										Line:     13,
+									},
+								},
+								Position: &ast.Position{
+									FileName: "",
+									Column:   4,
+									Line:     13,
+								},
+							},
+						},
+						Position: &ast.Position{
+							FileName: "",
+							Column:   31,
+							Line:     12,
+						},
+					},
+					Position: &ast.Position{
+						FileName: "",
+						Column:   2,
+						Line:     12,
+					},
+				},
+				&ast.Throw{
+					Expression: &ast.Name{
+						Value: "a",
+						Position: &ast.Position{
+							FileName: "",
+							Column:   8,
+							Line:     15,
+						},
+					},
+					Position: &ast.Position{
+						FileName: "",
+						Column:   2,
+						Line:     15,
+					},
+				},
+			}),
+		},
 	}
 	for _, testCase := range testCases {
 		out := parseString(testCase.Code)

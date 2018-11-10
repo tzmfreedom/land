@@ -642,11 +642,13 @@ func (v *AstBuilder) VisitStatement(ctx *parser.StatementContext) interface{} {
 		n := &ast.Switch{Position: v.newPosition(ctx)}
 		n.Expression = ctx.Expression().Accept(v).(ast.Node)
 		n.WhenStatements = ctx.WhenStatements().Accept(v).([]ast.Node)
-		n.ElseStatement = nil // TODO: implement
+		if b := ctx.Block(); b != nil {
+			n.ElseStatement = b.Accept(v).(ast.Node)
+		}
 		return n
 	} else if s := ctx.FOR(); s != nil {
 		n := &ast.For{Position: v.newPosition(ctx)}
-		n.Control = ctx.ForControl().Accept(v).(*ast.ForControl)
+		n.Control = ctx.ForControl().Accept(v).(ast.Node)
 		n.Statements = ctx.Statement(0).Accept(v).(ast.Node)
 		return n
 	} else if s := ctx.WHILE(); s != nil {
@@ -736,16 +738,18 @@ func (v *AstBuilder) VisitFinallyBlock(ctx *parser.FinallyBlockContext) interfac
 }
 
 func (v *AstBuilder) VisitWhenStatements(ctx *parser.WhenStatementsContext) interface{} {
-	_ = ctx.AllWhenStatement()
-	_ = ctx.Block().Accept(v)
-	// TODO: implement
-	return nil
+	whenStatements := ctx.AllWhenStatement()
+	statements := make([]ast.Node, len(whenStatements))
+	for i, s := range whenStatements {
+		statements[i] = s.Accept(v).(ast.Node)
+	}
+	return statements
 }
 
 func (v *AstBuilder) VisitWhenStatement(ctx *parser.WhenStatementContext) interface{} {
 	n := &ast.When{Position: v.newPosition(ctx)}
-	n.Condition = ctx.WhenExpression().Accept(v).(ast.Node)
-	n.Statements = ctx.Block().Accept(v).([]ast.Node)
+	n.Condition = ctx.WhenExpression().Accept(v).([]ast.Node)
+	n.Statements = ctx.Block().Accept(v).(*ast.Block)
 	return n
 }
 
@@ -760,7 +764,7 @@ func (v *AstBuilder) VisitWhenExpression(ctx *parser.WhenExpressionContext) inte
 	n := &ast.WhenType{Position: v.newPosition(ctx)}
 	n.Type = ctx.ApexType().Accept(v).(*ast.Type)
 	n.Identifier = ctx.ApexIdentifier().GetText()
-	return n
+	return []ast.Node{n}
 }
 
 func (v *AstBuilder) VisitForControl(ctx *parser.ForControlContext) interface{} {
@@ -775,7 +779,7 @@ func (v *AstBuilder) VisitForControl(ctx *parser.ForControlContext) interface{} 
 		c.Expression = e.Accept(v).(ast.Node)
 	}
 	if u := ctx.ForUpdate(); u != nil {
-		c.ForUpdate = u.Accept(v).(ast.Node)
+		c.ForUpdate = u.Accept(v).([]ast.Node)
 	}
 	return c
 }

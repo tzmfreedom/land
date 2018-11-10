@@ -117,7 +117,7 @@ type Finally struct {
 }
 
 type For struct {
-	Control    *ForControl
+	Control    Node
 	Statements Node
 	Position   *Position
 }
@@ -133,7 +133,7 @@ type ForEnum struct {
 type ForControl struct {
 	ForInit    Node
 	Expression Node
-	ForUpdate  Node
+	ForUpdate  []Node
 	Position   *Position
 }
 
@@ -261,8 +261,8 @@ type VariableDeclarator struct {
 }
 
 type When struct {
-	Condition  Node
-	Statements []Node
+	Condition  []Node
+	Statements *Block
 	Position   *Position
 }
 

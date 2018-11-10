@@ -32,7 +32,7 @@ type Modifier struct {
 
 type Annotation struct {
 	Name       string
-	Parameters []*Parameter
+	Parameters []Node
 	Position   *Position
 	Parent     Node
 }
@@ -42,7 +42,7 @@ type Interface struct {
 	Modifiers   []Node
 	Name        Name
 	SuperClass  []Node
-	Methods     map[string][]MethodDeclaration
+	Methods     []Node
 	Position    *Position
 	Parent      Node
 }
@@ -117,9 +117,9 @@ type FieldVariable struct {
 }
 
 type Try struct {
-	Block        *Block
+	Block        Node
 	CatchClause  []Node
-	FinallyBlock *Block
+	FinallyBlock Node
 	Position     *Position
 	Parent       Node
 }
@@ -128,7 +128,7 @@ type Catch struct {
 	Modifiers  []Node
 	Type       Node
 	Identifier string
-	Block      *Block
+	Block      Node
 	Position   *Position
 	Parent     Node
 }
@@ -184,9 +184,9 @@ type MethodDeclaration struct {
 	Name           string
 	Modifiers      []Node
 	ReturnType     Node
-	Parameters     []*Parameter
+	Parameters     []Node
 	Throws         []Node
-	Statements     *Block
+	Statements     Node
 	NativeFunction Node
 	Position       *Position
 	Parent         Node
@@ -279,8 +279,8 @@ type Switch struct {
 type Trigger struct {
 	Name           string
 	Object         string
-	TriggerTimings []*TriggerTiming
-	Statements     []Node
+	TriggerTimings []Node
+	Statements     Node
 	Position       *Position
 	Parent         Node
 }
@@ -309,7 +309,7 @@ type VariableDeclarator struct {
 
 type When struct {
 	Condition  []Node
-	Statements *Block
+	Statements Node
 	Position   *Position
 	Parent     Node
 }
@@ -365,7 +365,7 @@ type Block struct {
 type GetterSetter struct {
 	Type       string
 	Modifiers  []Node
-	MethodBody *Block
+	MethodBody Node
 	Position   *Position
 	Parent     Node
 }
@@ -432,7 +432,7 @@ type Name struct {
 type ConstructorDeclaration struct {
 	Modifiers      []Node
 	ReturnType     Node
-	Parameters     []*Parameter
+	Parameters     []Node
 	Throws         []Node
 	Statements     []Node
 	NativeFunction Node

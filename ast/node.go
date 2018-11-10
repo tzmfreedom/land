@@ -21,17 +21,20 @@ type ClassDeclaration struct {
 	Declarations     []Node
 	InnerClasses     []Node
 	Position         *Position
+	Parent           Node
 }
 
 type Modifier struct {
 	Name     string
 	Position *Position
+	Parent   Node
 }
 
 type Annotation struct {
 	Name       string
 	Parameters []*Parameter
 	Position   *Position
+	Parent     Node
 }
 
 type Interface struct {
@@ -41,11 +44,13 @@ type Interface struct {
 	SuperClass  []Node
 	Methods     map[string][]MethodDeclaration
 	Position    *Position
+	Parent      Node
 }
 
 type IntegerLiteral struct {
 	Value    int
 	Position *Position
+	Parent   Node
 }
 
 type Parameter struct {
@@ -53,25 +58,30 @@ type Parameter struct {
 	Type      Node
 	Name      string
 	Position  *Position
+	Parent    Node
 }
 
 type ArrayAccess struct {
 	Receiver Node
 	Key      Node
 	Position *Position
+	Parent   Node
 }
 
 type BooleanLiteral struct {
 	Value    bool
 	Position *Position
+	Parent   Node
 }
 
 type Break struct {
 	Position *Position
+	Parent   Node
 }
 
 type Continue struct {
 	Position *Position
+	Parent   Node
 }
 
 type Dml struct {
@@ -79,11 +89,13 @@ type Dml struct {
 	Expression Node
 	UpsertKey  string
 	Position   *Position
+	Parent     Node
 }
 
 type DoubleLiteral struct {
 	Value    float64
 	Position *Position
+	Parent   Node
 }
 
 type FieldDeclaration struct {
@@ -91,6 +103,7 @@ type FieldDeclaration struct {
 	Modifiers   []Node
 	Declarators []Node
 	Position    *Position
+	Parent      Node
 }
 
 type FieldVariable struct {
@@ -98,6 +111,7 @@ type FieldVariable struct {
 	Modifiers  []Node
 	Expression Node
 	Position   *Position
+	Parent     Node
 	Getter     Node
 	Setter     Node
 }
@@ -107,6 +121,7 @@ type Try struct {
 	CatchClause  []Node
 	FinallyBlock *Block
 	Position     *Position
+	Parent       Node
 }
 
 type Catch struct {
@@ -115,17 +130,20 @@ type Catch struct {
 	Identifier string
 	Block      *Block
 	Position   *Position
+	Parent     Node
 }
 
 type Finally struct {
 	Block    Node
 	Position *Position
+	Parent   Node
 }
 
 type For struct {
 	Control    Node
 	Statements Node
 	Position   *Position
+	Parent     Node
 }
 
 type ForEnum struct {
@@ -134,6 +152,7 @@ type ForEnum struct {
 	ListExpression Node
 	Statements     []Node
 	Position       *Position
+	Parent         Node
 }
 
 type ForControl struct {
@@ -141,6 +160,7 @@ type ForControl struct {
 	Expression Node
 	ForUpdate  []Node
 	Position   *Position
+	Parent     Node
 }
 
 type EnhancedForControl struct {
@@ -149,6 +169,7 @@ type EnhancedForControl struct {
 	VariableDeclaratorId string
 	Expression           Node
 	Position             *Position
+	Parent               Node
 }
 
 type If struct {
@@ -156,6 +177,7 @@ type If struct {
 	IfStatement   Node
 	ElseStatement Node
 	Position      *Position
+	Parent        Node
 }
 
 type MethodDeclaration struct {
@@ -167,22 +189,26 @@ type MethodDeclaration struct {
 	Statements     *Block
 	NativeFunction Node
 	Position       *Position
+	Parent         Node
 }
 
 type MethodInvocation struct {
 	NameOrExpression Node
 	Parameters       []Node
 	Position         *Position
+	Parent           Node
 }
 
 type New struct {
 	Type       Node
 	Parameters []Node
 	Position   *Position
+	Parent     Node
 }
 
 type NullLiteral struct {
 	Position *Position
+	Parent   Node
 }
 
 type Object struct {
@@ -190,6 +216,7 @@ type Object struct {
 	InstanceFields []Node
 	GenericType    string
 	Position       *Position
+	Parent         Node
 }
 
 type UnaryOperator struct {
@@ -197,6 +224,7 @@ type UnaryOperator struct {
 	Expression Node
 	IsPrefix   bool
 	Position   *Position
+	Parent     Node
 }
 
 type BinaryOperator struct {
@@ -204,16 +232,19 @@ type BinaryOperator struct {
 	Left     Node
 	Right    Node
 	Position *Position
+	Parent   Node
 }
 
 type Return struct {
 	Expression Node
 	Position   *Position
+	Parent     Node
 }
 
 type Throw struct {
 	Expression Node
 	Position   *Position
+	Parent     Node
 }
 
 type Soql struct {
@@ -223,13 +254,18 @@ type Soql struct {
 	Order        string
 	Limit        int
 	Position     *Position
+	Parent       Node
 }
 
-type Sosl struct{}
+type Sosl struct {
+	Position *Position
+	Parent   Node
+}
 
 type StringLiteral struct {
 	Value    string
 	Position *Position
+	Parent   Node
 }
 
 type Switch struct {
@@ -237,6 +273,7 @@ type Switch struct {
 	WhenStatements []Node
 	ElseStatement  Node
 	Position       *Position
+	Parent         Node
 }
 
 type Trigger struct {
@@ -245,12 +282,14 @@ type Trigger struct {
 	TriggerTimings []*TriggerTiming
 	Statements     []Node
 	Position       *Position
+	Parent         Node
 }
 
 type TriggerTiming struct {
 	Timing   string
 	Dml      string
 	Position *Position
+	Parent   Node
 }
 
 type VariableDeclaration struct {
@@ -258,24 +297,28 @@ type VariableDeclaration struct {
 	Type        Node
 	Declarators []Node
 	Position    *Position
+	Parent      Node
 }
 
 type VariableDeclarator struct {
 	Name       string
 	Expression Node
 	Position   *Position
+	Parent     Node
 }
 
 type When struct {
 	Condition  []Node
 	Statements *Block
 	Position   *Position
+	Parent     Node
 }
 
 type WhenType struct {
 	Type       Node
 	Identifier string
 	Position   *Position
+	Parent     Node
 }
 
 type While struct {
@@ -283,34 +326,40 @@ type While struct {
 	Statements []Node
 	IsDo       bool
 	Position   *Position
+	Parent     Node
 }
 
 // TOTO: when to use?
 type NothingStatement struct {
 	Position *Position
+	Parent   Node
 }
 
 type CastExpression struct {
 	CastType   Node
 	Expression Node
 	Position   *Position
+	Parent     Node
 }
 
 type FieldAccess struct {
 	Expression Node
 	FieldName  string
 	Position   *Position
+	Parent     Node
 }
 
 type Type struct {
 	Name       []string
 	Parameters []Node
 	Position   *Position
+	Parent     Node
 }
 
 type Block struct {
 	Statements []Node
 	Position   *Position
+	Parent     Node
 }
 
 type GetterSetter struct {
@@ -318,6 +367,7 @@ type GetterSetter struct {
 	Modifiers  []Node
 	MethodBody *Block
 	Position   *Position
+	Parent     Node
 }
 
 type PropertyDeclaration struct {
@@ -326,11 +376,13 @@ type PropertyDeclaration struct {
 	Identifier    string
 	GetterSetters Node
 	Position      *Position
+	Parent        Node
 }
 
 type ArrayInitializer struct {
 	Initializers []Node
 	Position     *Position
+	Parent       Node
 }
 
 type ArrayCreator struct {
@@ -338,16 +390,19 @@ type ArrayCreator struct {
 	Expressions      []Node
 	ArrayInitializer Node
 	Position         *Position
+	Parent           Node
 }
 
 type Blob struct {
 	Value    []byte
 	Position *Position
+	Parent   Node
 }
 
 type SoqlBindVariable struct {
 	Expression Node
 	Position   *Position
+	Parent     Node
 }
 
 type TernalyExpression struct {
@@ -355,19 +410,23 @@ type TernalyExpression struct {
 	TrueExpression  Node
 	FalseExpression Node
 	Position        *Position
+	Parent          Node
 }
 
 type MapCreator struct {
 	Position *Position
+	Parent   Node
 }
 
 type SetCreator struct {
 	Position *Position
+	Parent   Node
 }
 
 type Name struct {
 	Value    string
 	Position *Position
+	Parent   Node
 }
 
 type ConstructorDeclaration struct {
@@ -378,6 +437,7 @@ type ConstructorDeclaration struct {
 	Statements     []Node
 	NativeFunction Node
 	Position       *Position
+	Parent         Node
 }
 
 type InterfaceDeclaration struct {
@@ -451,6 +511,7 @@ type Node interface {
 	Accept(Visitor) interface{}
 	GetChildren() []interface{}
 	GetType() string
+	GetParent() Node
 }
 
 func (n *ClassDeclaration) Accept(v Visitor) interface{} {
@@ -1270,6 +1331,181 @@ func (n *Name) GetType() string {
 }
 func (n *ConstructorDeclaration) GetType() string {
 	return "ConstructorDeclaration"
+}
+
+func (n *ClassDeclaration) GetParent() Node {
+	return n.Parent
+}
+func (n *Modifier) GetParent() Node {
+	return n.Parent
+}
+func (n *Annotation) GetParent() Node {
+	return n.Parent
+}
+func (n *Interface) GetParent() Node {
+	return n.Parent
+}
+func (n *IntegerLiteral) GetParent() Node {
+	return n.Parent
+}
+func (n *Parameter) GetParent() Node {
+	return n.Parent
+}
+func (n *ArrayAccess) GetParent() Node {
+	return n.Parent
+}
+func (n *BooleanLiteral) GetParent() Node {
+	return n.Parent
+}
+func (n *Break) GetParent() Node {
+	return n.Parent
+}
+func (n *Continue) GetParent() Node {
+	return n.Parent
+}
+func (n *Dml) GetParent() Node {
+	return n.Parent
+}
+func (n *DoubleLiteral) GetParent() Node {
+	return n.Parent
+}
+func (n *FieldDeclaration) GetParent() Node {
+	return n.Parent
+}
+func (n *FieldVariable) GetParent() Node {
+	return n.Parent
+}
+func (n *Try) GetParent() Node {
+	return n.Parent
+}
+func (n *Catch) GetParent() Node {
+	return n.Parent
+}
+func (n *Finally) GetParent() Node {
+	return n.Parent
+}
+func (n *For) GetParent() Node {
+	return n.Parent
+}
+func (n *ForEnum) GetParent() Node {
+	return n.Parent
+}
+func (n *ForControl) GetParent() Node {
+	return n.Parent
+}
+func (n *EnhancedForControl) GetParent() Node {
+	return n.Parent
+}
+func (n *If) GetParent() Node {
+	return n.Parent
+}
+func (n *MethodDeclaration) GetParent() Node {
+	return n.Parent
+}
+func (n *MethodInvocation) GetParent() Node {
+	return n.Parent
+}
+func (n *New) GetParent() Node {
+	return n.Parent
+}
+func (n *NullLiteral) GetParent() Node {
+	return n.Parent
+}
+func (n *Object) GetParent() Node {
+	return n.Parent
+}
+func (n *UnaryOperator) GetParent() Node {
+	return n.Parent
+}
+func (n *BinaryOperator) GetParent() Node {
+	return n.Parent
+}
+func (n *Return) GetParent() Node {
+	return n.Parent
+}
+func (n *Throw) GetParent() Node {
+	return n.Parent
+}
+func (n *Soql) GetParent() Node {
+	return n.Parent
+}
+func (n *Sosl) GetParent() Node {
+	return n.Parent
+}
+func (n *StringLiteral) GetParent() Node {
+	return n.Parent
+}
+func (n *Switch) GetParent() Node {
+	return n.Parent
+}
+func (n *Trigger) GetParent() Node {
+	return n.Parent
+}
+func (n *TriggerTiming) GetParent() Node {
+	return n.Parent
+}
+func (n *VariableDeclaration) GetParent() Node {
+	return n.Parent
+}
+func (n *VariableDeclarator) GetParent() Node {
+	return n.Parent
+}
+func (n *When) GetParent() Node {
+	return n.Parent
+}
+func (n *WhenType) GetParent() Node {
+	return n.Parent
+}
+func (n *While) GetParent() Node {
+	return n.Parent
+}
+func (n *NothingStatement) GetParent() Node {
+	return n.Parent
+}
+func (n *CastExpression) GetParent() Node {
+	return n.Parent
+}
+func (n *FieldAccess) GetParent() Node {
+	return n.Parent
+}
+func (n *Type) GetParent() Node {
+	return n.Parent
+}
+func (n *Block) GetParent() Node {
+	return n.Parent
+}
+func (n *GetterSetter) GetParent() Node {
+	return n.Parent
+}
+func (n *PropertyDeclaration) GetParent() Node {
+	return n.Parent
+}
+func (n *ArrayInitializer) GetParent() Node {
+	return n.Parent
+}
+func (n *ArrayCreator) GetParent() Node {
+	return n.Parent
+}
+func (n *Blob) GetParent() Node {
+	return n.Parent
+}
+func (n *SoqlBindVariable) GetParent() Node {
+	return n.Parent
+}
+func (n *TernalyExpression) GetParent() Node {
+	return n.Parent
+}
+func (n *MapCreator) GetParent() Node {
+	return n.Parent
+}
+func (n *SetCreator) GetParent() Node {
+	return n.Parent
+}
+func (n *Name) GetParent() Node {
+	return n.Parent
+}
+func (n *ConstructorDeclaration) GetParent() Node {
+	return n.Parent
 }
 
 func Dump(n Node, ident int) string {

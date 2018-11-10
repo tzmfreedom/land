@@ -721,16 +721,13 @@ func (v *AstBuilder) VisitCatchClause(ctx *parser.CatchClauseContext) interface{
 	for i, m := range modifiers {
 		c.Modifiers[i] = m.Accept(v).(*ast.Modifier)
 	}
+	c.Block = ctx.Block().Accept(v).(*ast.Block)
 	return c
 }
 
 func (v *AstBuilder) VisitCatchType(ctx *parser.CatchTypeContext) interface{} {
 	names := ctx.AllQualifiedName()
-	types := make([]ast.Node, len(names))
-	for i, n := range names {
-		types[i] = n.Accept(v).(ast.Node)
-	}
-	return types
+	return names[0].Accept(v)
 }
 
 func (v *AstBuilder) VisitFinallyBlock(ctx *parser.FinallyBlockContext) interface{} {

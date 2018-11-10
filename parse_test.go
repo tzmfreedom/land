@@ -1170,7 +1170,6 @@ public void action(){
   for (Account acc : accounts) {
     return 1;
   }
-  throw a;
 }
 }`,
 			createExpectedClass([]ast.Node{
@@ -1412,20 +1411,103 @@ public void action(){
 						Line:     12,
 					},
 				},
-				&ast.Throw{
-					Expression: &ast.Name{
-						Value: "a",
+			}),
+		},
+		{
+			`class Foo {
+public void action(){
+try {
+  throw a;
+} catch (Exception e) {
+  return;
+} finally {
+  return;
+}
+}
+}`,
+			createExpectedClass([]ast.Node{
+				&ast.Try{
+					Block: &ast.Block{
+						Statements: []ast.Node{
+							&ast.Throw{
+								Expression: &ast.Name{
+									Value: "a",
+									Position: &ast.Position{
+										FileName: "",
+										Column:   8,
+										Line:     4,
+									},
+								},
+								Position: &ast.Position{
+									FileName: "",
+									Column:   2,
+									Line:     4,
+								},
+							},
+						},
 						Position: &ast.Position{
 							FileName: "",
-							Column:   8,
-							Line:     15,
+							Column:   4,
+							Line:     3,
 						},
 					},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   2,
-						Line:     15,
+					CatchClause: []ast.Node{
+						&ast.Catch{
+							Modifiers: []*ast.Modifier{},
+							Type: &ast.Type{
+								Name: []string{
+									"Exception",
+								},
+								Parameters: nil,
+								Position: &ast.Position{
+									FileName: "",
+									Column:   9,
+									Line:     5,
+								},
+							},
+							Identifier: "e",
+							Block: &ast.Block{
+								Statements: []ast.Node{
+									&ast.Return{
+										Expression: nil,
+										Position: &ast.Position{
+											FileName: "",
+											Column:   2,
+											Line:     6,
+										},
+									},
+								},
+								Position: &ast.Position{
+									FileName: "",
+									Column:   22,
+									Line:     5,
+								},
+							},
+							Position: &ast.Position{
+								FileName: "",
+								Column:   2,
+								Line:     5,
+							},
+						},
 					},
+					FinallyBlock: &ast.Block{
+						Statements: []ast.Node{
+							&ast.Return{
+								Expression: nil,
+								Position: &ast.Position{
+									FileName: "",
+									Column:   2,
+									Line:     8,
+								},
+							},
+						},
+						Position: &ast.Position{
+							FileName: "",
+							Column:   10,
+							Line:     7,
+						},
+					},
+					Position: (*ast.Position)(nil),
 				},
 			}),
 		},

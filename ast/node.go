@@ -112,7 +112,7 @@ type Catch struct {
 }
 
 type Finally struct {
-	Black    []Node
+	Block    Node
 	Position *Position
 }
 

@@ -35,10 +35,10 @@ func (v *AstBuilder) VisitTypeDeclaration(ctx *parser.TypeDeclarationContext) in
 
 	if ctx.ClassDeclaration() != nil {
 		cd := ctx.ClassDeclaration().Accept(v)
-		classDeclaration, _ := cd.(*ast.ClassDeclaration)
-		classDeclaration.Modifiers = modifiers
-		classDeclaration.Annotations = annotations
-		return classDeclaration
+		decl, _ := cd.(*ast.ClassDeclaration)
+		decl.Modifiers = setParentNodes(modifiers, decl)
+		decl.Annotations = setParentNodes(annotations, decl)
+		return decl
 	}
 	return nil
 }
@@ -116,6 +116,7 @@ func (v *AstBuilder) VisitClassDeclaration(ctx *parser.ClassDeclarationContext) 
 	}
 	n.Declarations = make([]ast.Node, len(declarations))
 	for i, d := range declarations {
+		d.SetParent(n)
 		n.Declarations[i] = d
 	}
 	return n
@@ -235,11 +236,13 @@ func (v *AstBuilder) VisitMethodDeclaration(ctx *parser.MethodDeclarationContext
 	n.Parameters = ctx.FormalParameters().Accept(v).([]*ast.Parameter)
 	if ctx.QualifiedNameList() != nil {
 		n.Throws = ctx.QualifiedNameList().Accept(v).([]ast.Node)
+		setParentNodes(n.Throws, n)
 	} else {
 		n.Throws = []ast.Node{}
 	}
 	if ctx.MethodBody() != nil {
 		n.Statements = ctx.MethodBody().Accept(v).(*ast.Block)
+		n.Statements.SetParent(n)
 	} else {
 		n.Statements = &ast.Block{}
 	}
@@ -584,6 +587,7 @@ func (v *AstBuilder) VisitBlock(ctx *parser.BlockContext) interface{} {
 		s := statement.Accept(v)
 		blk.Statements[i] = s.(ast.Node)
 	}
+	setParentNodes(blk.Statements, blk)
 	return blk
 }
 
@@ -650,6 +654,7 @@ func (v *AstBuilder) VisitStatement(ctx *parser.StatementContext) interface{} {
 		n := &ast.For{Position: v.newPosition(ctx)}
 		n.Control = ctx.ForControl().Accept(v).(ast.Node)
 		n.Statements = ctx.Statement(0).Accept(v).(ast.Node)
+		n.Statements.SetParent(n)
 		return n
 	} else if s := ctx.WHILE(); s != nil {
 		n := &ast.While{Position: v.newPosition(ctx)}
@@ -658,6 +663,7 @@ func (v *AstBuilder) VisitStatement(ctx *parser.StatementContext) interface{} {
 		n.Statements = make([]ast.Node, len(statements))
 		for i, statement := range statements {
 			n.Statements[i] = statement.Accept(v).(ast.Node)
+			n.Statements[i].SetParent(n)
 		}
 		n.IsDo = ctx.DO() != nil
 		return n
@@ -1108,7 +1114,7 @@ func (v *AstBuilder) VisitTypeIdentifier(ctx *parser.TypeIdentifierContext) inte
  * SOQL
  */
 func (v *AstBuilder) VisitSoqlLiteral(ctx *parser.SoqlLiteralContext) interface{} {
-	return v.VisitChildren(ctx)
+	return &ast.Soql{Position: v.newPosition(ctx)}
 }
 
 func (v *AstBuilder) VisitQuery(ctx *parser.QueryContext) interface{} {
@@ -1225,4 +1231,11 @@ func (v *AstBuilder) newPosition(ctx PositionContext) *ast.Position {
 		Column:   ctx.GetStart().GetColumn(),
 		Line:     ctx.GetStart().GetLine(),
 	}
+}
+
+func setParentNodes(nodes []ast.Node, parent ast.Node) []ast.Node {
+	for _, n := range nodes {
+		n.SetParent(parent)
+	}
+	return nodes
 }

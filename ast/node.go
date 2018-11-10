@@ -445,64 +445,64 @@ type InterfaceDeclaration struct {
 }
 
 type Visitor interface {
-	VisitClassDeclaration(Node) interface{}
-	VisitModifier(Node) interface{}
-	VisitAnnotation(Node) interface{}
-	VisitInterface(Node) interface{}
-	VisitIntegerLiteral(Node) interface{}
-	VisitParameter(Node) interface{}
-	VisitArrayAccess(Node) interface{}
-	VisitBooleanLiteral(Node) interface{}
-	VisitBreak(Node) interface{}
-	VisitContinue(Node) interface{}
-	VisitDml(Node) interface{}
-	VisitDoubleLiteral(Node) interface{}
-	VisitFieldDeclaration(Node) interface{}
-	VisitFieldVariable(Node) interface{}
-	VisitTry(Node) interface{}
-	VisitCatch(Node) interface{}
-	VisitFinally(Node) interface{}
-	VisitFor(Node) interface{}
-	VisitForEnum(Node) interface{}
-	VisitForControl(Node) interface{}
-	VisitEnhancedForControl(Node) interface{}
-	VisitIf(Node) interface{}
-	VisitMethodDeclaration(Node) interface{}
-	VisitMethodInvocation(Node) interface{}
-	VisitNew(Node) interface{}
-	VisitNullLiteral(Node) interface{}
-	VisitObject(Node) interface{}
-	VisitUnaryOperator(Node) interface{}
-	VisitBinaryOperator(Node) interface{}
-	VisitReturn(Node) interface{}
-	VisitThrow(Node) interface{}
-	VisitSoql(Node) interface{}
-	VisitSosl(Node) interface{}
-	VisitStringLiteral(Node) interface{}
-	VisitSwitch(Node) interface{}
-	VisitTrigger(Node) interface{}
-	VisitTriggerTiming(Node) interface{}
-	VisitVariableDeclaration(Node) interface{}
-	VisitVariableDeclarator(Node) interface{}
-	VisitWhen(Node) interface{}
-	VisitWhenType(Node) interface{}
-	VisitWhile(Node) interface{}
-	VisitNothingStatement(Node) interface{}
-	VisitCastExpression(Node) interface{}
-	VisitFieldAccess(Node) interface{}
-	VisitType(Node) interface{}
-	VisitBlock(Node) interface{}
-	VisitGetterSetter(Node) interface{}
-	VisitPropertyDeclaration(Node) interface{}
-	VisitArrayInitializer(Node) interface{}
-	VisitArrayCreator(Node) interface{}
-	VisitBlob(Node) interface{}
-	VisitSoqlBindVariable(Node) interface{}
-	VisitTernalyExpression(Node) interface{}
-	VisitMapCreator(Node) interface{}
-	VisitSetCreator(Node) interface{}
-	VisitName(Node) interface{}
-	VisitConstructorDeclaration(Node) interface{}
+	VisitClassDeclaration(*ClassDeclaration) interface{}
+	VisitModifier(*Modifier) interface{}
+	VisitAnnotation(*Annotation) interface{}
+	VisitInterface(*Interface) interface{}
+	VisitIntegerLiteral(*IntegerLiteral) interface{}
+	VisitParameter(*Parameter) interface{}
+	VisitArrayAccess(*ArrayAccess) interface{}
+	VisitBooleanLiteral(*BooleanLiteral) interface{}
+	VisitBreak(*Break) interface{}
+	VisitContinue(*Continue) interface{}
+	VisitDml(*Dml) interface{}
+	VisitDoubleLiteral(*DoubleLiteral) interface{}
+	VisitFieldDeclaration(*FieldDeclaration) interface{}
+	VisitFieldVariable(*FieldVariable) interface{}
+	VisitTry(*Try) interface{}
+	VisitCatch(*Catch) interface{}
+	VisitFinally(*Finally) interface{}
+	VisitFor(*For) interface{}
+	VisitForEnum(*ForEnum) interface{}
+	VisitForControl(*ForControl) interface{}
+	VisitEnhancedForControl(*EnhancedForControl) interface{}
+	VisitIf(*If) interface{}
+	VisitMethodDeclaration(*MethodDeclaration) interface{}
+	VisitMethodInvocation(*MethodInvocation) interface{}
+	VisitNew(*New) interface{}
+	VisitNullLiteral(*NullLiteral) interface{}
+	VisitObject(*Object) interface{}
+	VisitUnaryOperator(*UnaryOperator) interface{}
+	VisitBinaryOperator(*BinaryOperator) interface{}
+	VisitReturn(*Return) interface{}
+	VisitThrow(*Throw) interface{}
+	VisitSoql(*Soql) interface{}
+	VisitSosl(*Sosl) interface{}
+	VisitStringLiteral(*StringLiteral) interface{}
+	VisitSwitch(*Switch) interface{}
+	VisitTrigger(*Trigger) interface{}
+	VisitTriggerTiming(*TriggerTiming) interface{}
+	VisitVariableDeclaration(*VariableDeclaration) interface{}
+	VisitVariableDeclarator(*VariableDeclarator) interface{}
+	VisitWhen(*When) interface{}
+	VisitWhenType(*WhenType) interface{}
+	VisitWhile(*While) interface{}
+	VisitNothingStatement(*NothingStatement) interface{}
+	VisitCastExpression(*CastExpression) interface{}
+	VisitFieldAccess(*FieldAccess) interface{}
+	VisitType(*Type) interface{}
+	VisitBlock(*Block) interface{}
+	VisitGetterSetter(*GetterSetter) interface{}
+	VisitPropertyDeclaration(*PropertyDeclaration) interface{}
+	VisitArrayInitializer(*ArrayInitializer) interface{}
+	VisitArrayCreator(*ArrayCreator) interface{}
+	VisitBlob(*Blob) interface{}
+	VisitSoqlBindVariable(*SoqlBindVariable) interface{}
+	VisitTernalyExpression(*TernalyExpression) interface{}
+	VisitMapCreator(*MapCreator) interface{}
+	VisitSetCreator(*SetCreator) interface{}
+	VisitName(*Name) interface{}
+	VisitConstructorDeclaration(*ConstructorDeclaration) interface{}
 }
 
 var VoidType = &Type{}
@@ -512,6 +512,7 @@ type Node interface {
 	GetChildren() []interface{}
 	GetType() string
 	GetParent() Node
+	SetParent(Node)
 }
 
 func (n *ClassDeclaration) Accept(v Visitor) interface{} {
@@ -1506,6 +1507,238 @@ func (n *Name) GetParent() Node {
 }
 func (n *ConstructorDeclaration) GetParent() Node {
 	return n.Parent
+}
+
+func (n *ClassDeclaration) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Modifier) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Annotation) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Interface) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *IntegerLiteral) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Parameter) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *ArrayAccess) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *BooleanLiteral) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Break) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Continue) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Dml) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *DoubleLiteral) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *FieldDeclaration) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *FieldVariable) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Try) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Catch) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Finally) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *For) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *ForEnum) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *ForControl) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *EnhancedForControl) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *If) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *MethodDeclaration) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *MethodInvocation) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *New) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *NullLiteral) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Object) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *UnaryOperator) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *BinaryOperator) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Return) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Throw) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Soql) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Sosl) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *StringLiteral) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Switch) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Trigger) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *TriggerTiming) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *VariableDeclaration) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *VariableDeclarator) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *When) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *WhenType) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *While) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *NothingStatement) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *CastExpression) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *FieldAccess) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Type) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Block) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *GetterSetter) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *PropertyDeclaration) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *ArrayInitializer) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *ArrayCreator) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Blob) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *SoqlBindVariable) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *TernalyExpression) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *MapCreator) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *SetCreator) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Name) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *ConstructorDeclaration) SetParent(parent Node) {
+	n.Parent = parent
 }
 
 func Dump(n Node, ident int) string {

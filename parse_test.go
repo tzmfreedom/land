@@ -10,7 +10,7 @@ import (
 func TestParse(t *testing.T) {
 	testCases := []struct {
 		Code     string
-		Expected *ast.ClassDeclaration
+		Expected ast.Node
 	}{
 		{
 			`@foo public without sharing class Foo extends Bar implements Baz {}`,
@@ -303,8 +303,8 @@ public void method(){ }
 								Line:     6,
 							},
 						},
-						Parameters: []*ast.Parameter{
-							{
+						Parameters: []ast.Node{
+							&ast.Parameter{
 								Modifiers: []ast.Node{},
 								Type: &ast.Type{
 									Name: []string{
@@ -354,7 +354,7 @@ public void method(){ }
 							},
 						},
 						ReturnType: ast.VoidType,
-						Parameters: []*ast.Parameter{},
+						Parameters: []ast.Node{},
 						Throws:     []ast.Node{},
 						Statements: &ast.Block{
 							Statements: []ast.Node{},
@@ -1511,11 +1511,39 @@ try {
 				},
 			}),
 		},
+		{
+			`trigger Foo on Account(before insert, after update) {
+true;
+}`,
+			&ast.Trigger{
+				Name:   "Foo",
+				Object: "Account",
+				TriggerTimings: []ast.Node{
+					&ast.TriggerTiming{
+						Dml:    "insert",
+						Timing: "before",
+					},
+					&ast.TriggerTiming{
+						Dml:    "update",
+						Timing: "after",
+					},
+				},
+				Statements: &ast.Block{
+					Statements: []ast.Node{
+						&ast.BooleanLiteral{
+							Value: true,
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, testCase := range testCases {
 		out := parseString(testCase.Code)
 
-		ok := cmp.Equal(testCase.Expected, out)
+		expected := ast.Dump(testCase.Expected, 0)
+		actual := ast.Dump(out, 0)
+		ok := cmp.Equal(expected, actual)
 		if !ok {
 			diff := cmp.Diff(testCase.Expected, out)
 			pp.Print(out)
@@ -1547,7 +1575,7 @@ func createExpectedClass(statements []ast.Node) *ast.ClassDeclaration {
 					},
 				},
 				ReturnType: ast.VoidType,
-				Parameters: []*ast.Parameter{},
+				Parameters: []ast.Node{},
 				Throws:     []ast.Node{},
 				Statements: &ast.Block{
 					Statements: statements,

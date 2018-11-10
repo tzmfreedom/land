@@ -15,7 +15,7 @@ func main() {
 	pp.Print(t)
 }
 
-func parseFile(f string) *ast.ClassDeclaration {
+func parseFile(f string) ast.Node {
 	input, err := antlr.NewFileStream(f)
 	if err != nil {
 		panic(err)
@@ -23,12 +23,12 @@ func parseFile(f string) *ast.ClassDeclaration {
 	return parse(input, f)
 }
 
-func parseString(c string) *ast.ClassDeclaration {
+func parseString(c string) ast.Node {
 	input := antlr.NewInputStream(c)
 	return parse(input, "")
 }
 
-func parse(input antlr.CharStream, f string) *ast.ClassDeclaration {
+func parse(input antlr.CharStream, f string) ast.Node {
 	lexer := parser.NewapexLexer(input)
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	p := parser.NewapexParser(stream)
@@ -38,8 +38,8 @@ func parse(input antlr.CharStream, f string) *ast.ClassDeclaration {
 	t := tree.Accept(&AstBuilder{
 		CurrentFile: f,
 	})
-	if cd, ok := t.(*ast.ClassDeclaration); ok {
-		return cd
-	}
-	return nil
+	n := t.(ast.Node)
+	checker := &SoqlChecker{}
+	n.Accept(checker)
+	return n
 }

@@ -33,29 +33,25 @@ func (v *AstBuilder) VisitTypeDeclaration(ctx *parser.TypeDeclarationContext) in
 		}
 	}
 
-	if ctx.ClassDeclaration() != nil {
-		cd := ctx.ClassDeclaration().Accept(v)
+	if n := ctx.ClassDeclaration(); n != nil {
+		cd := n.Accept(v)
 		decl, _ := cd.(*ast.ClassDeclaration)
 		decl.Modifiers = setParentNodes(modifiers, decl)
 		decl.Annotations = setParentNodes(annotations, decl)
 		return decl
+	} else if n := ctx.TriggerDeclaration(); n != nil {
+		return n.Accept(v)
 	}
 	return nil
 }
 
 func (v *AstBuilder) VisitTriggerDeclaration(ctx *parser.TriggerDeclarationContext) interface{} {
-	timings := ctx.TriggerTimings().Accept(v)
-
-	name := ctx.ApexIdentifier(0).GetText()
-	object := ctx.ApexIdentifier(1).GetText()
-	block := ctx.Block().Accept(v)
-	return &ast.Trigger{
-		Name:           name,
-		TriggerTimings: timings.([]*ast.TriggerTiming),
-		Object:         object,
-		Statements:     block.([]ast.Node),
-		Position:       v.newPosition(ctx),
-	}
+	n := &ast.Trigger{Position: v.newPosition(ctx)}
+	n.Name = ctx.ApexIdentifier(0).GetText()
+	n.Object = ctx.ApexIdentifier(1).GetText()
+	n.TriggerTimings = ctx.TriggerTimings().Accept(v).([]ast.Node)
+	n.Statements = ctx.Block().Accept(v).(ast.Node)
+	return n
 }
 
 func (v *AstBuilder) VisitTriggerTimings(ctx *parser.TriggerTimingsContext) interface{} {
@@ -233,7 +229,7 @@ func (v *AstBuilder) VisitMethodDeclaration(ctx *parser.MethodDeclarationContext
 	} else {
 		n.ReturnType = ast.VoidType
 	}
-	n.Parameters = ctx.FormalParameters().Accept(v).([]*ast.Parameter)
+	n.Parameters = ctx.FormalParameters().Accept(v).([]ast.Node)
 	if ctx.QualifiedNameList() != nil {
 		n.Throws = ctx.QualifiedNameList().Accept(v).([]ast.Node)
 		setParentNodes(n.Throws, n)
@@ -241,7 +237,7 @@ func (v *AstBuilder) VisitMethodDeclaration(ctx *parser.MethodDeclarationContext
 		n.Throws = []ast.Node{}
 	}
 	if ctx.MethodBody() != nil {
-		n.Statements = ctx.MethodBody().Accept(v).(*ast.Block)
+		n.Statements = ctx.MethodBody().Accept(v).(ast.Node)
 		n.Statements.SetParent(n)
 	} else {
 		n.Statements = &ast.Block{}
@@ -250,7 +246,7 @@ func (v *AstBuilder) VisitMethodDeclaration(ctx *parser.MethodDeclarationContext
 }
 
 func (v *AstBuilder) VisitConstructorDeclaration(ctx *parser.ConstructorDeclarationContext) interface{} {
-	parameters := ctx.FormalParameters().Accept(v).([]*ast.Parameter)
+	parameters := ctx.FormalParameters().Accept(v).([]ast.Node)
 	var throws []ast.Node
 	if q := ctx.QualifiedNameList(); q != nil {
 		throws = q.Accept(v).([]ast.Node)
@@ -338,7 +334,7 @@ func (v *AstBuilder) VisitInterfaceMethodDeclaration(ctx *parser.InterfaceMethod
 	} else {
 		// TODO: implement void
 	}
-	decl.Parameters = ctx.FormalParameters().Accept(v).([]*ast.Parameter)
+	decl.Parameters = ctx.FormalParameters().Accept(v).([]ast.Node)
 	if q := ctx.QualifiedNameList(); q != nil {
 		decl.Throws = q.Accept(v).([]ast.Node)
 	} else {
@@ -462,14 +458,14 @@ func (v *AstBuilder) VisitFormalParameters(ctx *parser.FormalParametersContext) 
 	if p := ctx.FormalParameterList(); p != nil {
 		return p.Accept(v)
 	}
-	return []*ast.Parameter{}
+	return []ast.Node{}
 }
 
 func (v *AstBuilder) VisitFormalParameterList(ctx *parser.FormalParameterListContext) interface{} {
 	formalParameters := ctx.AllFormalParameter()
-	parameters := make([]*ast.Parameter, len(formalParameters))
+	parameters := make([]ast.Node, len(formalParameters))
 	for i, p := range formalParameters {
-		parameters[i] = p.Accept(v).(*ast.Parameter)
+		parameters[i] = p.Accept(v).(ast.Node)
 	}
 	return parameters
 }
@@ -620,8 +616,8 @@ func (v *AstBuilder) VisitLocalVariableDeclaration(ctx *parser.LocalVariableDecl
 
 func (v *AstBuilder) VisitStatement(ctx *parser.StatementContext) interface{} {
 	if t := ctx.TRY(); t != nil {
-		try := &ast.Try{}
-		try.Block = ctx.Block().Accept(v).(*ast.Block)
+		try := &ast.Try{Position: v.newPosition(ctx)}
+		try.Block = ctx.Block().Accept(v).(ast.Node)
 		if clauses := ctx.AllCatchClause(); len(clauses) != 0 {
 			try.CatchClause = make([]ast.Node, len(clauses))
 			for i, c := range clauses {
@@ -631,7 +627,7 @@ func (v *AstBuilder) VisitStatement(ctx *parser.StatementContext) interface{} {
 			try.CatchClause = []ast.Node{}
 		}
 		if b := ctx.FinallyBlock(); b != nil {
-			try.FinallyBlock = b.Accept(v).(*ast.Block)
+			try.FinallyBlock = b.Accept(v).(ast.Node)
 		}
 		return try
 	} else if t := ctx.IF(); t != nil {
@@ -727,7 +723,7 @@ func (v *AstBuilder) VisitCatchClause(ctx *parser.CatchClauseContext) interface{
 	for i, m := range modifiers {
 		c.Modifiers[i] = m.Accept(v).(ast.Node)
 	}
-	c.Block = ctx.Block().Accept(v).(*ast.Block)
+	c.Block = ctx.Block().Accept(v).(ast.Node)
 	return c
 }
 
@@ -752,7 +748,7 @@ func (v *AstBuilder) VisitWhenStatements(ctx *parser.WhenStatementsContext) inte
 func (v *AstBuilder) VisitWhenStatement(ctx *parser.WhenStatementContext) interface{} {
 	n := &ast.When{Position: v.newPosition(ctx)}
 	n.Condition = ctx.WhenExpression().Accept(v).([]ast.Node)
-	n.Statements = ctx.Block().Accept(v).(*ast.Block)
+	n.Statements = ctx.Block().Accept(v).(ast.Node)
 	return n
 }
 

@@ -9,11 +9,9 @@ func visitChildren(v Visitor, n Node) (interface{}, error) {
 		if nodes, ok := child.([]Node); ok {
 			for _, node := range nodes {
 				node.Accept(v)
-				visitChildren(v, node)
 			}
 		} else if node, ok := child.(Node); ok {
 			node.Accept(v)
-			visitChildren(v, node)
 		}
 	}
 	return nil, nil

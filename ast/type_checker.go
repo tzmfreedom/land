@@ -108,10 +108,6 @@ func (v *TypeChecker) VisitNullLiteral(n *NullLiteral) (interface{}, error) {
 	return VisitNullLiteral(v, n)
 }
 
-func (v *TypeChecker) VisitObject(n *Object) (interface{}, error) {
-	return VisitObject(v, n)
-}
-
 func (v *TypeChecker) VisitUnaryOperator(n *UnaryOperator) (interface{}, error) {
 	return VisitUnaryOperator(v, n)
 }
@@ -206,10 +202,6 @@ func (v *TypeChecker) VisitArrayInitializer(n *ArrayInitializer) (interface{}, e
 
 func (v *TypeChecker) VisitArrayCreator(n *ArrayCreator) (interface{}, error) {
 	return VisitArrayCreator(v, n)
-}
-
-func (v *TypeChecker) VisitBlob(n *Blob) (interface{}, error) {
-	return VisitBlob(v, n)
 }
 
 func (v *TypeChecker) VisitSoqlBindVariable(n *SoqlBindVariable) (interface{}, error) {

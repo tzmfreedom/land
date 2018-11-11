@@ -205,14 +205,6 @@ type NullLiteral struct {
 	Parent   Node
 }
 
-type Object struct {
-	ClassType      Node
-	InstanceFields []Node
-	GenericType    string
-	Position       *Position
-	Parent         Node
-}
-
 type UnaryOperator struct {
 	Op         string
 	Expression Node
@@ -465,7 +457,6 @@ type Visitor interface {
 	VisitMethodInvocation(*MethodInvocation) (interface{}, error)
 	VisitNew(*New) (interface{}, error)
 	VisitNullLiteral(*NullLiteral) (interface{}, error)
-	VisitObject(*Object) (interface{}, error)
 	VisitUnaryOperator(*UnaryOperator) (interface{}, error)
 	VisitBinaryOperator(*BinaryOperator) (interface{}, error)
 	VisitReturn(*Return) (interface{}, error)
@@ -490,7 +481,6 @@ type Visitor interface {
 	VisitPropertyDeclaration(*PropertyDeclaration) (interface{}, error)
 	VisitArrayInitializer(*ArrayInitializer) (interface{}, error)
 	VisitArrayCreator(*ArrayCreator) (interface{}, error)
-	VisitBlob(*Blob) (interface{}, error)
 	VisitSoqlBindVariable(*SoqlBindVariable) (interface{}, error)
 	VisitTernalyExpression(*TernalyExpression) (interface{}, error)
 	VisitMapCreator(*MapCreator) (interface{}, error)
@@ -801,18 +791,6 @@ func (n *NullLiteral) GetChildren() []interface{} {
 	return nil
 }
 
-func (n *Object) Accept(v Visitor) (interface{}, error) {
-	return v.VisitObject(n)
-}
-
-func (n *Object) GetChildren() []interface{} {
-	return []interface{}{
-		n.ClassType,
-		n.GenericType,
-		n.InstanceFields,
-	}
-}
-
 func (n *UnaryOperator) Accept(v Visitor) (interface{}, error) {
 	return v.VisitUnaryOperator(n)
 }
@@ -1080,16 +1058,6 @@ func (n *ArrayCreator) GetChildren() []interface{} {
 	}
 }
 
-func (n *Blob) Accept(v Visitor) (interface{}, error) {
-	return v.VisitBlob(n)
-}
-
-func (n *Blob) GetChildren() []interface{} {
-	return []interface{}{
-		n.Value,
-	}
-}
-
 func (n *SoqlBindVariable) Accept(v Visitor) (interface{}, error) {
 	return v.VisitSoqlBindVariable(n)
 }
@@ -1231,9 +1199,6 @@ func (n *New) GetType() string {
 func (n *NullLiteral) GetType() string {
 	return "Null"
 }
-func (n *Object) GetType() string {
-	return "Object"
-}
 func (n *UnaryOperator) GetType() string {
 	return "UnaryOperator"
 }
@@ -1305,9 +1270,6 @@ func (n *ArrayInitializer) GetType() string {
 }
 func (n *ArrayCreator) GetType() string {
 	return "ArrayCreator"
-}
-func (n *Blob) GetType() string {
-	return "Blob"
 }
 func (n *SoqlBindVariable) GetType() string {
 	return "SoqlBindVariable"
@@ -1406,9 +1368,6 @@ func (n *New) GetParent() Node {
 func (n *NullLiteral) GetParent() Node {
 	return n.Parent
 }
-func (n *Object) GetParent() Node {
-	return n.Parent
-}
 func (n *UnaryOperator) GetParent() Node {
 	return n.Parent
 }
@@ -1479,9 +1438,6 @@ func (n *ArrayInitializer) GetParent() Node {
 	return n.Parent
 }
 func (n *ArrayCreator) GetParent() Node {
-	return n.Parent
-}
-func (n *Blob) GetParent() Node {
 	return n.Parent
 }
 func (n *SoqlBindVariable) GetParent() Node {
@@ -1607,10 +1563,6 @@ func (n *NullLiteral) SetParent(parent Node) {
 	n.Parent = parent
 }
 
-func (n *Object) SetParent(parent Node) {
-	n.Parent = parent
-}
-
 func (n *UnaryOperator) SetParent(parent Node) {
 	n.Parent = parent
 }
@@ -1704,10 +1656,6 @@ func (n *ArrayInitializer) SetParent(parent Node) {
 }
 
 func (n *ArrayCreator) SetParent(parent Node) {
-	n.Parent = parent
-}
-
-func (n *Blob) SetParent(parent Node) {
 	n.Parent = parent
 }
 

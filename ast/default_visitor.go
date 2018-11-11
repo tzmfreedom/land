@@ -121,10 +121,6 @@ func VisitNullLiteral(v Visitor, n *NullLiteral) (interface{}, error) {
 	return visitChildren(v, n)
 }
 
-func VisitObject(v Visitor, n *Object) (interface{}, error) {
-	return visitChildren(v, n)
-}
-
 func VisitUnaryOperator(v Visitor, n *UnaryOperator) (interface{}, error) {
 	return visitChildren(v, n)
 }
@@ -218,10 +214,6 @@ func VisitArrayInitializer(v Visitor, n *ArrayInitializer) (interface{}, error) 
 }
 
 func VisitArrayCreator(v Visitor, n *ArrayCreator) (interface{}, error) {
-	return visitChildren(v, n)
-}
-
-func VisitBlob(v Visitor, n *Blob) (interface{}, error) {
 	return visitChildren(v, n)
 }
 

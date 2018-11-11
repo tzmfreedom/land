@@ -39,11 +39,11 @@ func (v *Interpreter) VisitBooleanLiteral(n *BooleanLiteral) (interface{}, error
 }
 
 func (v *Interpreter) VisitBreak(n *Break) (interface{}, error) {
-	return VisitBreak(v, n)
+	return &BreakValue{}, nil
 }
 
 func (v *Interpreter) VisitContinue(n *Continue) (interface{}, error) {
-	return VisitContinue(v, n)
+	return &ContinueValue{}, nil
 }
 
 func (v *Interpreter) VisitDml(n *Dml) (interface{}, error) {
@@ -63,7 +63,22 @@ func (v *Interpreter) VisitFieldVariable(n *FieldVariable) (interface{}, error) 
 }
 
 func (v *Interpreter) VisitTry(n *Try) (interface{}, error) {
-	return VisitTry(v, n)
+	res, err := n.Block.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	switch res.(type) {
+	case *RaiseValue:
+		_ = res.(*RaiseValue)
+		// TODO: implement
+	default:
+		res, err = n.FinallyBlock.Accept(v)
+		return res, nil
+	}
+	if _, err = n.FinallyBlock.Accept(v); err != nil {
+		return nil, err
+	}
+	return nil, nil
 }
 
 func (v *Interpreter) VisitCatch(n *Catch) (interface{}, error) {
@@ -75,6 +90,25 @@ func (v *Interpreter) VisitFinally(n *Finally) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitFor(n *For) (interface{}, error) {
+	control := n.Control.(*ForControl)
+	_, err := control.ForInit.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	for {
+		res, err := control.Expression.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+		if res.(*Boolean).Value {
+			res, err = n.Statements.Accept(v)
+			for _, stmt := range control.ForUpdate {
+				stmt.Accept(v)
+			}
+		} else {
+			break
+		}
+	}
 	return VisitFor(v, n)
 }
 
@@ -91,7 +125,16 @@ func (v *Interpreter) VisitEnhancedForControl(n *EnhancedForControl) (interface{
 }
 
 func (v *Interpreter) VisitIf(n *If) (interface{}, error) {
-	return VisitIf(v, n)
+	res, err := n.Condition.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	if res.(*Boolean).Value {
+		n.IfStatement.Accept(v)
+	} else {
+		n.ElseStatement.Accept(v)
+	}
+	return nil, nil
 }
 
 func (v *Interpreter) VisitMethodDeclaration(n *MethodDeclaration) (interface{}, error) {
@@ -99,6 +142,19 @@ func (v *Interpreter) VisitMethodDeclaration(n *MethodDeclaration) (interface{},
 }
 
 func (v *Interpreter) VisitMethodInvocation(n *MethodInvocation) (interface{}, error) {
+	switch exp := n.NameOrExpression.(type) {
+	case *FieldAccess:
+		if exp.Expression.(*Name).Value == "System" &&
+			exp.FieldName == "debug" {
+			for _, p := range n.Parameters {
+				res, err := p.Accept(v)
+				if err != nil {
+					return nil, err
+				}
+				pp.Println(res)
+			}
+		}
+	}
 	return VisitMethodInvocation(v, n)
 }
 
@@ -107,11 +163,7 @@ func (v *Interpreter) VisitNew(n *New) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitNullLiteral(n *NullLiteral) (interface{}, error) {
-	return VisitNullLiteral(v, n)
-}
-
-func (v *Interpreter) VisitObject(n *Object) (interface{}, error) {
-	return VisitObject(v, n)
+	return &Null{}, nil
 }
 
 func (v *Interpreter) VisitUnaryOperator(n *UnaryOperator) (interface{}, error) {
@@ -150,6 +202,30 @@ func (v *Interpreter) VisitBinaryOperator(n *BinaryOperator) (interface{}, error
 			l := left.(*Integer).Value
 			r := right.(*Integer).Value
 			return &Integer{Value: l % r}, nil
+		case "<":
+			l := left.(*Integer).Value
+			r := right.(*Integer).Value
+			return &Boolean{Value: l < r}, nil
+		case ">":
+			l := left.(*Integer).Value
+			r := right.(*Integer).Value
+			return &Boolean{Value: l > r}, nil
+		case "<=":
+			l := left.(*Integer).Value
+			r := right.(*Integer).Value
+			return &Boolean{Value: l <= r}, nil
+		case ">=":
+			l := left.(*Integer).Value
+			r := right.(*Integer).Value
+			return &Boolean{Value: l >= r}, nil
+		case "==":
+			l := left.(*Integer).Value
+			r := right.(*Integer).Value
+			return &Boolean{Value: l == r}, nil
+		case "!=":
+			l := left.(*Integer).Value
+			r := right.(*Integer).Value
+			return &Boolean{Value: l != r}, nil
 		}
 	case *Double:
 		switch n.Op {
@@ -182,11 +258,19 @@ func (v *Interpreter) VisitBinaryOperator(n *BinaryOperator) (interface{}, error
 }
 
 func (v *Interpreter) VisitReturn(n *Return) (interface{}, error) {
-	return VisitReturn(v, n)
+	res, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	return &ReturnValue{res}, nil
 }
 
 func (v *Interpreter) VisitThrow(n *Throw) (interface{}, error) {
-	return VisitThrow(v, n)
+	res, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	return &RaiseValue{res}, nil
 }
 
 func (v *Interpreter) VisitSoql(n *Soql) (interface{}, error) {
@@ -251,12 +335,9 @@ func (v *Interpreter) VisitType(n *Type) (interface{}, error) {
 
 func (v *Interpreter) VisitBlock(n *Block) (interface{}, error) {
 	for _, stmt := range n.Statements {
-		res, err := stmt.Accept(v)
+		_, err := stmt.Accept(v)
 		if err != nil {
 			return nil, err
-		}
-		if res != nil {
-			pp.Println(res)
 		}
 	}
 	return nil, nil
@@ -278,16 +359,19 @@ func (v *Interpreter) VisitArrayCreator(n *ArrayCreator) (interface{}, error) {
 	return VisitArrayCreator(v, n)
 }
 
-func (v *Interpreter) VisitBlob(n *Blob) (interface{}, error) {
-	return VisitBlob(v, n)
-}
-
 func (v *Interpreter) VisitSoqlBindVariable(n *SoqlBindVariable) (interface{}, error) {
 	return VisitSoqlBindVariable(v, n)
 }
 
 func (v *Interpreter) VisitTernalyExpression(n *TernalyExpression) (interface{}, error) {
-	return VisitTernalyExpression(v, n)
+	res, err := n.Condition.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	if res.(*Boolean).Value {
+		return n.TrueExpression.Accept(v)
+	}
+	return n.FalseExpression.Accept(v)
 }
 
 func (v *Interpreter) VisitMapCreator(n *MapCreator) (interface{}, error) {
@@ -320,6 +404,27 @@ type Double struct {
 
 type Boolean struct {
 	Value bool
+}
+
+type ReturnValue struct {
+	Value interface{}
+}
+
+type BreakValue struct{}
+
+type ContinueValue struct{}
+
+type RaiseValue struct {
+	Value interface{}
+}
+
+type Null struct{}
+
+type Object struct {
+	ClassType      Node
+	InstanceFields []Node
+	GenericType    string
+	Parent         Node
 }
 
 type Value interface {

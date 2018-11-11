@@ -109,10 +109,6 @@ func (v *ClassRegisterVisitor) VisitNullLiteral(n *NullLiteral) (interface{}, er
 	return VisitNullLiteral(v, n)
 }
 
-func (v *ClassRegisterVisitor) VisitObject(n *Object) (interface{}, error) {
-	return VisitObject(v, n)
-}
-
 func (v *ClassRegisterVisitor) VisitUnaryOperator(n *UnaryOperator) (interface{}, error) {
 	return VisitUnaryOperator(v, n)
 }
@@ -207,10 +203,6 @@ func (v *ClassRegisterVisitor) VisitArrayInitializer(n *ArrayInitializer) (inter
 
 func (v *ClassRegisterVisitor) VisitArrayCreator(n *ArrayCreator) (interface{}, error) {
 	return VisitArrayCreator(v, n)
-}
-
-func (v *ClassRegisterVisitor) VisitBlob(n *Blob) (interface{}, error) {
-	return VisitBlob(v, n)
 }
 
 func (v *ClassRegisterVisitor) VisitSoqlBindVariable(n *SoqlBindVariable) (interface{}, error) {

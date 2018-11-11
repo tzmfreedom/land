@@ -110,10 +110,6 @@ func (v *SoqlChecker) VisitNullLiteral(n *ast.NullLiteral) (interface{}, error) 
 	return ast.VisitNullLiteral(v, n)
 }
 
-func (v *SoqlChecker) VisitObject(n *ast.Object) (interface{}, error) {
-	return ast.VisitObject(v, n)
-}
-
 func (v *SoqlChecker) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, error) {
 	return ast.VisitUnaryOperator(v, n)
 }
@@ -217,10 +213,6 @@ func (v *SoqlChecker) VisitArrayInitializer(n *ast.ArrayInitializer) (interface{
 
 func (v *SoqlChecker) VisitArrayCreator(n *ast.ArrayCreator) (interface{}, error) {
 	return ast.VisitArrayCreator(v, n)
-}
-
-func (v *SoqlChecker) VisitBlob(n *ast.Blob) (interface{}, error) {
-	return ast.VisitBlob(v, n)
 }
 
 func (v *SoqlChecker) VisitSoqlBindVariable(n *ast.SoqlBindVariable) (interface{}, error) {

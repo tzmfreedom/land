@@ -150,7 +150,7 @@ type ForEnum struct {
 	Type           Node
 	Identifier     Node
 	ListExpression Node
-	Statements     []Node
+	Statements     Node
 	Position       *Position
 	Parent         Node
 }
@@ -445,77 +445,77 @@ type InterfaceDeclaration struct {
 }
 
 type Visitor interface {
-	VisitClassDeclaration(*ClassDeclaration) interface{}
-	VisitModifier(*Modifier) interface{}
-	VisitAnnotation(*Annotation) interface{}
-	VisitInterface(*Interface) interface{}
-	VisitIntegerLiteral(*IntegerLiteral) interface{}
-	VisitParameter(*Parameter) interface{}
-	VisitArrayAccess(*ArrayAccess) interface{}
-	VisitBooleanLiteral(*BooleanLiteral) interface{}
-	VisitBreak(*Break) interface{}
-	VisitContinue(*Continue) interface{}
-	VisitDml(*Dml) interface{}
-	VisitDoubleLiteral(*DoubleLiteral) interface{}
-	VisitFieldDeclaration(*FieldDeclaration) interface{}
-	VisitFieldVariable(*FieldVariable) interface{}
-	VisitTry(*Try) interface{}
-	VisitCatch(*Catch) interface{}
-	VisitFinally(*Finally) interface{}
-	VisitFor(*For) interface{}
-	VisitForEnum(*ForEnum) interface{}
-	VisitForControl(*ForControl) interface{}
-	VisitEnhancedForControl(*EnhancedForControl) interface{}
-	VisitIf(*If) interface{}
-	VisitMethodDeclaration(*MethodDeclaration) interface{}
-	VisitMethodInvocation(*MethodInvocation) interface{}
-	VisitNew(*New) interface{}
-	VisitNullLiteral(*NullLiteral) interface{}
-	VisitObject(*Object) interface{}
-	VisitUnaryOperator(*UnaryOperator) interface{}
-	VisitBinaryOperator(*BinaryOperator) interface{}
-	VisitReturn(*Return) interface{}
-	VisitThrow(*Throw) interface{}
-	VisitSoql(*Soql) interface{}
-	VisitSosl(*Sosl) interface{}
-	VisitStringLiteral(*StringLiteral) interface{}
-	VisitSwitch(*Switch) interface{}
-	VisitTrigger(*Trigger) interface{}
-	VisitTriggerTiming(*TriggerTiming) interface{}
-	VisitVariableDeclaration(*VariableDeclaration) interface{}
-	VisitVariableDeclarator(*VariableDeclarator) interface{}
-	VisitWhen(*When) interface{}
-	VisitWhenType(*WhenType) interface{}
-	VisitWhile(*While) interface{}
-	VisitNothingStatement(*NothingStatement) interface{}
-	VisitCastExpression(*CastExpression) interface{}
-	VisitFieldAccess(*FieldAccess) interface{}
-	VisitType(*Type) interface{}
-	VisitBlock(*Block) interface{}
-	VisitGetterSetter(*GetterSetter) interface{}
-	VisitPropertyDeclaration(*PropertyDeclaration) interface{}
-	VisitArrayInitializer(*ArrayInitializer) interface{}
-	VisitArrayCreator(*ArrayCreator) interface{}
-	VisitBlob(*Blob) interface{}
-	VisitSoqlBindVariable(*SoqlBindVariable) interface{}
-	VisitTernalyExpression(*TernalyExpression) interface{}
-	VisitMapCreator(*MapCreator) interface{}
-	VisitSetCreator(*SetCreator) interface{}
-	VisitName(*Name) interface{}
-	VisitConstructorDeclaration(*ConstructorDeclaration) interface{}
+	VisitClassDeclaration(*ClassDeclaration) (interface{}, error)
+	VisitModifier(*Modifier) (interface{}, error)
+	VisitAnnotation(*Annotation) (interface{}, error)
+	VisitInterface(*Interface) (interface{}, error)
+	VisitIntegerLiteral(*IntegerLiteral) (interface{}, error)
+	VisitParameter(*Parameter) (interface{}, error)
+	VisitArrayAccess(*ArrayAccess) (interface{}, error)
+	VisitBooleanLiteral(*BooleanLiteral) (interface{}, error)
+	VisitBreak(*Break) (interface{}, error)
+	VisitContinue(*Continue) (interface{}, error)
+	VisitDml(*Dml) (interface{}, error)
+	VisitDoubleLiteral(*DoubleLiteral) (interface{}, error)
+	VisitFieldDeclaration(*FieldDeclaration) (interface{}, error)
+	VisitFieldVariable(*FieldVariable) (interface{}, error)
+	VisitTry(*Try) (interface{}, error)
+	VisitCatch(*Catch) (interface{}, error)
+	VisitFinally(*Finally) (interface{}, error)
+	VisitFor(*For) (interface{}, error)
+	VisitForEnum(*ForEnum) (interface{}, error)
+	VisitForControl(*ForControl) (interface{}, error)
+	VisitEnhancedForControl(*EnhancedForControl) (interface{}, error)
+	VisitIf(*If) (interface{}, error)
+	VisitMethodDeclaration(*MethodDeclaration) (interface{}, error)
+	VisitMethodInvocation(*MethodInvocation) (interface{}, error)
+	VisitNew(*New) (interface{}, error)
+	VisitNullLiteral(*NullLiteral) (interface{}, error)
+	VisitObject(*Object) (interface{}, error)
+	VisitUnaryOperator(*UnaryOperator) (interface{}, error)
+	VisitBinaryOperator(*BinaryOperator) (interface{}, error)
+	VisitReturn(*Return) (interface{}, error)
+	VisitThrow(*Throw) (interface{}, error)
+	VisitSoql(*Soql) (interface{}, error)
+	VisitSosl(*Sosl) (interface{}, error)
+	VisitStringLiteral(*StringLiteral) (interface{}, error)
+	VisitSwitch(*Switch) (interface{}, error)
+	VisitTrigger(*Trigger) (interface{}, error)
+	VisitTriggerTiming(*TriggerTiming) (interface{}, error)
+	VisitVariableDeclaration(*VariableDeclaration) (interface{}, error)
+	VisitVariableDeclarator(*VariableDeclarator) (interface{}, error)
+	VisitWhen(*When) (interface{}, error)
+	VisitWhenType(*WhenType) (interface{}, error)
+	VisitWhile(*While) (interface{}, error)
+	VisitNothingStatement(*NothingStatement) (interface{}, error)
+	VisitCastExpression(*CastExpression) (interface{}, error)
+	VisitFieldAccess(*FieldAccess) (interface{}, error)
+	VisitType(*Type) (interface{}, error)
+	VisitBlock(*Block) (interface{}, error)
+	VisitGetterSetter(*GetterSetter) (interface{}, error)
+	VisitPropertyDeclaration(*PropertyDeclaration) (interface{}, error)
+	VisitArrayInitializer(*ArrayInitializer) (interface{}, error)
+	VisitArrayCreator(*ArrayCreator) (interface{}, error)
+	VisitBlob(*Blob) (interface{}, error)
+	VisitSoqlBindVariable(*SoqlBindVariable) (interface{}, error)
+	VisitTernalyExpression(*TernalyExpression) (interface{}, error)
+	VisitMapCreator(*MapCreator) (interface{}, error)
+	VisitSetCreator(*SetCreator) (interface{}, error)
+	VisitName(*Name) (interface{}, error)
+	VisitConstructorDeclaration(*ConstructorDeclaration) (interface{}, error)
 }
 
 var VoidType = &Type{}
 
 type Node interface {
-	Accept(Visitor) interface{}
+	Accept(Visitor) (interface{}, error)
 	GetChildren() []interface{}
 	GetType() string
 	GetParent() Node
 	SetParent(Node)
 }
 
-func (n *ClassDeclaration) Accept(v Visitor) interface{} {
+func (n *ClassDeclaration) Accept(v Visitor) (interface{}, error) {
 	return v.VisitClassDeclaration(n)
 }
 
@@ -530,7 +530,7 @@ func (n *ClassDeclaration) GetChildren() []interface{} {
 	}
 }
 
-func (n *Modifier) Accept(v Visitor) interface{} {
+func (n *Modifier) Accept(v Visitor) (interface{}, error) {
 	return v.VisitModifier(n)
 }
 
@@ -540,7 +540,7 @@ func (n *Modifier) GetChildren() []interface{} {
 	}
 }
 
-func (n *Annotation) Accept(v Visitor) interface{} {
+func (n *Annotation) Accept(v Visitor) (interface{}, error) {
 	return v.VisitAnnotation(n)
 }
 
@@ -550,7 +550,7 @@ func (n *Annotation) GetChildren() []interface{} {
 	}
 }
 
-func (n *Interface) Accept(v Visitor) interface{} {
+func (n *Interface) Accept(v Visitor) (interface{}, error) {
 	return v.VisitInterface(n)
 }
 
@@ -564,7 +564,7 @@ func (n *Interface) GetChildren() []interface{} {
 	}
 }
 
-func (n *IntegerLiteral) Accept(v Visitor) interface{} {
+func (n *IntegerLiteral) Accept(v Visitor) (interface{}, error) {
 	return v.VisitIntegerLiteral(n)
 }
 
@@ -574,7 +574,7 @@ func (n *IntegerLiteral) GetChildren() []interface{} {
 	}
 }
 
-func (n *Parameter) Accept(v Visitor) interface{} {
+func (n *Parameter) Accept(v Visitor) (interface{}, error) {
 	return v.VisitParameter(n)
 }
 
@@ -586,7 +586,7 @@ func (n *Parameter) GetChildren() []interface{} {
 	}
 }
 
-func (n *ArrayAccess) Accept(v Visitor) interface{} {
+func (n *ArrayAccess) Accept(v Visitor) (interface{}, error) {
 	return v.VisitArrayAccess(n)
 }
 
@@ -597,7 +597,7 @@ func (n *ArrayAccess) GetChildren() []interface{} {
 	}
 }
 
-func (n *BooleanLiteral) Accept(v Visitor) interface{} {
+func (n *BooleanLiteral) Accept(v Visitor) (interface{}, error) {
 	return v.VisitBooleanLiteral(n)
 }
 
@@ -605,7 +605,7 @@ func (n *BooleanLiteral) GetChildren() []interface{} {
 	return nil
 }
 
-func (n *Break) Accept(v Visitor) interface{} {
+func (n *Break) Accept(v Visitor) (interface{}, error) {
 	return v.VisitBreak(n)
 }
 
@@ -613,7 +613,7 @@ func (n *Break) GetChildren() []interface{} {
 	return nil
 }
 
-func (n *Continue) Accept(v Visitor) interface{} {
+func (n *Continue) Accept(v Visitor) (interface{}, error) {
 	return v.VisitContinue(n)
 }
 
@@ -621,7 +621,7 @@ func (n *Continue) GetChildren() []interface{} {
 	return nil
 }
 
-func (n *Dml) Accept(v Visitor) interface{} {
+func (n *Dml) Accept(v Visitor) (interface{}, error) {
 	return v.VisitDml(n)
 }
 
@@ -632,7 +632,7 @@ func (n *Dml) GetChildren() []interface{} {
 	}
 }
 
-func (n *DoubleLiteral) Accept(v Visitor) interface{} {
+func (n *DoubleLiteral) Accept(v Visitor) (interface{}, error) {
 	return v.VisitDoubleLiteral(n)
 }
 
@@ -642,7 +642,7 @@ func (n *DoubleLiteral) GetChildren() []interface{} {
 	}
 }
 
-func (n *FieldDeclaration) Accept(v Visitor) interface{} {
+func (n *FieldDeclaration) Accept(v Visitor) (interface{}, error) {
 	return v.VisitFieldDeclaration(n)
 }
 
@@ -653,7 +653,7 @@ func (n *FieldDeclaration) GetChildren() []interface{} {
 	}
 }
 
-func (n *FieldVariable) Accept(v Visitor) interface{} {
+func (n *FieldVariable) Accept(v Visitor) (interface{}, error) {
 	return v.VisitFieldVariable(n)
 }
 
@@ -667,7 +667,7 @@ func (n *FieldVariable) GetChildren() []interface{} {
 	}
 }
 
-func (n *Try) Accept(v Visitor) interface{} {
+func (n *Try) Accept(v Visitor) (interface{}, error) {
 	return v.VisitTry(n)
 }
 
@@ -679,7 +679,7 @@ func (n *Try) GetChildren() []interface{} {
 	}
 }
 
-func (n *Catch) Accept(v Visitor) interface{} {
+func (n *Catch) Accept(v Visitor) (interface{}, error) {
 	return v.VisitCatch(n)
 }
 
@@ -692,7 +692,7 @@ func (n *Catch) GetChildren() []interface{} {
 	}
 }
 
-func (n *Finally) Accept(v Visitor) interface{} {
+func (n *Finally) Accept(v Visitor) (interface{}, error) {
 	return v.VisitFinally(n)
 }
 
@@ -702,7 +702,7 @@ func (n *Finally) GetChildren() []interface{} {
 	}
 }
 
-func (n *For) Accept(v Visitor) interface{} {
+func (n *For) Accept(v Visitor) (interface{}, error) {
 	return v.VisitFor(n)
 }
 
@@ -713,7 +713,7 @@ func (n *For) GetChildren() []interface{} {
 	}
 }
 
-func (n *ForEnum) Accept(v Visitor) interface{} {
+func (n *ForEnum) Accept(v Visitor) (interface{}, error) {
 	return v.VisitForEnum(n)
 }
 
@@ -726,7 +726,7 @@ func (n *ForEnum) GetChildren() []interface{} {
 	}
 }
 
-func (n *ForControl) Accept(v Visitor) interface{} {
+func (n *ForControl) Accept(v Visitor) (interface{}, error) {
 	return v.VisitForControl(n)
 }
 
@@ -738,7 +738,7 @@ func (n *ForControl) GetChildren() []interface{} {
 	}
 }
 
-func (n *EnhancedForControl) Accept(v Visitor) interface{} {
+func (n *EnhancedForControl) Accept(v Visitor) (interface{}, error) {
 	return v.VisitEnhancedForControl(n)
 }
 
@@ -750,7 +750,7 @@ func (n *EnhancedForControl) GetChildren() []interface{} {
 	}
 }
 
-func (n *If) Accept(v Visitor) interface{} {
+func (n *If) Accept(v Visitor) (interface{}, error) {
 	return v.VisitIf(n)
 }
 
@@ -761,7 +761,7 @@ func (n *If) GetChildren() []interface{} {
 	}
 }
 
-func (n *MethodDeclaration) Accept(v Visitor) interface{} {
+func (n *MethodDeclaration) Accept(v Visitor) (interface{}, error) {
 	return v.VisitMethodDeclaration(n)
 }
 
@@ -777,7 +777,7 @@ func (n *MethodDeclaration) GetChildren() []interface{} {
 	}
 }
 
-func (n *MethodInvocation) Accept(v Visitor) interface{} {
+func (n *MethodInvocation) Accept(v Visitor) (interface{}, error) {
 	return v.VisitMethodInvocation(n)
 }
 
@@ -788,7 +788,7 @@ func (n *MethodInvocation) GetChildren() []interface{} {
 	}
 }
 
-func (n *New) Accept(v Visitor) interface{} {
+func (n *New) Accept(v Visitor) (interface{}, error) {
 	return v.VisitNew(n)
 }
 
@@ -799,7 +799,7 @@ func (n *New) GetChildren() []interface{} {
 	}
 }
 
-func (n *NullLiteral) Accept(v Visitor) interface{} {
+func (n *NullLiteral) Accept(v Visitor) (interface{}, error) {
 	return v.VisitNullLiteral(n)
 }
 
@@ -807,7 +807,7 @@ func (n *NullLiteral) GetChildren() []interface{} {
 	return nil
 }
 
-func (n *Object) Accept(v Visitor) interface{} {
+func (n *Object) Accept(v Visitor) (interface{}, error) {
 	return v.VisitObject(n)
 }
 
@@ -819,7 +819,7 @@ func (n *Object) GetChildren() []interface{} {
 	}
 }
 
-func (n *UnaryOperator) Accept(v Visitor) interface{} {
+func (n *UnaryOperator) Accept(v Visitor) (interface{}, error) {
 	return v.VisitUnaryOperator(n)
 }
 
@@ -831,7 +831,7 @@ func (n *UnaryOperator) GetChildren() []interface{} {
 	}
 }
 
-func (n *BinaryOperator) Accept(v Visitor) interface{} {
+func (n *BinaryOperator) Accept(v Visitor) (interface{}, error) {
 	return v.VisitBinaryOperator(n)
 }
 
@@ -843,7 +843,7 @@ func (n *BinaryOperator) GetChildren() []interface{} {
 	}
 }
 
-func (n *Return) Accept(v Visitor) interface{} {
+func (n *Return) Accept(v Visitor) (interface{}, error) {
 	return v.VisitReturn(n)
 }
 
@@ -853,7 +853,7 @@ func (n *Return) GetChildren() []interface{} {
 	}
 }
 
-func (n *Throw) Accept(v Visitor) interface{} {
+func (n *Throw) Accept(v Visitor) (interface{}, error) {
 	return v.VisitThrow(n)
 }
 
@@ -863,7 +863,7 @@ func (n *Throw) GetChildren() []interface{} {
 	}
 }
 
-func (n *Soql) Accept(v Visitor) interface{} {
+func (n *Soql) Accept(v Visitor) (interface{}, error) {
 	return v.VisitSoql(n)
 }
 
@@ -877,7 +877,7 @@ func (n *Soql) GetChildren() []interface{} {
 	}
 }
 
-func (n *Sosl) Accept(v Visitor) interface{} {
+func (n *Sosl) Accept(v Visitor) (interface{}, error) {
 	return v.VisitSosl(n)
 }
 
@@ -885,7 +885,7 @@ func (n *Sosl) GetChildren() []interface{} {
 	return []interface{}{}
 }
 
-func (n *StringLiteral) Accept(v Visitor) interface{} {
+func (n *StringLiteral) Accept(v Visitor) (interface{}, error) {
 	return v.VisitStringLiteral(n)
 }
 
@@ -895,7 +895,7 @@ func (n *StringLiteral) GetChildren() []interface{} {
 	}
 }
 
-func (n *Switch) Accept(v Visitor) interface{} {
+func (n *Switch) Accept(v Visitor) (interface{}, error) {
 	return v.VisitSwitch(n)
 }
 
@@ -907,7 +907,7 @@ func (n *Switch) GetChildren() []interface{} {
 	}
 }
 
-func (n *Trigger) Accept(v Visitor) interface{} {
+func (n *Trigger) Accept(v Visitor) (interface{}, error) {
 	return v.VisitTrigger(n)
 }
 
@@ -920,7 +920,7 @@ func (n *Trigger) GetChildren() []interface{} {
 	}
 }
 
-func (n *TriggerTiming) Accept(v Visitor) interface{} {
+func (n *TriggerTiming) Accept(v Visitor) (interface{}, error) {
 	return v.VisitTriggerTiming(n)
 }
 
@@ -931,7 +931,7 @@ func (n *TriggerTiming) GetChildren() []interface{} {
 	}
 }
 
-func (n *VariableDeclaration) Accept(v Visitor) interface{} {
+func (n *VariableDeclaration) Accept(v Visitor) (interface{}, error) {
 	return v.VisitVariableDeclaration(n)
 }
 
@@ -943,7 +943,7 @@ func (n *VariableDeclaration) GetChildren() []interface{} {
 	}
 }
 
-func (n *VariableDeclarator) Accept(v Visitor) interface{} {
+func (n *VariableDeclarator) Accept(v Visitor) (interface{}, error) {
 	return v.VisitVariableDeclarator(n)
 }
 
@@ -954,7 +954,7 @@ func (n *VariableDeclarator) GetChildren() []interface{} {
 	}
 }
 
-func (n *When) Accept(v Visitor) interface{} {
+func (n *When) Accept(v Visitor) (interface{}, error) {
 	return v.VisitWhen(n)
 }
 
@@ -965,7 +965,7 @@ func (n *When) GetChildren() []interface{} {
 	}
 }
 
-func (n *WhenType) Accept(v Visitor) interface{} {
+func (n *WhenType) Accept(v Visitor) (interface{}, error) {
 	return v.VisitWhenType(n)
 }
 
@@ -976,7 +976,7 @@ func (n *WhenType) GetChildren() []interface{} {
 	}
 }
 
-func (n *While) Accept(v Visitor) interface{} {
+func (n *While) Accept(v Visitor) (interface{}, error) {
 	return v.VisitWhile(n)
 }
 
@@ -988,7 +988,7 @@ func (n *While) GetChildren() []interface{} {
 	}
 }
 
-func (n *NothingStatement) Accept(v Visitor) interface{} {
+func (n *NothingStatement) Accept(v Visitor) (interface{}, error) {
 	return v.VisitNothingStatement(n)
 }
 
@@ -996,7 +996,7 @@ func (n *NothingStatement) GetChildren() []interface{} {
 	return nil
 }
 
-func (n *CastExpression) Accept(v Visitor) interface{} {
+func (n *CastExpression) Accept(v Visitor) (interface{}, error) {
 	return v.VisitCastExpression(n)
 }
 
@@ -1007,7 +1007,7 @@ func (n *CastExpression) GetChildren() []interface{} {
 	}
 }
 
-func (n *FieldAccess) Accept(v Visitor) interface{} {
+func (n *FieldAccess) Accept(v Visitor) (interface{}, error) {
 	return v.VisitFieldAccess(n)
 }
 
@@ -1018,7 +1018,7 @@ func (n *FieldAccess) GetChildren() []interface{} {
 	}
 }
 
-func (n *Type) Accept(v Visitor) interface{} {
+func (n *Type) Accept(v Visitor) (interface{}, error) {
 	return v.VisitType(n)
 }
 
@@ -1029,7 +1029,7 @@ func (n *Type) GetChildren() []interface{} {
 	}
 }
 
-func (n *Block) Accept(v Visitor) interface{} {
+func (n *Block) Accept(v Visitor) (interface{}, error) {
 	return v.VisitBlock(n)
 }
 
@@ -1039,7 +1039,7 @@ func (n *Block) GetChildren() []interface{} {
 	}
 }
 
-func (n *GetterSetter) Accept(v Visitor) interface{} {
+func (n *GetterSetter) Accept(v Visitor) (interface{}, error) {
 	return v.VisitGetterSetter(n)
 }
 
@@ -1051,7 +1051,7 @@ func (n *GetterSetter) GetChildren() []interface{} {
 	}
 }
 
-func (n *PropertyDeclaration) Accept(v Visitor) interface{} {
+func (n *PropertyDeclaration) Accept(v Visitor) (interface{}, error) {
 	return v.VisitPropertyDeclaration(n)
 }
 
@@ -1064,7 +1064,7 @@ func (n *PropertyDeclaration) GetChildren() []interface{} {
 	}
 }
 
-func (n *ArrayInitializer) Accept(v Visitor) interface{} {
+func (n *ArrayInitializer) Accept(v Visitor) (interface{}, error) {
 	return v.VisitArrayInitializer(n)
 }
 
@@ -1074,7 +1074,7 @@ func (n *ArrayInitializer) GetChildren() []interface{} {
 	}
 }
 
-func (n *ArrayCreator) Accept(v Visitor) interface{} {
+func (n *ArrayCreator) Accept(v Visitor) (interface{}, error) {
 	return v.VisitArrayCreator(n)
 }
 
@@ -1086,7 +1086,7 @@ func (n *ArrayCreator) GetChildren() []interface{} {
 	}
 }
 
-func (n *Blob) Accept(v Visitor) interface{} {
+func (n *Blob) Accept(v Visitor) (interface{}, error) {
 	return v.VisitBlob(n)
 }
 
@@ -1096,7 +1096,7 @@ func (n *Blob) GetChildren() []interface{} {
 	}
 }
 
-func (n *SoqlBindVariable) Accept(v Visitor) interface{} {
+func (n *SoqlBindVariable) Accept(v Visitor) (interface{}, error) {
 	return v.VisitSoqlBindVariable(n)
 }
 
@@ -1106,7 +1106,7 @@ func (n *SoqlBindVariable) GetChildren() []interface{} {
 	}
 }
 
-func (n *TernalyExpression) Accept(v Visitor) interface{} {
+func (n *TernalyExpression) Accept(v Visitor) (interface{}, error) {
 	return v.VisitTernalyExpression(n)
 }
 
@@ -1118,7 +1118,7 @@ func (n *TernalyExpression) GetChildren() []interface{} {
 	}
 }
 
-func (n *MapCreator) Accept(v Visitor) interface{} {
+func (n *MapCreator) Accept(v Visitor) (interface{}, error) {
 	return v.VisitMapCreator(n)
 }
 
@@ -1126,7 +1126,7 @@ func (n *MapCreator) GetChildren() []interface{} {
 	return []interface{}{}
 }
 
-func (n *SetCreator) Accept(v Visitor) interface{} {
+func (n *SetCreator) Accept(v Visitor) (interface{}, error) {
 	return v.VisitSetCreator(n)
 }
 
@@ -1134,7 +1134,7 @@ func (n *SetCreator) GetChildren() []interface{} {
 	return []interface{}{}
 }
 
-func (n *Name) Accept(v Visitor) interface{} {
+func (n *Name) Accept(v Visitor) (interface{}, error) {
 	return v.VisitName(n)
 }
 
@@ -1144,7 +1144,7 @@ func (n *Name) GetChildren() []interface{} {
 	}
 }
 
-func (n *ConstructorDeclaration) Accept(v Visitor) interface{} {
+func (n *ConstructorDeclaration) Accept(v Visitor) (interface{}, error) {
 	return v.VisitConstructorDeclaration(n)
 }
 

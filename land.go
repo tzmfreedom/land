@@ -7,6 +7,7 @@ import (
 	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/parser"
+	"github.com/tzmfreedom/goland/visitor"
 )
 
 func main() {
@@ -39,7 +40,7 @@ func parse(input antlr.CharStream, f string) ast.Node {
 		CurrentFile: f,
 	})
 	n := t.(ast.Node)
-	checker := &SoqlChecker{}
+	checker := &visitor.SoqlChecker{}
 	n.Accept(checker)
 	return n
 }

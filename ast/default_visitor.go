@@ -8,10 +8,16 @@ func visitChildren(v Visitor, n Node) (interface{}, error) {
 		}
 		if nodes, ok := child.([]Node); ok {
 			for _, node := range nodes {
-				node.Accept(v)
+				_, err := node.Accept(v)
+				if err != nil {
+					return nil, err
+				}
 			}
 		} else if node, ok := child.(Node); ok {
-			node.Accept(v)
+			_, err := node.Accept(v)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	return nil, nil

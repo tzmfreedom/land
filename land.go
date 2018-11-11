@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
+
+	"flag"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/tzmfreedom/goland/ast"
@@ -11,27 +14,41 @@ import (
 )
 
 func main() {
-	f := os.Args[1]
-	t := parseFile(f)
-	root, err := convert(t)
-	if err != nil {
-		panic(err)
+	f := flag.String("f", "", "filename")
+	cmd := os.Args[1]
+	os.Args = os.Args[1:]
+
+	flag.Parse()
+
+	t := parseFile(*f)
+	switch cmd {
+	case "format":
+		tos(t)
+	case "run":
+		root, err := convert(t)
+		if err != nil {
+			handleError(err)
+		}
+		err = run(root)
+		if err != nil {
+			handleError(err)
+		}
+	case "check":
+		root, err := convert(t)
+		if err != nil {
+			handleError(err)
+		}
+		err = check(root)
+		if err != nil {
+			handleError(err)
+		}
 	}
-	err = check(root)
-	if err != nil {
-		panic(err)
-	}
-	err = run(t)
-	if err != nil {
-		panic(err)
-	}
-	tos(t)
 }
 
 func parseFile(f string) ast.Node {
 	input, err := antlr.NewFileStream(f)
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 	return parse(input, f)
 }
@@ -60,8 +77,8 @@ func convert(n ast.Node) (ast.Node, error) {
 
 func check(n ast.Node) error {
 	checker := &visitor.SoqlChecker{}
-	n.Accept(checker)
-	return nil
+	_, err := n.Accept(checker)
+	return err
 }
 
 func run(n ast.Node) error {
@@ -74,4 +91,10 @@ func tos(n ast.Node) {
 	visitor := &ast.TosVisitor{}
 	r, _ := n.Accept(visitor)
 	fmt.Println(r)
+}
+
+func handleError(err error) {
+	l := log.New(os.Stderr, "", 0)
+	l.Println(err.Error())
+	os.Exit(1)
 }

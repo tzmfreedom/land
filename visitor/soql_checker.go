@@ -1,6 +1,8 @@
 package visitor
 
 import (
+	"errors"
+
 	"github.com/tzmfreedom/goland/ast"
 )
 
@@ -122,11 +124,11 @@ func (v *SoqlChecker) VisitSoql(n *ast.Soql) (interface{}, error) {
 	if isDecendants(n, "For") &&
 		!isParent(n, "Return") &&
 		!isParent(n, "For") {
-		panic("SOQL IN FOR LOOP")
+		return nil, errors.New("SOQL IN FOR LOOP")
 	}
 
 	if isDecendants(n, "While") {
-		panic("SOQL IN WHILE LOOP")
+		return nil, errors.New("SOQL IN WHILE LOOP")
 	}
 	return nil, nil
 }

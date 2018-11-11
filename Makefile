@@ -2,7 +2,11 @@ ANTLR := java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$(CLASSPATH)
 
 .PHONY: run
 run: format
-	go run . example.cls
+	go run . run -f example.cls
+
+.PHONY: run/format
+run/format:
+	go run . format -f example.cls
 
 .PHONY: test
 test: format

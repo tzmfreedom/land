@@ -19,43 +19,22 @@ func TestParse(t *testing.T) {
 				Modifiers: []ast.Node{
 					&ast.Modifier{
 						Name: "public",
-						Position: &ast.Position{
-							Column: 5,
-							Line:   1,
-						},
 					},
 					&ast.Modifier{
 						Name: "without sharing",
-						Position: &ast.Position{
-							Column: 12,
-							Line:   1,
-						},
 					},
 				},
 				Annotations: []ast.Node{
 					&ast.Annotation{
 						Name: "foo",
-						Position: &ast.Position{
-							Column: 0,
-							Line:   1,
-						},
 					},
 				},
 				Name: "Foo",
-				Position: &ast.Position{
-					Column: 28,
-					Line:   1,
-				},
 				SuperClass: &ast.Type{
 					Name: []string{
 						"Bar",
 					},
 					Parameters: []ast.Node{},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   46,
-						Line:     1,
-					},
 				},
 				ImplementClasses: []ast.Node{
 					&ast.Type{
@@ -63,11 +42,6 @@ func TestParse(t *testing.T) {
 							"Baz",
 						},
 						Parameters: []ast.Node{},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   61,
-							Line:     1,
-						},
 					},
 				},
 				Declarations: []ast.Node{},
@@ -86,10 +60,6 @@ public void method(){ }
 				Modifiers:   []ast.Node{},
 				Annotations: []ast.Node{},
 				Name:        "Foo",
-				Position: &ast.Position{
-					Column: 0,
-					Line:   1,
-				},
 				Declarations: []ast.Node{
 					&ast.FieldDeclaration{
 						Type: &ast.Type{
@@ -97,40 +67,18 @@ public void method(){ }
 								"Integer",
 							},
 							Parameters: []ast.Node{},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   7,
-								Line:     2,
-							},
 						},
 						Modifiers: []ast.Node{
 							&ast.Modifier{
 								Name: "public",
-								Position: &ast.Position{
-									FileName: "",
-									Column:   0,
-									Line:     2,
-								},
 							},
 						},
 						Declarators: []ast.Node{
 							&ast.VariableDeclarator{
-								Name: "field",
-								Expression: &ast.NullLiteral{
-									Position: &ast.Position{
-										FileName: "",
-										Column:   15,
-										Line:     2,
-									},
-								},
-								Position: &ast.Position{
-									FileName: "",
-									Column:   15,
-									Line:     2,
-								},
+								Name:       "field",
+								Expression: nil,
 							},
 						},
-						Position: nil,
 					},
 					&ast.FieldDeclaration{
 						Type: &ast.Type{
@@ -138,20 +86,10 @@ public void method(){ }
 								"Double",
 							},
 							Parameters: []ast.Node{},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   7,
-								Line:     3,
-							},
 						},
 						Modifiers: []ast.Node{
 							&ast.Modifier{
 								Name: "public",
-								Position: &ast.Position{
-									FileName: "",
-									Column:   0,
-									Line:     3,
-								},
 							},
 						},
 						Declarators: []ast.Node{
@@ -159,20 +97,9 @@ public void method(){ }
 								Name: "field_with_init",
 								Expression: &ast.IntegerLiteral{
 									Value: 2,
-									Position: &ast.Position{
-										FileName: "",
-										Column:   32,
-										Line:     3,
-									},
-								},
-								Position: &ast.Position{
-									FileName: "",
-									Column:   14,
-									Line:     3,
 								},
 							},
 						},
-						Position: nil,
 					},
 					&ast.FieldDeclaration{
 						Type: &ast.Type{
@@ -180,48 +107,21 @@ public void method(){ }
 								"String",
 							},
 							Parameters: []ast.Node{},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   14,
-								Line:     4,
-							},
 						},
 						Modifiers: []ast.Node{
 							&ast.Modifier{
 								Name: "public",
-								Position: &ast.Position{
-									FileName: "",
-									Column:   0,
-									Line:     4,
-								},
 							},
 							&ast.Modifier{
 								Name: "static",
-								Position: &ast.Position{
-									FileName: "",
-									Column:   7,
-									Line:     4,
-								},
 							},
 						},
 						Declarators: []ast.Node{
 							&ast.VariableDeclarator{
-								Name: "static_field",
-								Expression: &ast.NullLiteral{
-									Position: &ast.Position{
-										FileName: "",
-										Column:   21,
-										Line:     4,
-									},
-								},
-								Position: &ast.Position{
-									FileName: "",
-									Column:   21,
-									Line:     4,
-								},
+								Name:       "static_field",
+								Expression: nil,
 							},
 						},
-						Position: nil,
 					},
 					&ast.FieldDeclaration{
 						Type: &ast.Type{
@@ -229,28 +129,13 @@ public void method(){ }
 								"Boolean",
 							},
 							Parameters: []ast.Node{},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   14,
-								Line:     5,
-							},
 						},
 						Modifiers: []ast.Node{
 							&ast.Modifier{
 								Name: "public",
-								Position: &ast.Position{
-									FileName: "",
-									Column:   0,
-									Line:     5,
-								},
 							},
 							&ast.Modifier{
 								Name: "static",
-								Position: &ast.Position{
-									FileName: "",
-									Column:   7,
-									Line:     5,
-								},
 							},
 						},
 						Declarators: []ast.Node{
@@ -258,39 +143,18 @@ public void method(){ }
 								Name: "static_field_with_init",
 								Expression: &ast.IntegerLiteral{
 									Value: 1,
-									Position: &ast.Position{
-										FileName: "",
-										Column:   47,
-										Line:     5,
-									},
-								},
-								Position: &ast.Position{
-									FileName: "",
-									Column:   22,
-									Line:     5,
 								},
 							},
 						},
-						Position: nil,
 					},
 					&ast.MethodDeclaration{
 						Name: "static_method",
 						Modifiers: []ast.Node{
 							&ast.Modifier{
 								Name: "public",
-								Position: &ast.Position{
-									FileName: "",
-									Column:   0,
-									Line:     6,
-								},
 							},
 							&ast.Modifier{
 								Name: "static",
-								Position: &ast.Position{
-									FileName: "",
-									Column:   7,
-									Line:     6,
-								},
 							},
 						},
 						ReturnType: &ast.Type{
@@ -298,11 +162,6 @@ public void method(){ }
 								"String",
 							},
 							Parameters: []ast.Node{},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   14,
-								Line:     6,
-							},
 						},
 						Parameters: []ast.Node{
 							&ast.Parameter{
@@ -312,46 +171,21 @@ public void method(){ }
 										"Boolean",
 									},
 									Parameters: []ast.Node{},
-									Position: &ast.Position{
-										FileName: "",
-										Column:   35,
-										Line:     6,
-									},
 								},
 								Name: "p1",
-								Position: &ast.Position{
-									FileName: "",
-									Column:   35,
-									Line:     6,
-								},
 							},
 						},
 						Throws: []ast.Node{},
 						Statements: &ast.Block{
 							Statements: []ast.Node{},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   47,
-								Line:     6,
-							},
 						},
 						NativeFunction: nil,
-						Position: &ast.Position{
-							FileName: "",
-							Column:   14,
-							Line:     6,
-						},
 					},
 					&ast.MethodDeclaration{
 						Name: "method",
 						Modifiers: []ast.Node{
 							&ast.Modifier{
 								Name: "public",
-								Position: &ast.Position{
-									FileName: "",
-									Column:   0,
-									Line:     7,
-								},
 							},
 						},
 						ReturnType: ast.VoidType,
@@ -359,18 +193,8 @@ public void method(){ }
 						Throws:     []ast.Node{},
 						Statements: &ast.Block{
 							Statements: []ast.Node{},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   20,
-								Line:     7,
-							},
 						},
 						NativeFunction: nil,
-						Position: &ast.Position{
-							FileName: "",
-							Column:   7,
-							Line:     7,
-						},
 					},
 				},
 			},
@@ -393,34 +217,14 @@ Integer i;
 							"Integer",
 						},
 						Parameters: []ast.Node{},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   0,
-							Line:     3,
-						},
 					},
 					Declarators: []ast.Node{
 						&ast.VariableDeclarator{
 							Name: "i",
 							Expression: &ast.IntegerLiteral{
 								Value: 0,
-								Position: &ast.Position{
-									FileName: "",
-									Column:   12,
-									Line:     3,
-								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   8,
-								Line:     3,
 							},
 						},
-					},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   0,
-						Line:     3,
 					},
 				},
 				&ast.VariableDeclaration{
@@ -430,34 +234,14 @@ Integer i;
 							"String",
 						},
 						Parameters: []ast.Node{},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   0,
-							Line:     4,
-						},
 					},
 					Declarators: []ast.Node{
 						&ast.VariableDeclarator{
 							Name: "s",
 							Expression: &ast.StringLiteral{
-								Value: "'ab",
-								Position: &ast.Position{
-									FileName: "",
-									Column:   11,
-									Line:     4,
-								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   7,
-								Line:     4,
+								Value: "abc",
 							},
 						},
-					},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   0,
-						Line:     4,
 					},
 				},
 				&ast.VariableDeclaration{
@@ -467,34 +251,14 @@ Integer i;
 							"Double",
 						},
 						Parameters: []ast.Node{},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   0,
-							Line:     5,
-						},
 					},
 					Declarators: []ast.Node{
 						&ast.VariableDeclarator{
 							Name: "d",
 							Expression: &ast.DoubleLiteral{
 								Value: 1.230000,
-								Position: &ast.Position{
-									FileName: "",
-									Column:   11,
-									Line:     5,
-								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   7,
-								Line:     5,
 							},
 						},
-					},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   0,
-						Line:     5,
 					},
 				},
 				&ast.VariableDeclaration{
@@ -504,34 +268,14 @@ Integer i;
 							"Boolean",
 						},
 						Parameters: []ast.Node{},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   0,
-							Line:     6,
-						},
 					},
 					Declarators: []ast.Node{
 						&ast.VariableDeclarator{
 							Name: "b",
 							Expression: &ast.BooleanLiteral{
 								Value: true,
-								Position: &ast.Position{
-									FileName: "",
-									Column:   12,
-									Line:     6,
-								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   8,
-								Line:     6,
 							},
 						},
-					},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   0,
-						Line:     6,
 					},
 				},
 				&ast.VariableDeclaration{
@@ -541,33 +285,12 @@ Integer i;
 							"Integer",
 						},
 						Parameters: []ast.Node{},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   0,
-							Line:     7,
-						},
 					},
 					Declarators: []ast.Node{
 						&ast.VariableDeclarator{
-							Name: "i",
-							Expression: &ast.NullLiteral{
-								Position: &ast.Position{
-									FileName: "",
-									Column:   8,
-									Line:     7,
-								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   8,
-								Line:     7,
-							},
+							Name:       "i",
+							Expression: nil,
 						},
-					},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   0,
-						Line:     7,
 					},
 				},
 			}),
@@ -585,11 +308,6 @@ i = (1 + 2) * 3;
 					Op: "=",
 					Left: &ast.Name{
 						Value: "i",
-						Position: &ast.Position{
-							FileName: "",
-							Column:   0,
-							Line:     3,
-						},
 					},
 					Right: &ast.BinaryOperator{
 						Op: "+",
@@ -597,111 +315,41 @@ i = (1 + 2) * 3;
 							Op: "+",
 							Left: &ast.IntegerLiteral{
 								Value: 1,
-								Position: &ast.Position{
-									FileName: "",
-									Column:   4,
-									Line:     3,
-								},
 							},
 							Right: &ast.IntegerLiteral{
 								Value: 2,
-								Position: &ast.Position{
-									FileName: "",
-									Column:   8,
-									Line:     3,
-								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   4,
-								Line:     3,
 							},
 						},
 						Right: &ast.IntegerLiteral{
 							Value: 3,
-							Position: &ast.Position{
-								FileName: "",
-								Column:   12,
-								Line:     3,
-							},
 						},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   4,
-							Line:     3,
-						},
-					},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   0,
-						Line:     3,
 					},
 				},
 				&ast.BinaryOperator{
 					Op: "=",
 					Left: &ast.Name{
 						Value: "i",
-						Position: &ast.Position{
-							FileName: "",
-							Column:   0,
-							Line:     4,
-						},
 					},
 					Right: &ast.BinaryOperator{
 						Op: "+",
 						Left: &ast.IntegerLiteral{
 							Value: 1,
-							Position: &ast.Position{
-								FileName: "",
-								Column:   4,
-								Line:     4,
-							},
 						},
 						Right: &ast.BinaryOperator{
 							Op: "*",
 							Left: &ast.IntegerLiteral{
 								Value: 2,
-								Position: &ast.Position{
-									FileName: "",
-									Column:   8,
-									Line:     4,
-								},
 							},
 							Right: &ast.IntegerLiteral{
 								Value: 3,
-								Position: &ast.Position{
-									FileName: "",
-									Column:   12,
-									Line:     4,
-								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   8,
-								Line:     4,
 							},
 						},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   4,
-							Line:     4,
-						},
-					},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   0,
-						Line:     4,
 					},
 				},
 				&ast.BinaryOperator{
 					Op: "=",
 					Left: &ast.Name{
 						Value: "i",
-						Position: &ast.Position{
-							FileName: "",
-							Column:   0,
-							Line:     5,
-						},
 					},
 					Right: &ast.BinaryOperator{
 						Op: "*",
@@ -709,44 +357,14 @@ i = (1 + 2) * 3;
 							Op: "+",
 							Left: &ast.IntegerLiteral{
 								Value: 1,
-								Position: &ast.Position{
-									FileName: "",
-									Column:   5,
-									Line:     5,
-								},
 							},
 							Right: &ast.IntegerLiteral{
 								Value: 2,
-								Position: &ast.Position{
-									FileName: "",
-									Column:   9,
-									Line:     5,
-								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   5,
-								Line:     5,
 							},
 						},
 						Right: &ast.IntegerLiteral{
 							Value: 3,
-							Position: &ast.Position{
-								FileName: "",
-								Column:   14,
-								Line:     5,
-							},
 						},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   4,
-							Line:     5,
-						},
-					},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   0,
-						Line:     5,
 					},
 				},
 			}),
@@ -764,97 +382,37 @@ foo(1, s, false);
 					Expression: &ast.FieldAccess{
 						Expression: &ast.Name{
 							Value: "foo",
-							Position: &ast.Position{
-								FileName: "",
-								Column:   0,
-								Line:     3,
-							},
 						},
 						FieldName: "bar",
-						Position: &ast.Position{
-							FileName: "",
-							Column:   0,
-							Line:     3,
-						},
 					},
 					FieldName: "baz",
-					Position: &ast.Position{
-						FileName: "",
-						Column:   0,
-						Line:     3,
-					},
 				},
 				&ast.MethodInvocation{
 					NameOrExpression: &ast.FieldAccess{
 						Expression: &ast.FieldAccess{
 							Expression: &ast.Name{
 								Value: "foo",
-								Position: &ast.Position{
-									FileName: "",
-									Column:   0,
-									Line:     4,
-								},
 							},
 							FieldName: "bar",
-							Position: &ast.Position{
-								FileName: "",
-								Column:   0,
-								Line:     4,
-							},
 						},
 						FieldName: "baz",
-						Position: &ast.Position{
-							FileName: "",
-							Column:   0,
-							Line:     4,
-						},
 					},
 					Parameters: []ast.Node{},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   0,
-						Line:     4,
-					},
 				},
 				&ast.MethodInvocation{
 					NameOrExpression: &ast.Name{
 						Value: "foo",
-						Position: &ast.Position{
-							FileName: "",
-							Column:   0,
-							Line:     5,
-						},
 					},
 					Parameters: []ast.Node{
 						&ast.IntegerLiteral{
 							Value: 1,
-							Position: &ast.Position{
-								FileName: "",
-								Column:   4,
-								Line:     5,
-							},
 						},
 						&ast.Name{
 							Value: "s",
-							Position: &ast.Position{
-								FileName: "",
-								Column:   7,
-								Line:     5,
-							},
 						},
 						&ast.BooleanLiteral{
 							Value: false,
-							Position: &ast.Position{
-								FileName: "",
-								Column:   10,
-								Line:     5,
-							},
 						},
-					},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   0,
-						Line:     5,
 					},
 				},
 			}),
@@ -891,41 +449,16 @@ public void action(){
 						Op: "==",
 						Left: &ast.Name{
 							Value: "i",
-							Position: &ast.Position{
-								FileName: "",
-								Column:   6,
-								Line:     3,
-							},
 						},
 						Right: &ast.IntegerLiteral{
 							Value: 1,
-							Position: &ast.Position{
-								FileName: "",
-								Column:   11,
-								Line:     3,
-							},
-						},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   6,
-							Line:     3,
 						},
 					},
 					IfStatement: &ast.Block{
 						Statements: []ast.Node{
 							&ast.BooleanLiteral{
 								Value: true,
-								Position: &ast.Position{
-									FileName: "",
-									Column:   4,
-									Line:     4,
-								},
 							},
-						},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   14,
-							Line:     3,
 						},
 					},
 					ElseStatement: &ast.If{
@@ -933,156 +466,61 @@ public void action(){
 							Op: "==",
 							Left: &ast.Name{
 								Value: "i",
-								Position: &ast.Position{
-									FileName: "",
-									Column:   13,
-									Line:     5,
-								},
 							},
 							Right: &ast.IntegerLiteral{
 								Value: 2,
-								Position: &ast.Position{
-									FileName: "",
-									Column:   18,
-									Line:     5,
-								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   13,
-								Line:     5,
 							},
 						},
 						IfStatement: &ast.Block{
 							Statements: []ast.Node{
 								&ast.BooleanLiteral{
 									Value: true,
-									Position: &ast.Position{
-										FileName: "",
-										Column:   4,
-										Line:     6,
-									},
 								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   21,
-								Line:     5,
 							},
 						},
 						ElseStatement: &ast.Block{
 							Statements: []ast.Node{
 								&ast.BooleanLiteral{
 									Value: false,
-									Position: &ast.Position{
-										FileName: "",
-										Column:   4,
-										Line:     8,
-									},
 								},
 							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   9,
-								Line:     7,
-							},
 						},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   9,
-							Line:     5,
-						},
-					},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   2,
-						Line:     3,
 					},
 				},
 				&ast.Switch{
 					Expression: &ast.Name{
 						Value: "i",
-						Position: &ast.Position{
-							FileName: "",
-							Column:   12,
-							Line:     10,
-						},
 					},
 					WhenStatements: []ast.Node{
 						&ast.When{
 							Condition: []ast.Node{
 								&ast.IntegerLiteral{
 									Value: 1,
-									Position: &ast.Position{
-										FileName: "",
-										Column:   9,
-										Line:     11,
-									},
 								},
 							},
 							Statements: &ast.Block{
 								Statements: []ast.Node{
 									&ast.BooleanLiteral{
 										Value: true,
-										Position: &ast.Position{
-											FileName: "",
-											Column:   6,
-											Line:     12,
-										},
 									},
 								},
-								Position: &ast.Position{
-									FileName: "",
-									Column:   11,
-									Line:     11,
-								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   4,
-								Line:     11,
 							},
 						},
 						&ast.When{
 							Condition: []ast.Node{
 								&ast.IntegerLiteral{
 									Value: 2,
-									Position: &ast.Position{
-										FileName: "",
-										Column:   9,
-										Line:     14,
-									},
 								},
 								&ast.IntegerLiteral{
 									Value: 3,
-									Position: &ast.Position{
-										FileName: "",
-										Column:   12,
-										Line:     14,
-									},
 								},
 							},
 							Statements: &ast.Block{
 								Statements: []ast.Node{
 									&ast.BooleanLiteral{
 										Value: false,
-										Position: &ast.Position{
-											FileName: "",
-											Column:   6,
-											Line:     15,
-										},
 									},
 								},
-								Position: &ast.Position{
-									FileName: "",
-									Column:   14,
-									Line:     14,
-								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   4,
-								Line:     14,
 							},
 						},
 						&ast.When{
@@ -1093,41 +531,16 @@ public void action(){
 											"Account",
 										},
 										Parameters: []ast.Node{},
-										Position: &ast.Position{
-											FileName: "",
-											Column:   9,
-											Line:     17,
-										},
 									},
 									Identifier: "a",
-									Position: &ast.Position{
-										FileName: "",
-										Column:   9,
-										Line:     17,
-									},
 								},
 							},
 							Statements: &ast.Block{
 								Statements: []ast.Node{
 									&ast.BooleanLiteral{
 										Value: false,
-										Position: &ast.Position{
-											FileName: "",
-											Column:   6,
-											Line:     18,
-										},
 									},
 								},
-								Position: &ast.Position{
-									FileName: "",
-									Column:   19,
-									Line:     17,
-								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   4,
-								Line:     17,
 							},
 						},
 					},
@@ -1135,23 +548,8 @@ public void action(){
 						Statements: []ast.Node{
 							&ast.IntegerLiteral{
 								Value: 1,
-								Position: &ast.Position{
-									FileName: "",
-									Column:   6,
-									Line:     21,
-								},
 							},
 						},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   9,
-							Line:     20,
-						},
-					},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   2,
-						Line:     10,
 					},
 				},
 			}),
@@ -1183,58 +581,23 @@ public void action(){
 									"Integer",
 								},
 								Parameters: []ast.Node{},
-								Position: &ast.Position{
-									FileName: "",
-									Column:   7,
-									Line:     3,
-								},
 							},
 							Declarators: []ast.Node{
 								&ast.VariableDeclarator{
 									Name: "i",
 									Expression: &ast.IntegerLiteral{
 										Value: 0,
-										Position: &ast.Position{
-											FileName: "",
-											Column:   19,
-											Line:     3,
-										},
-									},
-									Position: &ast.Position{
-										FileName: "",
-										Column:   15,
-										Line:     3,
 									},
 								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   7,
-								Line:     3,
 							},
 						},
 						Expression: &ast.BinaryOperator{
 							Op: "<",
 							Left: &ast.Name{
 								Value: "i",
-								Position: &ast.Position{
-									FileName: "",
-									Column:   22,
-									Line:     3,
-								},
 							},
 							Right: &ast.Name{
 								Value: "imax",
-								Position: &ast.Position{
-									FileName: "",
-									Column:   26,
-									Line:     3,
-								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   22,
-								Line:     3,
 							},
 						},
 						ForUpdate: []ast.Node{
@@ -1242,116 +605,44 @@ public void action(){
 								Op: "++",
 								Expression: &ast.Name{
 									Value: "i",
-									Position: &ast.Position{
-										FileName: "",
-										Column:   32,
-										Line:     3,
-									},
 								},
 								IsPrefix: false,
-								Position: &ast.Position{
-									FileName: "",
-									Column:   32,
-									Line:     3,
-								},
 							},
-						},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   7,
-							Line:     3,
 						},
 					},
 					Statements: &ast.Block{
 						Statements: []ast.Node{
-							&ast.Continue{
-								Position: &ast.Position{
-									FileName: "",
-									Column:   4,
-									Line:     4,
-								},
-							},
+							&ast.Continue{},
 						},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   37,
-							Line:     3,
-						},
-					},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   2,
-						Line:     3,
 					},
 				},
 				&ast.While{
 					Condition: &ast.BooleanLiteral{
 						Value: true,
-						Position: &ast.Position{
-							FileName: "",
-							Column:   9,
-							Line:     6,
-						},
 					},
 					Statements: []ast.Node{
 						&ast.Block{
 							Statements: []ast.Node{
-								&ast.Break{
-									Position: &ast.Position{
-										FileName: "",
-										Column:   4,
-										Line:     7,
-									},
-								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   15,
-								Line:     6,
+								&ast.Break{},
 							},
 						},
 					},
 					IsDo: false,
-					Position: &ast.Position{
-						FileName: "",
-						Column:   2,
-						Line:     6,
-					},
 				},
 				&ast.While{
 					Condition: &ast.BooleanLiteral{
 						Value: false,
-						Position: &ast.Position{
-							FileName: "",
-							Column:   11,
-							Line:     11,
-						},
 					},
 					Statements: []ast.Node{
 						&ast.Block{
 							Statements: []ast.Node{
 								&ast.Return{
 									Expression: nil,
-									Position: &ast.Position{
-										FileName: "",
-										Column:   4,
-										Line:     10,
-									},
 								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   5,
-								Line:     9,
 							},
 						},
 					},
 					IsDo: true,
-					Position: &ast.Position{
-						FileName: "",
-						Column:   2,
-						Line:     9,
-					},
 				},
 				&ast.For{
 					Control: &ast.EnhancedForControl{
@@ -1361,25 +652,10 @@ public void action(){
 								"Account",
 							},
 							Parameters: []ast.Node{},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   7,
-								Line:     12,
-							},
 						},
 						VariableDeclaratorId: "acc",
 						Expression: &ast.Name{
 							Value: "accounts",
-							Position: &ast.Position{
-								FileName: "",
-								Column:   21,
-								Line:     12,
-							},
-						},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   7,
-							Line:     12,
 						},
 					},
 					Statements: &ast.Block{
@@ -1387,29 +663,9 @@ public void action(){
 							&ast.Return{
 								Expression: &ast.IntegerLiteral{
 									Value: 1,
-									Position: &ast.Position{
-										FileName: "",
-										Column:   11,
-										Line:     13,
-									},
-								},
-								Position: &ast.Position{
-									FileName: "",
-									Column:   4,
-									Line:     13,
 								},
 							},
 						},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   31,
-							Line:     12,
-						},
-					},
-					Position: &ast.Position{
-						FileName: "",
-						Column:   2,
-						Line:     12,
 					},
 				},
 			}),
@@ -1433,23 +689,8 @@ try {
 							&ast.Throw{
 								Expression: &ast.Name{
 									Value: "a",
-									Position: &ast.Position{
-										FileName: "",
-										Column:   8,
-										Line:     4,
-									},
-								},
-								Position: &ast.Position{
-									FileName: "",
-									Column:   2,
-									Line:     4,
 								},
 							},
-						},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   4,
-							Line:     3,
 						},
 					},
 					CatchClause: []ast.Node{
@@ -1460,34 +701,14 @@ try {
 									"Exception",
 								},
 								Parameters: nil,
-								Position: &ast.Position{
-									FileName: "",
-									Column:   9,
-									Line:     5,
-								},
 							},
 							Identifier: "e",
 							Block: &ast.Block{
 								Statements: []ast.Node{
 									&ast.Return{
 										Expression: nil,
-										Position: &ast.Position{
-											FileName: "",
-											Column:   2,
-											Line:     6,
-										},
 									},
 								},
-								Position: &ast.Position{
-									FileName: "",
-									Column:   22,
-									Line:     5,
-								},
-							},
-							Position: &ast.Position{
-								FileName: "",
-								Column:   2,
-								Line:     5,
 							},
 						},
 					},
@@ -1495,20 +716,9 @@ try {
 						Statements: []ast.Node{
 							&ast.Return{
 								Expression: nil,
-								Position: &ast.Position{
-									FileName: "",
-									Column:   2,
-									Line:     8,
-								},
 							},
 						},
-						Position: &ast.Position{
-							FileName: "",
-							Column:   10,
-							Line:     7,
-						},
 					},
-					Position: (*ast.Position)(nil),
 				},
 			}),
 		},
@@ -1540,16 +750,19 @@ true;
 		},
 	}
 	for _, testCase := range testCases {
-		out := parseString(testCase.Code)
+		actual := parseString(testCase.Code)
 
-		expected := ast.Dump(testCase.Expected, 0)
-		actual := ast.Dump(out, 0)
-		ok := cmp.Equal(expected, actual)
-		if !ok {
-			diff := cmp.Diff(testCase.Expected, out)
-			pp.Print(out)
-			t.Errorf(diff)
-		}
+		equalNode(t, testCase.Expected, actual)
+	}
+}
+
+func equalNode(t *testing.T, expected ast.Node, actual ast.Node) {
+	e := ast.ToString(expected)
+	a := ast.ToString(actual)
+	if e != a {
+		pp.Print(actual)
+		diff := cmp.Diff(a, e)
+		t.Errorf(diff)
 	}
 }
 
@@ -1558,21 +771,12 @@ func createExpectedClass(statements []ast.Node) *ast.ClassDeclaration {
 		Modifiers:   []ast.Node{},
 		Annotations: []ast.Node{},
 		Name:        "Foo",
-		Position: &ast.Position{
-			Column: 0,
-			Line:   1,
-		},
 		Declarations: []ast.Node{
 			&ast.MethodDeclaration{
 				Name: "action",
 				Modifiers: []ast.Node{
 					&ast.Modifier{
 						Name: "public",
-						Position: &ast.Position{
-							FileName: "",
-							Column:   0,
-							Line:     2,
-						},
 					},
 				},
 				ReturnType: ast.VoidType,
@@ -1580,18 +784,8 @@ func createExpectedClass(statements []ast.Node) *ast.ClassDeclaration {
 				Throws:     []ast.Node{},
 				Statements: &ast.Block{
 					Statements: statements,
-					Position: &ast.Position{
-						FileName: "",
-						Column:   20,
-						Line:     2,
-					},
 				},
 				NativeFunction: nil,
-				Position: &ast.Position{
-					FileName: "",
-					Column:   7,
-					Line:     2,
-				},
 			},
 		},
 	}

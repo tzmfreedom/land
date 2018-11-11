@@ -357,8 +357,6 @@ func (v *AstBuilder) VisitVariableDeclarator(ctx *parser.VariableDeclaratorConte
 	decl.Name = ctx.VariableDeclaratorId().Accept(v).(string)
 	if init := ctx.VariableInitializer(); init != nil {
 		decl.Expression = init.Accept(v).(ast.Node)
-	} else {
-		decl.Expression = &ast.NullLiteral{Position: v.newPosition(ctx)}
 	}
 	return decl
 }

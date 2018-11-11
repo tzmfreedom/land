@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
@@ -24,6 +25,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	tos(t)
 }
 
 func parseFile(f string) ast.Node {
@@ -66,4 +68,10 @@ func run(n ast.Node) error {
 	interpreter := &ast.Interpreter{}
 	_, err := n.Accept(interpreter)
 	return err
+}
+
+func tos(n ast.Node) {
+	visitor := &ast.TosVisitor{}
+	r, _ := n.Accept(visitor)
+	fmt.Println(r)
 }

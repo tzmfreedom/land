@@ -14,7 +14,7 @@ build: format
 
 .PHONY: format
 format:
-	# goimports -w .
+	goimports -w ast/ visitor/ ./land.go ./ast_builder.go
 	gofmt -w .
 
 .PHONY: generate

@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
-	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/parser"
 	"github.com/tzmfreedom/goland/visitor"
@@ -13,7 +12,18 @@ import (
 func main() {
 	f := os.Args[1]
 	t := parseFile(f)
-	pp.Print(t)
+	root, err := convert(t)
+	if err != nil {
+		panic(err)
+	}
+	err = check(root)
+	if err != nil {
+		panic(err)
+	}
+	err = run(t)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func parseFile(f string) ast.Node {
@@ -39,8 +49,21 @@ func parse(input antlr.CharStream, f string) ast.Node {
 	t := tree.Accept(&AstBuilder{
 		CurrentFile: f,
 	})
-	n := t.(ast.Node)
+	return t.(ast.Node)
+}
+
+func convert(n ast.Node) (ast.Node, error) {
+	return n, nil
+}
+
+func check(n ast.Node) error {
 	checker := &visitor.SoqlChecker{}
 	n.Accept(checker)
-	return n
+	return nil
+}
+
+func run(n ast.Node) error {
+	interpreter := &ast.Interpreter{}
+	_, err := n.Accept(interpreter)
+	return err
 }

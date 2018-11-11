@@ -521,10 +521,9 @@ func (v *AstBuilder) VisitLiteral(ctx *parser.LiteralContext) interface{} {
 		return &ast.DoubleLiteral{Value: val, Position: v.newPosition(ctx)}
 	} else if lit := ctx.StringLiteral(); lit != nil {
 		str := lit.GetText()
-		return &ast.StringLiteral{Value: str[0 : len(str)-2], Position: v.newPosition(ctx)}
+		return &ast.StringLiteral{Value: str[1 : len(str)-1], Position: v.newPosition(ctx)}
 	} else if lit := ctx.BooleanLiteral(); lit != nil {
-		// TODO: implement caseinsensitive value
-		return &ast.BooleanLiteral{Value: lit.GetText() == "true", Position: v.newPosition(ctx)}
+		return &ast.BooleanLiteral{Value: strings.ToLower(lit.GetText()) == "true", Position: v.newPosition(ctx)}
 	} else if lit := ctx.NullLiteral(); lit != nil {
 		return &ast.NullLiteral{Position: v.newPosition(ctx)}
 	}

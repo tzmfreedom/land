@@ -1128,27 +1128,45 @@ func (v *AstBuilder) VisitTypeIdentifier(ctx *parser.TypeIdentifierContext) inte
  * SOQL
  */
 func (v *AstBuilder) VisitSoqlLiteral(ctx *parser.SoqlLiteralContext) interface{} {
-	return &ast.Soql{Position: v.newPosition(ctx)}
+	return ctx.Query().Accept(v)
 }
 
 func (v *AstBuilder) VisitQuery(ctx *parser.QueryContext) interface{} {
+	n := &ast.Soql{Position: v.newPosition(ctx)}
+	n.SelectFields = ctx.SelectClause().Accept(v).([]ast.Node)
+	setParentNodes(n.SelectFields, n)
+	n.FromObject = ctx.FromClause().Accept(v).(string)
+	n.Where = ctx.WhereClause().Accept(v).([]ast.Node)
+	n.Order = ctx.OrderClause().Accept(v).(ast.Node)
+	n.Offset = ctx.OffsetClause().Accept(v).(ast.Node)
 	return v.VisitChildren(ctx)
 }
 
 func (v *AstBuilder) VisitSelectClause(ctx *parser.SelectClauseContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.FieldList().Accept(v)
 }
 
 func (v *AstBuilder) VisitFieldList(ctx *parser.FieldListContext) interface{} {
-	return v.VisitChildren(ctx)
+	selectFields := ctx.AllSelectField()
+	fields := make([]ast.Node, len(selectFields))
+	for i, f := range selectFields {
+		fields[i] = f.Accept(v).(ast.Node)
+	}
+	return fields
 }
 
 func (v *AstBuilder) VisitSelectField(ctx *parser.SelectFieldContext) interface{} {
-	return v.VisitChildren(ctx)
+	if t := ctx.SoqlField(); t != nil {
+		return t.Accept(v)
+	}
+	if t := ctx.Subquery(); t != nil {
+		return t.Accept(v)
+	}
+	return nil
 }
 
 func (v *AstBuilder) VisitFromClause(ctx *parser.FromClauseContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.ApexIdentifier().GetText()
 }
 
 func (v *AstBuilder) VisitFilterScope(ctx *parser.FilterScopeContext) interface{} {
@@ -1156,7 +1174,13 @@ func (v *AstBuilder) VisitFilterScope(ctx *parser.FilterScopeContext) interface{
 }
 
 func (v *AstBuilder) VisitSoqlFieldReference(ctx *parser.SoqlFieldReferenceContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := &ast.SelectField{Position: v.newPosition(ctx)}
+	identifiers := ctx.AllApexIdentifier()
+	n.Value = make([]string, len(identifiers))
+	for i, ident := range identifiers {
+		n.Value[i] = ident.GetText()
+	}
+	return n
 }
 
 func (v *AstBuilder) VisitSoqlFunctionCall(ctx *parser.SoqlFunctionCallContext) interface{} {
@@ -1164,35 +1188,60 @@ func (v *AstBuilder) VisitSoqlFunctionCall(ctx *parser.SoqlFunctionCallContext) 
 }
 
 func (v *AstBuilder) VisitSubquery(ctx *parser.SubqueryContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.Query().Accept(v)
 }
 
 func (v *AstBuilder) VisitWhereClause(ctx *parser.WhereClauseContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.WhereFields().Accept(v)
 }
 
 func (v *AstBuilder) VisitWhereFields(ctx *parser.WhereFieldsContext) interface{} {
-	return v.VisitChildren(ctx)
+	if f := ctx.WhereField(); f != nil {
+		return f.Accept(v)
+	}
+	n := &ast.WhereBinaryOperator{Position: v.newPosition(ctx)}
+	n.Left = ctx.WhereFields(0).Accept(v).(ast.Node)
+	n.Right = ctx.WhereFields(1).Accept(v).(ast.Node)
+	n.Op = ctx.GetAnd_or().GetText()
+	return n
 }
 
 func (v *AstBuilder) VisitWhereField(ctx *parser.WhereFieldContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := &ast.WhereCondition{Position: v.newPosition(ctx)}
+	n.Field = ctx.SoqlField().Accept(v).(ast.Node)
+	n.Not = ctx.SOQL_NOT().GetText() != ""
+	n.Op = ctx.GetOp().GetText()
+	n.Expression = ctx.SoqlValue().Accept(v).(ast.Node)
+	return n
 }
 
 func (v *AstBuilder) VisitLimitClause(ctx *parser.LimitClauseContext) interface{} {
-	return v.VisitChildren(ctx)
+	if l := ctx.IntegerLiteral(); l != nil {
+		return l.Accept(v)
+	}
+	return ctx.BindVariable().Accept(v)
 }
 
 func (v *AstBuilder) VisitOrderClause(ctx *parser.OrderClauseContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := &ast.Order{Position: v.newPosition(ctx)}
+	n.Field = ctx.SoqlField().Accept(v).(ast.Node)
+	n.Asc = ctx.GetAsc_desc().GetText() == "asc"
+	n.Nulls = ctx.GetNulls().GetText()
+	return n
 }
 
 func (v *AstBuilder) VisitBindVariable(ctx *parser.BindVariableContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.Expression().Accept(v)
 }
 
 func (v *AstBuilder) VisitSoqlValue(ctx *parser.SoqlValueContext) interface{} {
-	return v.VisitChildren(ctx)
+	if l := ctx.Literal(); l != nil {
+		return l.Accept(v)
+	}
+	if b := ctx.BindVariable(); b != nil {
+		return b.Accept(v)
+	}
+	return nil
 }
 
 func (v *AstBuilder) VisitWithClause(ctx *parser.WithClauseContext) interface{} {
@@ -1216,7 +1265,10 @@ func (v *AstBuilder) VisitHavingConditionExpression(ctx *parser.HavingConditionE
 }
 
 func (v *AstBuilder) VisitOffsetClause(ctx *parser.OffsetClauseContext) interface{} {
-	return v.VisitChildren(ctx)
+	if l := ctx.IntegerLiteral(); l != nil {
+		return l.Accept(v)
+	}
+	return ctx.BindVariable().Accept(v)
 }
 
 func (v *AstBuilder) VisitViewClause(ctx *parser.ViewClauseContext) interface{} {

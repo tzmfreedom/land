@@ -214,13 +214,45 @@ type Throw struct {
 }
 
 type Soql struct {
-	SelectFields []string
+	SelectFields []Node
 	FromObject   string
-	Where        []string
-	Order        string
-	Limit        int
+	Where        []Node
+	Order        Node
+	Limit        Node
+	Offset       Node
 	Position     *Position
 	Parent       Node
+}
+
+type SelectField struct {
+	Value    []string
+	Position *Position
+	Parent   Node
+}
+
+type WhereBinaryOperator struct {
+	Left     Node
+	Right    Node
+	Op       string
+	Position *Position
+	Parent   Node
+}
+
+type WhereCondition struct {
+	Field      Node
+	Op         string
+	Expression Node
+	Not        bool
+	Position   *Position
+	Parent     Node
+}
+
+type Order struct {
+	Field    Node
+	Asc      bool
+	Nulls    string
+	Position *Position
+	Parent   Node
 }
 
 type Sosl struct {

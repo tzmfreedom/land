@@ -637,8 +637,8 @@ whereFields
 
 whereField
     :
-       soqlField
        SOQL_NOT?
+       soqlField
        op=(
          '='
          | '<'

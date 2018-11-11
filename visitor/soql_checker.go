@@ -200,10 +200,7 @@ func (v *SoqlChecker) VisitType(n *ast.Type) (interface{}, error) {
 }
 
 func (v *SoqlChecker) VisitBlock(n *ast.Block) (interface{}, error) {
-	for _, stmt := range n.Statements {
-		stmt.Accept(v)
-	}
-	return nil, nil
+	return ast.VisitBlock(v, n)
 }
 
 func (v *SoqlChecker) VisitGetterSetter(n *ast.GetterSetter) (interface{}, error) {

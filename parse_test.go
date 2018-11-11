@@ -1,10 +1,11 @@
 package main
 
 import (
+	"testing"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
-	"testing"
 )
 
 func TestParse(t *testing.T) {

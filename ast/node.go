@@ -1,11 +1,5 @@
 package ast
 
-import (
-	"fmt"
-	"reflect"
-	"strings"
-)
-
 type Position struct {
 	FileName string
 	Column   int
@@ -1739,40 +1733,4 @@ func (n *Name) SetParent(parent Node) {
 
 func (n *ConstructorDeclaration) SetParent(parent Node) {
 	n.Parent = parent
-}
-
-func Dump(n Node, ident int) string {
-	if n == nil || reflect.ValueOf(n).IsNil() {
-		return "nil"
-	}
-	children := n.GetChildren()
-	if len(children) != 0 {
-		properties := make([]string, len(children))
-		for i, child := range children {
-			if nodes, ok := child.([]Node); ok {
-				properties[i] = DumpArray(nodes, ident+2)
-			} else if node, ok := child.(Node); ok {
-				properties[i] = Dump(node, ident+2)
-			} else {
-				properties[i] = strings.Repeat(" ", ident) +
-					fmt.Sprintf("%v", child)
-			}
-		}
-		return strings.Repeat(" ", ident) +
-			"(" +
-			n.GetType() + "\n" +
-			strings.Repeat(" ", ident+2) +
-			strings.Join(properties, "\n") +
-			")"
-	}
-	return strings.Repeat(" ", ident) + "(" + n.GetType() + ")"
-}
-
-func DumpArray(nodes []Node, ident int) string {
-	properties := make([]string, len(nodes))
-	for i, n := range nodes {
-		properties[i] = Dump(n, 0)
-	}
-	return strings.Repeat(" ", ident) +
-		"[" + strings.Join(properties, ",") + "]"
 }

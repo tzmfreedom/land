@@ -13,9 +13,14 @@ build: format
 	go build
 
 .PHONY: format
-format:
-	goimports -w ast/ visitor/ ./land.go ./ast_builder.go
+format: import
 	gofmt -w .
+
+.PHONY: import
+import:
+ifneq ($(shell command -v goimports 2> /dev/null),)
+	goimports -w ast/ visitor/ ./land.go ./ast_builder.go
+endif
 
 .PHONY: generate
 generate:

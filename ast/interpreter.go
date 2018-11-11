@@ -18,8 +18,8 @@ func (v *Interpreter) VisitAnnotation(n *Annotation) (interface{}, error) {
 	return VisitAnnotation(v, n)
 }
 
-func (v *Interpreter) VisitInterface(n *Interface) (interface{}, error) {
-	return VisitInterface(v, n)
+func (v *Interpreter) VisitInterfaceDeclaration(n *InterfaceDeclaration) (interface{}, error) {
+	return VisitInterfaceDeclaration(v, n)
 }
 
 func (v *Interpreter) VisitIntegerLiteral(n *IntegerLiteral) (interface{}, error) {
@@ -56,10 +56,6 @@ func (v *Interpreter) VisitDoubleLiteral(n *DoubleLiteral) (interface{}, error) 
 
 func (v *Interpreter) VisitFieldDeclaration(n *FieldDeclaration) (interface{}, error) {
 	return VisitFieldDeclaration(v, n)
-}
-
-func (v *Interpreter) VisitFieldVariable(n *FieldVariable) (interface{}, error) {
-	return VisitFieldVariable(v, n)
 }
 
 func (v *Interpreter) VisitTry(n *Try) (interface{}, error) {
@@ -110,10 +106,6 @@ func (v *Interpreter) VisitFor(n *For) (interface{}, error) {
 		}
 	}
 	return VisitFor(v, n)
-}
-
-func (v *Interpreter) VisitForEnum(n *ForEnum) (interface{}, error) {
-	return VisitForEnum(v, n)
 }
 
 func (v *Interpreter) VisitForControl(n *ForControl) (interface{}, error) {

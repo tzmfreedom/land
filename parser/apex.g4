@@ -120,7 +120,7 @@ enumBodyDeclarations
     ;
 
 interfaceDeclaration
-    :   INTERFACE apexIdentifier (EXTENDS typeList)? interfaceBody
+    :   INTERFACE apexIdentifier interfaceBody
     ;
 
 typeList

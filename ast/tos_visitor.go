@@ -67,8 +67,28 @@ func (v *TosVisitor) VisitAnnotation(n *Annotation) (interface{}, error) {
 	return n.Name, nil
 }
 
-func (v *TosVisitor) VisitInterface(n *Interface) (interface{}, error) {
-	return VisitInterface(v, n)
+func (v *TosVisitor) VisitInterfaceDeclaration(n *InterfaceDeclaration) (interface{}, error) {
+	modifiers := make([]string, len(n.Modifiers))
+	for i, m := range n.Modifiers {
+		r, _ := m.Accept(v)
+		modifiers[i] = r.(string)
+	}
+	methods := make([]string, len(n.Methods))
+	v.AddIndent(func() {
+		for i, m := range n.Methods {
+			r, _ := m.Accept(v)
+			methods[i], _ = r.(string)
+		}
+	})
+	return fmt.Sprintf(
+		`%s interface %s {
+%s
+%s`,
+		strings.Join(modifiers, " "),
+		n.Name,
+		strings.Join(methods, "\n"),
+		v.withIndent("}"),
+	), nil
 }
 
 func (v *TosVisitor) VisitIntegerLiteral(n *IntegerLiteral) (interface{}, error) {
@@ -85,7 +105,13 @@ func (v *TosVisitor) VisitParameter(n *Parameter) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitArrayAccess(n *ArrayAccess) (interface{}, error) {
-	return VisitArrayAccess(v, n)
+	r, _ := n.Receiver.Accept(v)
+	k, _ := n.Key.Accept(v)
+	return fmt.Sprint(
+		"%s[%s]",
+		r.(string),
+		k.(string),
+	), nil
 }
 
 func (v *TosVisitor) VisitBooleanLiteral(n *BooleanLiteral) (interface{}, error) {
@@ -133,10 +159,6 @@ func (v *TosVisitor) VisitFieldDeclaration(n *FieldDeclaration) (interface{}, er
 		strings.Join(declarators, ", "),
 	), nil
 
-}
-
-func (v *TosVisitor) VisitFieldVariable(n *FieldVariable) (interface{}, error) {
-	return VisitFieldVariable(v, n)
 }
 
 func (v *TosVisitor) VisitTry(n *Try) (interface{}, error) {
@@ -210,10 +232,6 @@ func (v *TosVisitor) VisitFor(n *For) (interface{}, error) {
 		stmt,
 		v.withIndent("}"),
 	), nil
-}
-
-func (v *TosVisitor) VisitForEnum(n *ForEnum) (interface{}, error) {
-	return VisitForEnum(v, n)
 }
 
 func (v *TosVisitor) VisitForControl(n *ForControl) (interface{}, error) {
@@ -511,11 +529,13 @@ func (v *TosVisitor) VisitWhile(n *While) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitNothingStatement(n *NothingStatement) (interface{}, error) {
-	return VisitNothingStatement(v, n)
+	return ";", nil
 }
 
 func (v *TosVisitor) VisitCastExpression(n *CastExpression) (interface{}, error) {
-	return VisitCastExpression(v, n)
+	t, _ := n.CastType.Accept(v)
+	exp, _ := n.Expression.Accept(v)
+	return fmt.Sprintf("(%s)%s", t.(string), exp.(string)), nil
 }
 
 func (v *TosVisitor) VisitFieldAccess(n *FieldAccess) (interface{}, error) {

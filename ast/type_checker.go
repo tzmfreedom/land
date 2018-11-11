@@ -16,8 +16,8 @@ func (v *TypeChecker) VisitAnnotation(n *Annotation) (interface{}, error) {
 	return VisitAnnotation(v, n)
 }
 
-func (v *TypeChecker) VisitInterface(n *Interface) (interface{}, error) {
-	return VisitInterface(v, n)
+func (v *TypeChecker) VisitInterfaceDeclaration(n *InterfaceDeclaration) (interface{}, error) {
+	return VisitInterfaceDeclaration(v, n)
 }
 
 func (v *TypeChecker) VisitIntegerLiteral(n *IntegerLiteral) (interface{}, error) {
@@ -56,10 +56,6 @@ func (v *TypeChecker) VisitFieldDeclaration(n *FieldDeclaration) (interface{}, e
 	return VisitFieldDeclaration(v, n)
 }
 
-func (v *TypeChecker) VisitFieldVariable(n *FieldVariable) (interface{}, error) {
-	return VisitFieldVariable(v, n)
-}
-
 func (v *TypeChecker) VisitTry(n *Try) (interface{}, error) {
 	return VisitTry(v, n)
 }
@@ -74,10 +70,6 @@ func (v *TypeChecker) VisitFinally(n *Finally) (interface{}, error) {
 
 func (v *TypeChecker) VisitFor(n *For) (interface{}, error) {
 	return VisitFor(v, n)
-}
-
-func (v *TypeChecker) VisitForEnum(n *ForEnum) (interface{}, error) {
-	return VisitForEnum(v, n)
 }
 
 func (v *TypeChecker) VisitForControl(n *ForControl) (interface{}, error) {

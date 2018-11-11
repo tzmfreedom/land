@@ -11,12 +11,10 @@ Continue
 Dml
 DoubleLiteral
 FieldDeclaration
-FieldVariable
 Try
 Catch
 Finally
 For
-ForEnum
 ForControl
 EnhancedForControl
 If
@@ -24,7 +22,6 @@ MethodDeclaration
 MethodInvocation
 New
 NullLiteral
-Object
 UnaryOperator
 BinaryOperator
 Return

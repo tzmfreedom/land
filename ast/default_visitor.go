@@ -29,7 +29,7 @@ func VisitAnnotation(v Visitor, n *Annotation) (interface{}, error) {
 	return visitChildren(v, n)
 }
 
-func VisitInterface(v Visitor, n *Interface) (interface{}, error) {
+func VisitInterfaceDeclaration(v Visitor, n *InterfaceDeclaration) (interface{}, error) {
 	return visitChildren(v, n)
 }
 
@@ -69,10 +69,6 @@ func VisitFieldDeclaration(v Visitor, n *FieldDeclaration) (interface{}, error) 
 	return visitChildren(v, n)
 }
 
-func VisitFieldVariable(v Visitor, n *FieldVariable) (interface{}, error) {
-	return visitChildren(v, n)
-}
-
 func VisitTry(v Visitor, n *Try) (interface{}, error) {
 	return visitChildren(v, n)
 }
@@ -86,10 +82,6 @@ func VisitFinally(v Visitor, n *Finally) (interface{}, error) {
 }
 
 func VisitFor(v Visitor, n *For) (interface{}, error) {
-	return visitChildren(v, n)
-}
-
-func VisitForEnum(v Visitor, n *ForEnum) (interface{}, error) {
 	return visitChildren(v, n)
 }
 

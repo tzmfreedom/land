@@ -18,8 +18,8 @@ func (v *SoqlChecker) VisitAnnotation(n *ast.Annotation) (interface{}, error) {
 	return ast.VisitAnnotation(v, n)
 }
 
-func (v *SoqlChecker) VisitInterface(n *ast.Interface) (interface{}, error) {
-	return ast.VisitInterface(v, n)
+func (v *SoqlChecker) VisitInterfaceDeclaration(n *ast.InterfaceDeclaration) (interface{}, error) {
+	return ast.VisitInterfaceDeclaration(v, n)
 }
 
 func (v *SoqlChecker) VisitIntegerLiteral(n *ast.IntegerLiteral) (interface{}, error) {
@@ -58,10 +58,6 @@ func (v *SoqlChecker) VisitFieldDeclaration(n *ast.FieldDeclaration) (interface{
 	return ast.VisitFieldDeclaration(v, n)
 }
 
-func (v *SoqlChecker) VisitFieldVariable(n *ast.FieldVariable) (interface{}, error) {
-	return ast.VisitFieldVariable(v, n)
-}
-
 func (v *SoqlChecker) VisitTry(n *ast.Try) (interface{}, error) {
 	return ast.VisitTry(v, n)
 }
@@ -76,10 +72,6 @@ func (v *SoqlChecker) VisitFinally(n *ast.Finally) (interface{}, error) {
 
 func (v *SoqlChecker) VisitFor(n *ast.For) (interface{}, error) {
 	return ast.VisitFor(v, n)
-}
-
-func (v *SoqlChecker) VisitForEnum(n *ast.ForEnum) (interface{}, error) {
-	return ast.VisitForEnum(v, n)
 }
 
 func (v *SoqlChecker) VisitForControl(n *ast.ForControl) (interface{}, error) {

@@ -31,11 +31,10 @@ type Annotation struct {
 	Parent     Node
 }
 
-type Interface struct {
+type InterfaceDeclaration struct {
 	Annotations []Node
 	Modifiers   []Node
-	Name        Name
-	SuperClass  []Node
+	Name        string
 	Methods     []Node
 	Position    *Position
 	Parent      Node
@@ -100,16 +99,6 @@ type FieldDeclaration struct {
 	Parent      Node
 }
 
-type FieldVariable struct {
-	Type       Node
-	Modifiers  []Node
-	Expression Node
-	Position   *Position
-	Parent     Node
-	Getter     Node
-	Setter     Node
-}
-
 type Try struct {
 	Block        Node
 	CatchClause  []Node
@@ -138,15 +127,6 @@ type For struct {
 	Statements Node
 	Position   *Position
 	Parent     Node
-}
-
-type ForEnum struct {
-	Type           Node
-	Identifier     Node
-	ListExpression Node
-	Statements     Node
-	Position       *Position
-	Parent         Node
 }
 
 type ForControl struct {
@@ -426,15 +406,11 @@ type ConstructorDeclaration struct {
 	Parent         Node
 }
 
-type InterfaceDeclaration struct {
-	Modifiers []Node
-}
-
 type Visitor interface {
 	VisitClassDeclaration(*ClassDeclaration) (interface{}, error)
 	VisitModifier(*Modifier) (interface{}, error)
 	VisitAnnotation(*Annotation) (interface{}, error)
-	VisitInterface(*Interface) (interface{}, error)
+	VisitInterfaceDeclaration(*InterfaceDeclaration) (interface{}, error)
 	VisitIntegerLiteral(*IntegerLiteral) (interface{}, error)
 	VisitParameter(*Parameter) (interface{}, error)
 	VisitArrayAccess(*ArrayAccess) (interface{}, error)
@@ -444,12 +420,10 @@ type Visitor interface {
 	VisitDml(*Dml) (interface{}, error)
 	VisitDoubleLiteral(*DoubleLiteral) (interface{}, error)
 	VisitFieldDeclaration(*FieldDeclaration) (interface{}, error)
-	VisitFieldVariable(*FieldVariable) (interface{}, error)
 	VisitTry(*Try) (interface{}, error)
 	VisitCatch(*Catch) (interface{}, error)
 	VisitFinally(*Finally) (interface{}, error)
 	VisitFor(*For) (interface{}, error)
-	VisitForEnum(*ForEnum) (interface{}, error)
 	VisitForControl(*ForControl) (interface{}, error)
 	VisitEnhancedForControl(*EnhancedForControl) (interface{}, error)
 	VisitIf(*If) (interface{}, error)
@@ -534,17 +508,16 @@ func (n *Annotation) GetChildren() []interface{} {
 	}
 }
 
-func (n *Interface) Accept(v Visitor) (interface{}, error) {
-	return v.VisitInterface(n)
+func (n *InterfaceDeclaration) Accept(v Visitor) (interface{}, error) {
+	return v.VisitInterfaceDeclaration(n)
 }
 
-func (n *Interface) GetChildren() []interface{} {
+func (n *InterfaceDeclaration) GetChildren() []interface{} {
 	return []interface{}{
 		n.Name,
 		n.Annotations,
 		n.Methods,
 		n.Modifiers,
-		n.SuperClass,
 	}
 }
 
@@ -636,21 +609,6 @@ func (n *FieldDeclaration) GetChildren() []interface{} {
 		n.Declarators,
 	}
 }
-
-func (n *FieldVariable) Accept(v Visitor) (interface{}, error) {
-	return v.VisitFieldVariable(n)
-}
-
-func (n *FieldVariable) GetChildren() []interface{} {
-	return []interface{}{
-		n.Modifiers,
-		n.Type,
-		n.Expression,
-		n.Getter,
-		n.Setter,
-	}
-}
-
 func (n *Try) Accept(v Visitor) (interface{}, error) {
 	return v.VisitTry(n)
 }
@@ -694,19 +652,6 @@ func (n *For) GetChildren() []interface{} {
 	return []interface{}{
 		n.Statements,
 		n.Control,
-	}
-}
-
-func (n *ForEnum) Accept(v Visitor) (interface{}, error) {
-	return v.VisitForEnum(n)
-}
-
-func (n *ForEnum) GetChildren() []interface{} {
-	return []interface{}{
-		n.Type,
-		n.Identifier,
-		n.ListExpression,
-		n.Statements,
 	}
 }
 
@@ -1130,8 +1075,8 @@ func (n *Modifier) GetType() string {
 func (n *Annotation) GetType() string {
 	return "Annotation"
 }
-func (n *Interface) GetType() string {
-	return "Interface"
+func (n *InterfaceDeclaration) GetType() string {
+	return "InterfaceDeclaration"
 }
 func (n *IntegerLiteral) GetType() string {
 	return "Integer"
@@ -1160,9 +1105,6 @@ func (n *DoubleLiteral) GetType() string {
 func (n *FieldDeclaration) GetType() string {
 	return "FieldDeclaration"
 }
-func (n *FieldVariable) GetType() string {
-	return "FieldVariable"
-}
 func (n *Try) GetType() string {
 	return "Try"
 }
@@ -1174,9 +1116,6 @@ func (n *Finally) GetType() string {
 }
 func (n *For) GetType() string {
 	return "For"
-}
-func (n *ForEnum) GetType() string {
-	return "ForEnum"
 }
 func (n *ForControl) GetType() string {
 	return "ForControl"
@@ -1299,7 +1238,7 @@ func (n *Modifier) GetParent() Node {
 func (n *Annotation) GetParent() Node {
 	return n.Parent
 }
-func (n *Interface) GetParent() Node {
+func (n *InterfaceDeclaration) GetParent() Node {
 	return n.Parent
 }
 func (n *IntegerLiteral) GetParent() Node {
@@ -1329,9 +1268,6 @@ func (n *DoubleLiteral) GetParent() Node {
 func (n *FieldDeclaration) GetParent() Node {
 	return n.Parent
 }
-func (n *FieldVariable) GetParent() Node {
-	return n.Parent
-}
 func (n *Try) GetParent() Node {
 	return n.Parent
 }
@@ -1342,9 +1278,6 @@ func (n *Finally) GetParent() Node {
 	return n.Parent
 }
 func (n *For) GetParent() Node {
-	return n.Parent
-}
-func (n *ForEnum) GetParent() Node {
 	return n.Parent
 }
 func (n *ForControl) GetParent() Node {
@@ -1471,7 +1404,7 @@ func (n *Annotation) SetParent(parent Node) {
 	n.Parent = parent
 }
 
-func (n *Interface) SetParent(parent Node) {
+func (n *InterfaceDeclaration) SetParent(parent Node) {
 	n.Parent = parent
 }
 
@@ -1511,10 +1444,6 @@ func (n *FieldDeclaration) SetParent(parent Node) {
 	n.Parent = parent
 }
 
-func (n *FieldVariable) SetParent(parent Node) {
-	n.Parent = parent
-}
-
 func (n *Try) SetParent(parent Node) {
 	n.Parent = parent
 }
@@ -1528,10 +1457,6 @@ func (n *Finally) SetParent(parent Node) {
 }
 
 func (n *For) SetParent(parent Node) {
-	n.Parent = parent
-}
-
-func (n *ForEnum) SetParent(parent Node) {
 	n.Parent = parent
 }
 

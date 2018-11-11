@@ -17,8 +17,8 @@ func (v *ClassRegisterVisitor) VisitAnnotation(n *Annotation) (interface{}, erro
 	return VisitAnnotation(v, n)
 }
 
-func (v *ClassRegisterVisitor) VisitInterface(n *Interface) (interface{}, error) {
-	return VisitInterface(v, n)
+func (v *ClassRegisterVisitor) VisitInterfaceDeclaration(n *InterfaceDeclaration) (interface{}, error) {
+	return VisitInterfaceDeclaration(v, n)
 }
 
 func (v *ClassRegisterVisitor) VisitIntegerLiteral(n *IntegerLiteral) (interface{}, error) {
@@ -57,10 +57,6 @@ func (v *ClassRegisterVisitor) VisitFieldDeclaration(n *FieldDeclaration) (inter
 	return VisitFieldDeclaration(v, n)
 }
 
-func (v *ClassRegisterVisitor) VisitFieldVariable(n *FieldVariable) (interface{}, error) {
-	return VisitFieldVariable(v, n)
-}
-
 func (v *ClassRegisterVisitor) VisitTry(n *Try) (interface{}, error) {
 	return VisitTry(v, n)
 }
@@ -75,10 +71,6 @@ func (v *ClassRegisterVisitor) VisitFinally(n *Finally) (interface{}, error) {
 
 func (v *ClassRegisterVisitor) VisitFor(n *For) (interface{}, error) {
 	return VisitFor(v, n)
-}
-
-func (v *ClassRegisterVisitor) VisitForEnum(n *ForEnum) (interface{}, error) {
-	return VisitForEnum(v, n)
 }
 
 func (v *ClassRegisterVisitor) VisitForControl(n *ForControl) (interface{}, error) {

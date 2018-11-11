@@ -135,7 +135,13 @@ func (v *AstBuilder) VisitEnumBodyDeclarations(ctx *parser.EnumBodyDeclarationsC
 }
 
 func (v *AstBuilder) VisitInterfaceDeclaration(ctx *parser.InterfaceDeclarationContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := &ast.InterfaceDeclaration{
+		Name:     ctx.ApexIdentifier().GetText(),
+		Position: v.newPosition(ctx),
+	}
+	n.Methods = ctx.InterfaceBody().Accept(v).([]ast.Node)
+	setParentNodes(n.Methods, n)
+	return n
 }
 
 func (v *AstBuilder) VisitTypeList(ctx *parser.TypeListContext) interface{} {
@@ -292,17 +298,32 @@ func (v *AstBuilder) VisitPropertyBodyDeclaration(ctx *parser.PropertyBodyDeclar
 }
 
 func (v *AstBuilder) VisitInterfaceBodyDeclaration(ctx *parser.InterfaceBodyDeclarationContext) interface{} {
-	d := ctx.InterfaceMemberDeclaration().Accept(v).(ast.Interface)
-	modifiers := ctx.AllModifier()
-	d.Modifiers = make([]ast.Node, len(modifiers)+1)
-	for i, m := range modifiers {
-		d.Modifiers[i] = m.Accept(v).(ast.Node)
+	memberDeclaration := ctx.InterfaceMemberDeclaration()
+	if memberDeclaration != nil {
+		declaration := memberDeclaration.Accept(v)
+
+		modifiers := ctx.AllModifier()
+		declarationModifiers := make([]ast.Node, len(modifiers)+1)
+		for i, m := range modifiers {
+			declarationModifiers[i] = m.Accept(v).(ast.Node)
+		}
+		declarationModifiers[len(modifiers)] = &ast.Modifier{
+			Name:     "public",
+			Position: v.newPosition(ctx),
+		}
+		switch decl := declaration.(type) {
+		case *ast.MethodDeclaration:
+			decl.Modifiers = declarationModifiers
+			return decl
+		case *ast.InterfaceDeclaration:
+			decl.Modifiers = declarationModifiers
+			return decl
+		case *ast.ClassDeclaration:
+			decl.Modifiers = declarationModifiers
+			return decl
+		}
 	}
-	d.Modifiers[len(modifiers)] = &ast.Modifier{
-		Name:     "public",
-		Position: v.newPosition(ctx),
-	}
-	return d
+	return nil
 }
 
 func (v *AstBuilder) VisitInterfaceMemberDeclaration(ctx *parser.InterfaceMemberDeclarationContext) interface{} {

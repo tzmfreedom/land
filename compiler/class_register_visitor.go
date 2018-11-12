@@ -13,7 +13,7 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 	t.ImplementClasses = n.ImplementClasses
 	t.InnerClasses = n.InnerClasses
 	t.SuperClass = n.SuperClass
-	t.Position = n.Position
+	t.Location = n.Location
 	t.Annotations = n.Annotations
 	t.Parent = n.Parent
 	t.InstanceFields = []ast.Node{}

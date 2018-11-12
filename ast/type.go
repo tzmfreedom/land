@@ -11,7 +11,7 @@ type ClassType struct {
 	InstanceMethods  []Node
 	StaticMethods    []Node
 	InnerClasses     []Node
-	Position         *Position
+	Location         *Location
 	Parent           Node
 }
 

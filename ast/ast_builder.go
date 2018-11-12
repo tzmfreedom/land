@@ -45,7 +45,7 @@ func (v *Builder) VisitTypeDeclaration(ctx *parser.TypeDeclarationContext) inter
 }
 
 func (v *Builder) VisitTriggerDeclaration(ctx *parser.TriggerDeclarationContext) interface{} {
-	n := &Trigger{Position: v.newPosition(ctx)}
+	n := &Trigger{Location: v.newLocation(ctx)}
 	n.Name = ctx.ApexIdentifier(0).GetText()
 	n.Object = ctx.ApexIdentifier(1).GetText()
 	n.TriggerTimings = ctx.TriggerTimings().Accept(v).([]Node)
@@ -66,7 +66,7 @@ func (v *Builder) VisitTriggerTiming(ctx *parser.TriggerTimingContext) interface
 	return &TriggerTiming{
 		Timing:   ctx.GetTiming().GetText(),
 		Dml:      ctx.GetDml().GetText(),
-		Position: v.newPosition(ctx),
+		Location: v.newLocation(ctx),
 	}
 }
 
@@ -77,7 +77,7 @@ func (v *Builder) VisitModifier(ctx *parser.ModifierContext) interface{} {
 	}
 	return &Modifier{
 		Name:     ctx.GetText(),
-		Position: v.newPosition(ctx),
+		Location: v.newLocation(ctx),
 	}
 }
 
@@ -88,7 +88,7 @@ func (v *Builder) VisitClassOrInterfaceModifier(ctx *parser.ClassOrInterfaceModi
 	}
 	return &Modifier{
 		Name:     ctx.GetText(),
-		Position: v.newPosition(ctx),
+		Location: v.newLocation(ctx),
 	}
 }
 
@@ -101,7 +101,7 @@ func (v *Builder) VisitClassDeclaration(ctx *parser.ClassDeclarationContext) int
 
 	n := &ClassDeclaration{
 		Name:     ctx.ApexIdentifier().GetText(),
-		Position: v.newPosition(ctx),
+		Location: v.newLocation(ctx),
 	}
 	if t := ctx.ApexType(); t != nil {
 		n.SuperClass = t.Accept(v).(Node)
@@ -136,7 +136,7 @@ func (v *Builder) VisitEnumBodyDeclarations(ctx *parser.EnumBodyDeclarationsCont
 func (v *Builder) VisitInterfaceDeclaration(ctx *parser.InterfaceDeclarationContext) interface{} {
 	n := &InterfaceDeclaration{
 		Name:     ctx.ApexIdentifier().GetText(),
-		Position: v.newPosition(ctx),
+		Location: v.newLocation(ctx),
 	}
 	n.Methods = ctx.InterfaceBody().Accept(v).([]Node)
 	setParentNodes(n.Methods, n)
@@ -227,7 +227,7 @@ func (v *Builder) VisitMemberDeclaration(ctx *parser.MemberDeclarationContext) i
 }
 
 func (v *Builder) VisitMethodDeclaration(ctx *parser.MethodDeclarationContext) interface{} {
-	n := &MethodDeclaration{Position: v.newPosition(ctx)}
+	n := &MethodDeclaration{Location: v.newLocation(ctx)}
 	n.Name = ctx.ApexIdentifier().GetText()
 	if ctx.ApexType() != nil {
 		n.ReturnType = ctx.ApexType().Accept(v).(Node)
@@ -263,7 +263,7 @@ func (v *Builder) VisitConstructorDeclaration(ctx *parser.ConstructorDeclaration
 		Parameters: parameters,
 		Throws:     throws,
 		Statements: body,
-		Position:   v.newPosition(ctx),
+		Location:   v.newLocation(ctx),
 	}
 }
 
@@ -308,7 +308,7 @@ func (v *Builder) VisitInterfaceBodyDeclaration(ctx *parser.InterfaceBodyDeclara
 		}
 		declarationModifiers[len(modifiers)] = &Modifier{
 			Name:     "public",
-			Position: v.newPosition(ctx),
+			Location: v.newLocation(ctx),
 		}
 		switch decl := declaration.(type) {
 		case *MethodDeclaration:
@@ -346,7 +346,7 @@ func (v *Builder) VisitConstantDeclarator(ctx *parser.ConstantDeclaratorContext)
 }
 
 func (v *Builder) VisitInterfaceMethodDeclaration(ctx *parser.InterfaceMethodDeclarationContext) interface{} {
-	decl := &MethodDeclaration{Position: v.newPosition(ctx)}
+	decl := &MethodDeclaration{Location: v.newLocation(ctx)}
 	decl.Name = ctx.ApexIdentifier().Accept(v).(string)
 
 	if t := ctx.ApexType(); t != nil {
@@ -373,7 +373,7 @@ func (v *Builder) VisitVariableDeclarators(ctx *parser.VariableDeclaratorsContex
 }
 
 func (v *Builder) VisitVariableDeclarator(ctx *parser.VariableDeclaratorContext) interface{} {
-	decl := &VariableDeclarator{Position: v.newPosition(ctx)}
+	decl := &VariableDeclarator{Location: v.newLocation(ctx)}
 	decl.Name = ctx.VariableDeclaratorId().Accept(v).(string)
 	if init := ctx.VariableInitializer(); init != nil {
 		decl.Expression = init.Accept(v).(Node)
@@ -425,7 +425,7 @@ func (v *Builder) VisitTypedArray(ctx *parser.TypedArrayContext) interface{} {
 }
 
 func (v *Builder) VisitClassOrInterfaceType(ctx *parser.ClassOrInterfaceTypeContext) interface{} {
-	t := &Type{Position: v.newPosition(ctx)}
+	t := &Type{Location: v.newLocation(ctx)}
 	arguments := ctx.AllTypeArguments()
 	t.Parameters = make([]Node, len(arguments))
 	for i, argument := range arguments {
@@ -446,7 +446,7 @@ func (v *Builder) VisitPrimitiveType(ctx *parser.PrimitiveTypeContext) interface
 	return &Type{
 		Name:       []string{ctx.GetText()},
 		Parameters: []Node{},
-		Position:   v.newPosition(ctx),
+		Location:   v.newLocation(ctx),
 	}
 }
 
@@ -489,7 +489,7 @@ func (v *Builder) VisitFormalParameterList(ctx *parser.FormalParameterListContex
 }
 
 func (v *Builder) VisitFormalParameter(ctx *parser.FormalParameterContext) interface{} {
-	p := &Parameter{Position: v.newPosition(ctx)}
+	p := &Parameter{Location: v.newLocation(ctx)}
 	modifiers := ctx.AllVariableModifier()
 	p.Modifiers = make([]Node, len(modifiers))
 	for i, m := range modifiers {
@@ -519,7 +519,7 @@ func (v *Builder) VisitQualifiedName(ctx *parser.QualifiedNameContext) interface
 		ident := identifier.Accept(v)
 		identifiers[i], _ = ident.(string)
 	}
-	n := &Type{Position: v.newPosition(ctx)}
+	n := &Type{Location: v.newLocation(ctx)}
 	n.Name = identifiers
 	return n
 }
@@ -530,20 +530,20 @@ func (v *Builder) VisitLiteral(ctx *parser.LiteralContext) interface{} {
 		if err != nil {
 			panic(err)
 		}
-		return &IntegerLiteral{Value: val, Position: v.newPosition(ctx)}
+		return &IntegerLiteral{Value: val, Location: v.newLocation(ctx)}
 	} else if lit := ctx.FloatingPointLiteral(); lit != nil {
 		val, err := strconv.ParseFloat(lit.GetText(), 64)
 		if err != nil {
 			panic(err)
 		}
-		return &DoubleLiteral{Value: val, Position: v.newPosition(ctx)}
+		return &DoubleLiteral{Value: val, Location: v.newLocation(ctx)}
 	} else if lit := ctx.StringLiteral(); lit != nil {
 		str := lit.GetText()
-		return &StringLiteral{Value: str[1 : len(str)-1], Position: v.newPosition(ctx)}
+		return &StringLiteral{Value: str[1 : len(str)-1], Location: v.newLocation(ctx)}
 	} else if lit := ctx.BooleanLiteral(); lit != nil {
-		return &BooleanLiteral{Value: strings.ToLower(lit.GetText()) == "true", Position: v.newPosition(ctx)}
+		return &BooleanLiteral{Value: strings.ToLower(lit.GetText()) == "true", Location: v.newLocation(ctx)}
 	} else if lit := ctx.NullLiteral(); lit != nil {
-		return &NullLiteral{Position: v.newPosition(ctx)}
+		return &NullLiteral{Location: v.newLocation(ctx)}
 	}
 	return nil
 }
@@ -553,7 +553,7 @@ func (v *Builder) VisitAnnotation(ctx *parser.AnnotationContext) interface{} {
 	annotation := &Annotation{}
 	// TODO: implement annotationName
 	annotation.Name = name.Name[0]
-	annotation.Position = v.newPosition(ctx)
+	annotation.Location = v.newLocation(ctx)
 	return annotation
 }
 
@@ -593,7 +593,7 @@ func (v *Builder) VisitElementValueArrayInitializer(ctx *parser.ElementValueArra
 }
 
 func (v *Builder) VisitBlock(ctx *parser.BlockContext) interface{} {
-	blk := &Block{Position: v.newPosition(ctx)}
+	blk := &Block{Location: v.newLocation(ctx)}
 	statements := ctx.AllBlockStatement()
 	blk.Statements = make([]Node, len(statements))
 	for i, statement := range statements {
@@ -620,7 +620,7 @@ func (v *Builder) VisitLocalVariableDeclarationStatement(ctx *parser.LocalVariab
 }
 
 func (v *Builder) VisitLocalVariableDeclaration(ctx *parser.LocalVariableDeclarationContext) interface{} {
-	decl := &VariableDeclaration{Position: v.newPosition(ctx)}
+	decl := &VariableDeclaration{Location: v.newLocation(ctx)}
 	modifiers := ctx.AllVariableModifier()
 	decl.Modifiers = make([]Node, len(modifiers))
 	for i, m := range modifiers {
@@ -633,7 +633,7 @@ func (v *Builder) VisitLocalVariableDeclaration(ctx *parser.LocalVariableDeclara
 
 func (v *Builder) VisitStatement(ctx *parser.StatementContext) interface{} {
 	if t := ctx.TRY(); t != nil {
-		try := &Try{Position: v.newPosition(ctx)}
+		try := &Try{Location: v.newLocation(ctx)}
 		try.Block = ctx.Block().Accept(v).(Node)
 		if clauses := ctx.AllCatchClause(); len(clauses) != 0 {
 			try.CatchClause = make([]Node, len(clauses))
@@ -648,7 +648,7 @@ func (v *Builder) VisitStatement(ctx *parser.StatementContext) interface{} {
 		}
 		return try
 	} else if t := ctx.IF(); t != nil {
-		n := &If{Position: v.newPosition(ctx)}
+		n := &If{Location: v.newLocation(ctx)}
 		n.Condition = ctx.ParExpression().Accept(v).(Node)
 		n.IfStatement = ctx.Statement(0).Accept(v).(Node)
 		if ctx.Statement(1) != nil {
@@ -656,7 +656,7 @@ func (v *Builder) VisitStatement(ctx *parser.StatementContext) interface{} {
 		}
 		return n
 	} else if s := ctx.SWITCH(); s != nil {
-		n := &Switch{Position: v.newPosition(ctx)}
+		n := &Switch{Location: v.newLocation(ctx)}
 		n.Expression = ctx.Expression().Accept(v).(Node)
 		n.WhenStatements = ctx.WhenStatements().Accept(v).([]Node)
 		if b := ctx.Block(); b != nil {
@@ -664,13 +664,13 @@ func (v *Builder) VisitStatement(ctx *parser.StatementContext) interface{} {
 		}
 		return n
 	} else if s := ctx.FOR(); s != nil {
-		n := &For{Position: v.newPosition(ctx)}
+		n := &For{Location: v.newLocation(ctx)}
 		n.Control = ctx.ForControl().Accept(v).(Node)
 		n.Statements = ctx.Statement(0).Accept(v).(Node)
 		n.Statements.SetParent(n)
 		return n
 	} else if s := ctx.WHILE(); s != nil {
-		n := &While{Position: v.newPosition(ctx)}
+		n := &While{Location: v.newLocation(ctx)}
 		n.Condition = ctx.ParExpression().Accept(v).(Node)
 		statements := ctx.AllStatement()
 		n.Statements = make([]Node, len(statements))
@@ -681,21 +681,21 @@ func (v *Builder) VisitStatement(ctx *parser.StatementContext) interface{} {
 		n.IsDo = ctx.DO() != nil
 		return n
 	} else if s := ctx.RETURN(); s != nil {
-		n := &Return{Position: v.newPosition(ctx)}
+		n := &Return{Location: v.newLocation(ctx)}
 		if e := ctx.Expression(); e != nil {
 			n.Expression = e.Accept(v).(Node)
 		}
 		return n
 	} else if s := ctx.THROW(); s != nil {
-		n := &Throw{Position: v.newPosition(ctx)}
+		n := &Throw{Location: v.newLocation(ctx)}
 		n.Expression = ctx.Expression().Accept(v).(Node)
 		return n
 	} else if s := ctx.BREAK(); s != nil {
-		return &Break{Position: v.newPosition(ctx)}
+		return &Break{Location: v.newLocation(ctx)}
 	} else if s := ctx.CONTINUE(); s != nil {
-		return &Continue{Position: v.newPosition(ctx)}
+		return &Continue{Location: v.newLocation(ctx)}
 	} else if s := ctx.BREAK(); s != nil {
-		return &Break{Position: v.newPosition(ctx)}
+		return &Break{Location: v.newLocation(ctx)}
 	} else if s := ctx.StatementExpression(); s != nil {
 		return s.Accept(v)
 	} else if s := ctx.ApexDbExpression(); s != nil {
@@ -703,13 +703,13 @@ func (v *Builder) VisitStatement(ctx *parser.StatementContext) interface{} {
 	} else if s := ctx.Block(); s != nil {
 		return s.Accept(v)
 	}
-	return &NothingStatement{Position: v.newPosition(ctx)}
+	return &NothingStatement{Location: v.newLocation(ctx)}
 }
 
 // goal
 
 func (v *Builder) VisitPropertyBlock(ctx *parser.PropertyBlockContext) interface{} {
-	n := &GetterSetter{Position: v.newPosition(ctx)}
+	n := &GetterSetter{Location: v.newLocation(ctx)}
 	if ctx.Getter() != nil {
 		n.Type = ctx.Getter().Accept(v).(string)
 	} else {
@@ -732,7 +732,7 @@ func (v *Builder) VisitSetter(ctx *parser.SetterContext) interface{} {
 }
 
 func (v *Builder) VisitCatchClause(ctx *parser.CatchClauseContext) interface{} {
-	c := &Catch{Position: v.newPosition(ctx)}
+	c := &Catch{Location: v.newLocation(ctx)}
 	c.Type = ctx.CatchType().Accept(v).(Node)
 	c.Identifier = ctx.ApexIdentifier().GetText()
 	modifiers := ctx.AllVariableModifier()
@@ -763,7 +763,7 @@ func (v *Builder) VisitWhenStatements(ctx *parser.WhenStatementsContext) interfa
 }
 
 func (v *Builder) VisitWhenStatement(ctx *parser.WhenStatementContext) interface{} {
-	n := &When{Position: v.newPosition(ctx)}
+	n := &When{Location: v.newLocation(ctx)}
 	n.Condition = ctx.WhenExpression().Accept(v).([]Node)
 	n.Statements = ctx.Block().Accept(v).(Node)
 	return n
@@ -777,7 +777,7 @@ func (v *Builder) VisitWhenExpression(ctx *parser.WhenExpressionContext) interfa
 		}
 		return expressions
 	}
-	n := &WhenType{Position: v.newPosition(ctx)}
+	n := &WhenType{Location: v.newLocation(ctx)}
 	n.Type = ctx.ApexType().Accept(v).(Node)
 	n.Identifier = ctx.ApexIdentifier().GetText()
 	return []Node{n}
@@ -787,7 +787,7 @@ func (v *Builder) VisitForControl(ctx *parser.ForControlContext) interface{} {
 	if c := ctx.EnhancedForControl(); c != nil {
 		return c.Accept(v)
 	}
-	c := &ForControl{Position: v.newPosition(ctx)}
+	c := &ForControl{Location: v.newLocation(ctx)}
 	if f := ctx.ForInit(); f != nil {
 		c.ForInit = f.Accept(v).(Node)
 	}
@@ -808,7 +808,7 @@ func (v *Builder) VisitForInit(ctx *parser.ForInitContext) interface{} {
 }
 
 func (v *Builder) VisitEnhancedForControl(ctx *parser.EnhancedForControlContext) interface{} {
-	n := &EnhancedForControl{Position: v.newPosition(ctx)}
+	n := &EnhancedForControl{Location: v.newLocation(ctx)}
 	n.Type = ctx.ApexType().Accept(v).(Node)
 	n.VariableDeclaratorId = ctx.VariableDeclaratorId().Accept(v).(string)
 	n.Expression = ctx.Expression().Accept(v).(Node)
@@ -846,7 +846,7 @@ func (v *Builder) VisitConstantExpression(ctx *parser.ConstantExpressionContext)
 }
 
 func (v *Builder) VisitApexDbExpressionShort(ctx *parser.ApexDbExpressionShortContext) interface{} {
-	n := &Dml{Position: v.newPosition(ctx)}
+	n := &Dml{Location: v.newLocation(ctx)}
 	n.Type = ctx.GetDml().GetText()
 	if ident := ctx.ApexIdentifier(); ident != nil {
 		n.UpsertKey = ident.Accept(v).(string)
@@ -860,7 +860,7 @@ func (v *Builder) VisitApexDbExpression(ctx *parser.ApexDbExpressionContext) int
 }
 
 func (v *Builder) VisitTernalyExpression(ctx *parser.TernalyExpressionContext) interface{} {
-	n := &TernalyExpression{Position: v.newPosition(ctx)}
+	n := &TernalyExpression{Location: v.newLocation(ctx)}
 	n.Condition = ctx.Expression(0).Accept(v).(Node)
 	n.TrueExpression = ctx.Expression(1).Accept(v).(Node)
 	n.FalseExpression = ctx.Expression(2).Accept(v).(Node)
@@ -868,7 +868,7 @@ func (v *Builder) VisitTernalyExpression(ctx *parser.TernalyExpressionContext) i
 }
 
 func (v *Builder) VisitPreUnaryExpression(ctx *parser.PreUnaryExpressionContext) interface{} {
-	n := &UnaryOperator{Position: v.newPosition(ctx)}
+	n := &UnaryOperator{Location: v.newLocation(ctx)}
 	n.Op = ctx.GetOp().GetText()
 	n.Expression = ctx.Expression().Accept(v).(Node)
 	n.IsPrefix = true
@@ -876,14 +876,14 @@ func (v *Builder) VisitPreUnaryExpression(ctx *parser.PreUnaryExpressionContext)
 }
 
 func (v *Builder) VisitArrayAccess(ctx *parser.ArrayAccessContext) interface{} {
-	n := &ArrayAccess{Position: v.newPosition(ctx)}
+	n := &ArrayAccess{Location: v.newLocation(ctx)}
 	n.Receiver = ctx.Expression(0).Accept(v).(Node)
 	n.Key = ctx.Expression(1).Accept(v).(Node)
 	return n
 }
 
 func (v *Builder) VisitPostUnaryExpression(ctx *parser.PostUnaryExpressionContext) interface{} {
-	n := &UnaryOperator{Position: v.newPosition(ctx)}
+	n := &UnaryOperator{Location: v.newLocation(ctx)}
 	n.Op = ctx.GetOp().GetText()
 	n.Expression = ctx.Expression().Accept(v).(Node)
 	n.IsPrefix = false
@@ -895,7 +895,7 @@ func (v *Builder) VisitPrimaryExpression(ctx *parser.PrimaryExpressionContext) i
 }
 
 func (v *Builder) VisitOpExpression(ctx *parser.OpExpressionContext) interface{} {
-	n := &BinaryOperator{Position: v.newPosition(ctx)}
+	n := &BinaryOperator{Location: v.newLocation(ctx)}
 	n.Op = ctx.GetOp().GetText()
 	n.Left = ctx.Expression(0).Accept(v).(Node)
 	n.Right = ctx.Expression(1).Accept(v).(Node)
@@ -907,14 +907,14 @@ func (v *Builder) VisitNewExpression(ctx *parser.NewObjectExpressionContext) int
 }
 
 func (v *Builder) VisitUnaryExpression(ctx *parser.UnaryExpressionContext) interface{} {
-	n := &UnaryOperator{Position: v.newPosition(ctx)}
+	n := &UnaryOperator{Location: v.newLocation(ctx)}
 	n.Op = ctx.GetOp().GetText()
 	n.Expression = ctx.Expression().Accept(v).(Node)
 	return n
 }
 
 func (v *Builder) VisitMethodInvocation(ctx *parser.MethodInvocationContext) interface{} {
-	n := &MethodInvocation{Position: v.newPosition(ctx)}
+	n := &MethodInvocation{Location: v.newLocation(ctx)}
 	n.NameOrExpression = ctx.Expression().Accept(v).(Node)
 	if list := ctx.ExpressionList(); list != nil {
 		n.Parameters = list.Accept(v).([]Node)
@@ -925,14 +925,14 @@ func (v *Builder) VisitMethodInvocation(ctx *parser.MethodInvocationContext) int
 }
 
 func (v *Builder) VisitCastExpression(ctx *parser.CastExpressionContext) interface{} {
-	n := &CastExpression{Position: v.newPosition(ctx)}
+	n := &CastExpression{Location: v.newLocation(ctx)}
 	n.CastType = ctx.ApexType().Accept(v).(Node)
 	n.Expression = ctx.Expression().Accept(v).(Node)
 	return n
 }
 
 func (v *Builder) VisitShiftExpression(ctx *parser.ShiftExpressionContext) interface{} {
-	n := &BinaryOperator{Position: v.newPosition(ctx)}
+	n := &BinaryOperator{Location: v.newLocation(ctx)}
 	ops := []string{}
 	for i, o := range ctx.GetOp() {
 		ops[i] = o.GetText()
@@ -949,7 +949,7 @@ func (v *Builder) VisitFieldAccess(ctx *parser.FieldAccessContext) interface{} {
 	return &FieldAccess{
 		Expression: expression,
 		FieldName:  fieldName,
-		Position:   v.newPosition(ctx),
+		Location:   v.newLocation(ctx),
 	}
 }
 
@@ -963,7 +963,7 @@ func (v *Builder) VisitPrimary(ctx *parser.PrimaryContext) interface{} {
 	} else if l := ctx.Literal(); l != nil {
 		return l.Accept(v)
 	} else if i := ctx.ApexIdentifier(); i != nil {
-		n := &Name{Position: v.newPosition(ctx)}
+		n := &Name{Location: v.newLocation(ctx)}
 		n.Value = i.Accept(v).(string)
 		return n
 	} else if l := ctx.SoqlLiteral(); l != nil {
@@ -973,7 +973,7 @@ func (v *Builder) VisitPrimary(ctx *parser.PrimaryContext) interface{} {
 	} else if t := ctx.ApexType(); t != nil {
 		return t.Accept(v)
 	}
-	n := &Name{Position: v.newPosition(ctx)}
+	n := &Name{Location: v.newLocation(ctx)}
 	n.Value = ctx.PrimitiveType().GetText()
 	return n
 }
@@ -984,7 +984,7 @@ func (v *Builder) VisitCreator(ctx *parser.CreatorContext) interface{} {
 
 func (v *Builder) VisitCreatedName(ctx *parser.CreatedNameContext) interface{} {
 	if identifiers := ctx.AllApexIdentifier(); len(identifiers) != 0 {
-		n := &Type{Position: v.newPosition(ctx)}
+		n := &Type{Location: v.newLocation(ctx)}
 		if types := ctx.AllTypeArgumentsOrDiamond(); len(types) != 0 {
 			// n.Parameters = ctx.TypeArgumentsOrDiamond(0).Accept(v)
 		}
@@ -1003,7 +1003,7 @@ func (v *Builder) VisitInnerCreator(ctx *parser.InnerCreatorContext) interface{}
 }
 
 func (v *Builder) VisitArrayCreatorRest(ctx *parser.ArrayCreatorRestContext) interface{} {
-	n := &ArrayCreator{Position: v.newPosition(ctx)}
+	n := &ArrayCreator{Location: v.newLocation(ctx)}
 	n.Dim = len(ctx.AllTypedArray())
 	if init := ctx.ArrayInitializer(); init != nil {
 		n.ArrayInitializer = init.Accept(v).(Node)
@@ -1017,11 +1017,11 @@ func (v *Builder) VisitArrayCreatorRest(ctx *parser.ArrayCreatorRestContext) int
 }
 
 func (v *Builder) VisitMapCreatorRest(ctx *parser.MapCreatorRestContext) interface{} {
-	return &MapCreator{Position: v.newPosition(ctx)}
+	return &MapCreator{Location: v.newLocation(ctx)}
 }
 
 func (v *Builder) VisitSetCreatorRest(ctx *parser.SetCreatorRestContext) interface{} {
-	return &SetCreator{Position: v.newPosition(ctx)}
+	return &SetCreator{Location: v.newLocation(ctx)}
 }
 
 func (v *Builder) VisitClassCreatorRest(ctx *parser.ClassCreatorRestContext) interface{} {
@@ -1132,7 +1132,7 @@ func (v *Builder) VisitSoqlLiteral(ctx *parser.SoqlLiteralContext) interface{} {
 }
 
 func (v *Builder) VisitQuery(ctx *parser.QueryContext) interface{} {
-	n := &Soql{Position: v.newPosition(ctx)}
+	n := &Soql{Location: v.newLocation(ctx)}
 	n.SelectFields = ctx.SelectClause().Accept(v).([]Node)
 	setParentNodes(n.SelectFields, n)
 	n.FromObject = ctx.FromClause().Accept(v).(string)
@@ -1174,7 +1174,7 @@ func (v *Builder) VisitFilterScope(ctx *parser.FilterScopeContext) interface{} {
 }
 
 func (v *Builder) VisitSoqlFieldReference(ctx *parser.SoqlFieldReferenceContext) interface{} {
-	n := &SelectField{Position: v.newPosition(ctx)}
+	n := &SelectField{Location: v.newLocation(ctx)}
 	identifiers := ctx.AllApexIdentifier()
 	n.Value = make([]string, len(identifiers))
 	for i, ident := range identifiers {
@@ -1199,7 +1199,7 @@ func (v *Builder) VisitWhereFields(ctx *parser.WhereFieldsContext) interface{} {
 	if f := ctx.WhereField(); f != nil {
 		return f.Accept(v)
 	}
-	n := &WhereBinaryOperator{Position: v.newPosition(ctx)}
+	n := &WhereBinaryOperator{Location: v.newLocation(ctx)}
 	n.Left = ctx.WhereFields(0).Accept(v).(Node)
 	n.Right = ctx.WhereFields(1).Accept(v).(Node)
 	n.Op = ctx.GetAnd_or().GetText()
@@ -1207,7 +1207,7 @@ func (v *Builder) VisitWhereFields(ctx *parser.WhereFieldsContext) interface{} {
 }
 
 func (v *Builder) VisitWhereField(ctx *parser.WhereFieldContext) interface{} {
-	n := &WhereCondition{Position: v.newPosition(ctx)}
+	n := &WhereCondition{Location: v.newLocation(ctx)}
 	n.Field = ctx.SoqlField().Accept(v).(Node)
 	n.Not = ctx.SOQL_NOT().GetText() != ""
 	n.Op = ctx.GetOp().GetText()
@@ -1223,7 +1223,7 @@ func (v *Builder) VisitLimitClause(ctx *parser.LimitClauseContext) interface{} {
 }
 
 func (v *Builder) VisitOrderClause(ctx *parser.OrderClauseContext) interface{} {
-	n := &Order{Position: v.newPosition(ctx)}
+	n := &Order{Location: v.newLocation(ctx)}
 	n.Field = ctx.SoqlField().Accept(v).(Node)
 	n.Asc = ctx.GetAsc_desc().GetText() == "asc"
 	n.Nulls = ctx.GetNulls().GetText()
@@ -1287,12 +1287,12 @@ func (v *Builder) VisitSoslReturningObject(ctx *parser.SoslReturningObjectContex
 	return v.VisitChildren(ctx)
 }
 
-type PositionContext interface {
+type LocationContext interface {
 	GetStart() antlr.Token
 }
 
-func (v *Builder) newPosition(ctx PositionContext) *Position {
-	return &Position{
+func (v *Builder) newLocation(ctx LocationContext) *Location {
+	return &Location{
 		FileName: v.Source,
 		Column:   ctx.GetStart().GetColumn(),
 		Line:     ctx.GetStart().GetLine(),

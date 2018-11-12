@@ -1,6 +1,6 @@
 package ast
 
-type Position struct {
+type Location struct {
 	FileName string
 	Column   int
 	Line     int
@@ -14,20 +14,20 @@ type ClassDeclaration struct {
 	ImplementClasses []Node
 	Declarations     []Node
 	InnerClasses     []Node
-	Position         *Position
+	Location         *Location
 	Parent           Node
 }
 
 type Modifier struct {
 	Name     string
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
 type Annotation struct {
 	Name       string
 	Parameters []Node
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
@@ -36,13 +36,13 @@ type InterfaceDeclaration struct {
 	Modifiers   []Node
 	Name        string
 	Methods     []Node
-	Position    *Position
+	Location    *Location
 	Parent      Node
 }
 
 type IntegerLiteral struct {
 	Value    int
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
@@ -50,30 +50,30 @@ type Parameter struct {
 	Modifiers []Node
 	Type      Node
 	Name      string
-	Position  *Position
+	Location  *Location
 	Parent    Node
 }
 
 type ArrayAccess struct {
 	Receiver Node
 	Key      Node
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
 type BooleanLiteral struct {
 	Value    bool
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
 type Break struct {
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
 type Continue struct {
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
@@ -81,13 +81,13 @@ type Dml struct {
 	Type       string
 	Expression Node
 	UpsertKey  string
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
 type DoubleLiteral struct {
 	Value    float64
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
@@ -95,7 +95,7 @@ type FieldDeclaration struct {
 	Type        Node
 	Modifiers   []Node
 	Declarators []Node
-	Position    *Position
+	Location    *Location
 	Parent      Node
 }
 
@@ -103,7 +103,7 @@ type Try struct {
 	Block        Node
 	CatchClause  []Node
 	FinallyBlock Node
-	Position     *Position
+	Location     *Location
 	Parent       Node
 }
 
@@ -112,20 +112,20 @@ type Catch struct {
 	Type       Node
 	Identifier string
 	Block      Node
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
 type Finally struct {
 	Block    Node
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
 type For struct {
 	Control    Node
 	Statements Node
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
@@ -133,7 +133,7 @@ type ForControl struct {
 	ForInit    Node
 	Expression Node
 	ForUpdate  []Node
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
@@ -142,7 +142,7 @@ type EnhancedForControl struct {
 	Type                 Node
 	VariableDeclaratorId string
 	Expression           Node
-	Position             *Position
+	Location             *Location
 	Parent               Node
 }
 
@@ -150,7 +150,7 @@ type If struct {
 	Condition     Node
 	IfStatement   Node
 	ElseStatement Node
-	Position      *Position
+	Location      *Location
 	Parent        Node
 }
 
@@ -162,26 +162,26 @@ type MethodDeclaration struct {
 	Throws         []Node
 	Statements     Node
 	NativeFunction Node
-	Position       *Position
+	Location       *Location
 	Parent         Node
 }
 
 type MethodInvocation struct {
 	NameOrExpression Node
 	Parameters       []Node
-	Position         *Position
+	Location         *Location
 	Parent           Node
 }
 
 type New struct {
 	Type       Node
 	Parameters []Node
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
 type NullLiteral struct {
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
@@ -189,7 +189,7 @@ type UnaryOperator struct {
 	Op         string
 	Expression Node
 	IsPrefix   bool
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
@@ -197,19 +197,19 @@ type BinaryOperator struct {
 	Op       string
 	Left     Node
 	Right    Node
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
 type Return struct {
 	Expression Node
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
 type Throw struct {
 	Expression Node
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
@@ -220,13 +220,13 @@ type Soql struct {
 	Order        Node
 	Limit        Node
 	Offset       Node
-	Position     *Position
+	Location     *Location
 	Parent       Node
 }
 
 type SelectField struct {
 	Value    []string
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
@@ -234,7 +234,7 @@ type WhereBinaryOperator struct {
 	Left     Node
 	Right    Node
 	Op       string
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
@@ -243,7 +243,7 @@ type WhereCondition struct {
 	Op         string
 	Expression Node
 	Not        bool
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
@@ -251,18 +251,18 @@ type Order struct {
 	Field    Node
 	Asc      bool
 	Nulls    string
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
 type Sosl struct {
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
 type StringLiteral struct {
 	Value    string
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
@@ -270,7 +270,7 @@ type Switch struct {
 	Expression     Node
 	WhenStatements []Node
 	ElseStatement  Node
-	Position       *Position
+	Location       *Location
 	Parent         Node
 }
 
@@ -279,14 +279,14 @@ type Trigger struct {
 	Object         string
 	TriggerTimings []Node
 	Statements     Node
-	Position       *Position
+	Location       *Location
 	Parent         Node
 }
 
 type TriggerTiming struct {
 	Timing   string
 	Dml      string
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
@@ -294,28 +294,28 @@ type VariableDeclaration struct {
 	Modifiers   []Node
 	Type        Node
 	Declarators []Node
-	Position    *Position
+	Location    *Location
 	Parent      Node
 }
 
 type VariableDeclarator struct {
 	Name       string
 	Expression Node
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
 type When struct {
 	Condition  []Node
 	Statements Node
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
 type WhenType struct {
 	Type       Node
 	Identifier string
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
@@ -323,40 +323,40 @@ type While struct {
 	Condition  Node
 	Statements []Node
 	IsDo       bool
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
 // TOTO: when to use?
 type NothingStatement struct {
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
 type CastExpression struct {
 	CastType   Node
 	Expression Node
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
 type FieldAccess struct {
 	Expression Node
 	FieldName  string
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
 type Type struct {
 	Name       []string
 	Parameters []Node
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
 type Block struct {
 	Statements []Node
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
@@ -364,7 +364,7 @@ type GetterSetter struct {
 	Type       string
 	Modifiers  []Node
 	MethodBody Node
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
@@ -373,13 +373,13 @@ type PropertyDeclaration struct {
 	Type          Node
 	Identifier    string
 	GetterSetters Node
-	Position      *Position
+	Location      *Location
 	Parent        Node
 }
 
 type ArrayInitializer struct {
 	Initializers []Node
-	Position     *Position
+	Location     *Location
 	Parent       Node
 }
 
@@ -387,19 +387,19 @@ type ArrayCreator struct {
 	Dim              int
 	Expressions      []Node
 	ArrayInitializer Node
-	Position         *Position
+	Location         *Location
 	Parent           Node
 }
 
 type Blob struct {
 	Value    []byte
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
 type SoqlBindVariable struct {
 	Expression Node
-	Position   *Position
+	Location   *Location
 	Parent     Node
 }
 
@@ -407,23 +407,23 @@ type TernalyExpression struct {
 	Condition       Node
 	TrueExpression  Node
 	FalseExpression Node
-	Position        *Position
+	Location        *Location
 	Parent          Node
 }
 
 type MapCreator struct {
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
 type SetCreator struct {
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
 type Name struct {
 	Value    string
-	Position *Position
+	Location *Location
 	Parent   Node
 }
 
@@ -434,7 +434,7 @@ type ConstructorDeclaration struct {
 	Throws         []Node
 	Statements     []Node
 	NativeFunction Node
-	Position       *Position
+	Location       *Location
 	Parent         Node
 }
 

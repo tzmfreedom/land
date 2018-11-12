@@ -107,7 +107,7 @@ func (v *TosVisitor) VisitParameter(n *Parameter) (interface{}, error) {
 func (v *TosVisitor) VisitArrayAccess(n *ArrayAccess) (interface{}, error) {
 	r, _ := n.Receiver.Accept(v)
 	k, _ := n.Key.Accept(v)
-	return fmt.Sprint(
+	return fmt.Sprintf(
 		"%s[%s]",
 		r.(string),
 		k.(string),

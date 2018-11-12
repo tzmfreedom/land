@@ -11,7 +11,7 @@ import (
 func TestClassRegister(t *testing.T) {
 	testCases := []struct {
 		Input    ast.Node
-		Expected *ClassType
+		Expected *ast.ClassType
 	}{
 		{
 			&ast.ClassDeclaration{
@@ -156,7 +156,7 @@ func TestClassRegister(t *testing.T) {
 					},
 				},
 			},
-			&ClassType{
+			&ast.ClassType{
 				Modifiers:   []ast.Node{},
 				Annotations: []ast.Node{},
 				Name:        "Foo",
@@ -313,11 +313,11 @@ func TestClassRegister(t *testing.T) {
 			panic(err)
 		}
 
-		equalNode(t, testCase.Expected, actual.(*ClassType))
+		equalNode(t, testCase.Expected, actual.(*ast.ClassType))
 	}
 }
 
-func equalNode(t *testing.T, expected *ClassType, actual *ClassType) {
+func equalNode(t *testing.T, expected *ast.ClassType, actual *ast.ClassType) {
 	if ok := cmp.Equal(expected, actual); !ok {
 		diff := cmp.Diff(expected, actual)
 		pp.Print(actual)

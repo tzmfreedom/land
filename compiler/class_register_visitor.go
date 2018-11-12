@@ -7,7 +7,7 @@ import (
 type ClassRegisterVisitor struct{}
 
 func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (interface{}, error) {
-	t := &ClassType{}
+	t := &ast.ClassType{}
 	t.Name = n.Name
 	t.Modifiers = n.Modifiers
 	t.ImplementClasses = n.ImplementClasses

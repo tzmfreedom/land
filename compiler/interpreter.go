@@ -5,9 +5,7 @@ import (
 	"github.com/tzmfreedom/goland/ast"
 )
 
-type Interpreter struct {
-	Env *Env
-}
+type Interpreter struct{}
 
 func (v *Interpreter) VisitClassDeclaration(n *ast.ClassDeclaration) (interface{}, error) {
 	return ast.VisitClassDeclaration(v, n)
@@ -401,6 +399,15 @@ type Boolean struct {
 	Value bool
 }
 
+type Null struct{}
+
+type Object struct {
+	ClassType      ast.Node
+	InstanceFields []ast.Node
+	GenericType    string
+	Parent         ast.Node
+}
+
 type ReturnValue struct {
 	Value interface{}
 }
@@ -411,28 +418,4 @@ type ContinueValue struct{}
 
 type RaiseValue struct {
 	Value interface{}
-}
-
-type Null struct{}
-
-type Object struct {
-	ClassType      ast.Node
-	InstanceFields []ast.Node
-	GenericType    string
-	Parent         ast.Node
-}
-
-type ClassType struct {
-	Annotations      []ast.Node
-	Modifiers        []ast.Node
-	Name             string
-	SuperClass       ast.Node
-	ImplementClasses []ast.Node
-	InstanceFields   []ast.Node
-	StaticFields     []ast.Node
-	InstanceMethods  []ast.Node
-	StaticMethods    []ast.Node
-	InnerClasses     []ast.Node
-	Position         *ast.Position
-	Parent           ast.Node
 }

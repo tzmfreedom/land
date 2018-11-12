@@ -1,10 +1,14 @@
-package compiler
+package ast
 
 import (
 	"strings"
-
-	"github.com/tzmfreedom/goland/ast"
 )
+
+type Context struct {
+	Env           *Env
+	CurrentMethod MethodDeclaration
+	CurrentClass  ClassType
+}
 
 type Env struct {
 	Data   []NodeMap
@@ -12,14 +16,14 @@ type Env struct {
 }
 
 type NodeMap struct {
-	Data map[string]ast.Node
+	Data map[string]Node
 }
 
-func (m *NodeMap) Set(k string, n ast.Node) {
+func (m *NodeMap) Set(k string, n Node) {
 	m.Data[strings.ToLower(k)] = n
 }
 
-func (m *NodeMap) Get(k string) ast.Node {
+func (m *NodeMap) Get(k string) Node {
 	return m.Data[strings.ToLower(k)]
 }
 

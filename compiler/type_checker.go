@@ -1,14 +1,36 @@
 package compiler
 
-import (
-	"github.com/tzmfreedom/goland/ast"
-)
+import "github.com/tzmfreedom/goland/ast"
 
 type TypeChecker struct {
-	ClassTypes    []ClassType
+	ClassTypes    []ast.ClassType
 	CurrentMethod string
 	CurrentClass  string
-	Env           *Env
+	Env           *ast.Env
+	Errors        []error
+}
+
+func (v *TypeChecker) VisitClassType(n *ast.ClassType) (interface{}, error) {
+	for _, f := range n.StaticFields {
+		_, err := f.Accept(v)
+		v.Errors = append(v.Errors, err)
+	}
+
+	for _, f := range n.InstanceFields {
+		_, err := f.Accept(v)
+		v.Errors = append(v.Errors, err)
+	}
+
+	for _, m := range n.StaticMethods {
+		_, err := m.Accept(v)
+		v.Errors = append(v.Errors, err)
+	}
+
+	for _, m := range n.InstanceMethods {
+		_, err := m.Accept(v)
+		v.Errors = append(v.Errors, err)
+	}
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitClassDeclaration(n *ast.ClassDeclaration) (interface{}, error) {

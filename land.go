@@ -63,8 +63,8 @@ func semantic_analysis(n ast.Node) error {
 	if err != nil {
 		return err
 	}
-	classTypes := make([]compiler.ClassType, 1)
-	if tp, ok := t.(compiler.ClassType); ok {
+	classTypes := make([]ast.ClassType, 1)
+	if tp, ok := t.(ast.ClassType); ok {
 		classTypes[1] = tp
 	}
 	typeChecker := &compiler.TypeChecker{

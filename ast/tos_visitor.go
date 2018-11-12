@@ -36,7 +36,7 @@ func (v *TosVisitor) VisitClassDeclaration(n *ClassDeclaration) (interface{}, er
 	if n.SuperClass != nil {
 		r, _ := n.SuperClass.Accept(v)
 		super, _ = r.(string)
-		super = "extend " + super
+		super = "extends " + super
 	}
 	implements := make([]string, len(n.ImplementClasses))
 	for i, impl := range n.ImplementClasses {

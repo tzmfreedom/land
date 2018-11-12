@@ -6,10 +6,8 @@ import (
 
 	"flag"
 
-	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/compiler"
-	"github.com/tzmfreedom/goland/parser"
 	"github.com/tzmfreedom/goland/visitor"
 )
 
@@ -21,7 +19,10 @@ func main() {
 
 	flag.Parse()
 
-	t := parseFile(*f)
+	t, err := ast.ParseFile(*f)
+	if err != nil {
+		handleError(err)
+	}
 	switch cmd {
 	case "format":
 		tos(t)
@@ -44,32 +45,6 @@ func main() {
 			handleError(err)
 		}
 	}
-}
-
-func parseFile(f string) ast.Node {
-	input, err := antlr.NewFileStream(f)
-	if err != nil {
-		handleError(err)
-	}
-	return parse(input, f)
-}
-
-func parseString(c string) ast.Node {
-	input := antlr.NewInputStream(c)
-	return parse(input, "")
-}
-
-func parse(input antlr.CharStream, f string) ast.Node {
-	lexer := parser.NewapexLexer(input)
-	stream := antlr.NewCommonTokenStream(lexer, 0)
-	p := parser.NewapexParser(stream)
-	p.AddErrorListener(antlr.NewDiagnosticErrorListener(true))
-	p.BuildParseTrees = true
-	tree := p.CompilationUnit()
-	t := tree.Accept(&AstBuilder{
-		CurrentFile: f,
-	})
-	return t.(ast.Node)
 }
 
 func convert(n ast.Node) (ast.Node, error) {

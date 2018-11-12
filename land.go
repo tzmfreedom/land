@@ -2,19 +2,20 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"flag"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/goland/compiler"
 	"github.com/tzmfreedom/goland/parser"
 	"github.com/tzmfreedom/goland/visitor"
 )
 
 func main() {
-	f := flag.String("f", "", "filename")
+	f := flag.String("f", "", "file")
+	_ = flag.String("d", "", "directory")
 	cmd := os.Args[1]
 	os.Args = os.Args[1:]
 
@@ -81,8 +82,28 @@ func check(n ast.Node) error {
 	return err
 }
 
+func semantic_analysis(n ast.Node) error {
+	register := &compiler.ClassRegisterVisitor{}
+	t, err := n.Accept(register)
+	if err != nil {
+		return err
+	}
+	classTypes := make([]compiler.ClassType, 1)
+	if tp, ok := t.(compiler.ClassType); ok {
+		classTypes[1] = tp
+	}
+	typeChecker := &compiler.TypeChecker{
+		ClassTypes: classTypes,
+	}
+	_, err = n.Accept(typeChecker)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func run(n ast.Node) error {
-	interpreter := &ast.Interpreter{}
+	interpreter := &compiler.Interpreter{}
 	_, err := n.Accept(interpreter)
 	return err
 }
@@ -94,7 +115,6 @@ func tos(n ast.Node) {
 }
 
 func handleError(err error) {
-	l := log.New(os.Stderr, "", 0)
-	l.Println(err.Error())
+	fmt.Fprintf(os.Stderr, err.Error())
 	os.Exit(1)
 }

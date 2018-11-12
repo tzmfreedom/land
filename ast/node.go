@@ -641,6 +641,16 @@ func (n *FieldDeclaration) GetChildren() []interface{} {
 		n.Declarators,
 	}
 }
+
+func (n *FieldDeclaration) IsStatic() bool {
+	for _, m := range n.Modifiers {
+		if m.(*Modifier).Name == "static" {
+			return true
+		}
+	}
+	return false
+}
+
 func (n *Try) Accept(v Visitor) (interface{}, error) {
 	return v.VisitTry(n)
 }
@@ -736,6 +746,15 @@ func (n *MethodDeclaration) GetChildren() []interface{} {
 		n.NativeFunction,
 		n.Statements,
 	}
+}
+
+func (n *MethodDeclaration) IsStatic() bool {
+	for _, m := range n.Modifiers {
+		if m.(*Modifier).Name == "static" {
+			return true
+		}
+	}
+	return false
 }
 
 func (n *MethodInvocation) Accept(v Visitor) (interface{}, error) {

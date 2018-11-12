@@ -10,7 +10,7 @@ run/format:
 
 .PHONY: test
 test: format
-	go test
+	go test ./...
 
 .PHONY: build
 build: format

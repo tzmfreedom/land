@@ -299,17 +299,21 @@ func (v *TosVisitor) VisitMethodDeclaration(n *MethodDeclaration) (interface{}, 
 		r, _ := m.Accept(v)
 		modifiers[i] = r.(string)
 	}
-	r, _ := n.ReturnType.Accept(v)
-	returnType := r.(string)
+	returnType := ""
+	if n.ReturnType != nil {
+		r, _ := n.ReturnType.Accept(v)
+		returnType = r.(string)
+	}
 	parameters := make([]string, len(n.Parameters))
 	for i, p := range n.Parameters {
 		r, _ := p.Accept(v)
 		parameters[i] = r.(string)
 	}
+	block := ""
 	v.AddIndent(func() {
-		r, _ = n.Statements.Accept(v)
+		r, _ := n.Statements.Accept(v)
+		block = r.(string)
 	})
-	block := r.(string)
 	return fmt.Sprintf(
 		`%s %s %s (%s) {
 %s

@@ -1,6 +1,8 @@
 package compiler
 
-import "github.com/tzmfreedom/goland/ast"
+import (
+	"github.com/tzmfreedom/goland/ast"
+)
 
 type TypeChecker struct {
 	Context *Context
@@ -37,10 +39,12 @@ func (v *TypeChecker) VisitClassDeclaration(n *ast.ClassDeclaration) (interface{
 }
 
 func (v *TypeChecker) VisitModifier(n *ast.Modifier) (interface{}, error) {
+	panic("Not pass")
 	return ast.VisitModifier(v, n)
 }
 
 func (v *TypeChecker) VisitAnnotation(n *ast.Annotation) (interface{}, error) {
+	panic("Not pass")
 	return ast.VisitAnnotation(v, n)
 }
 
@@ -49,7 +53,7 @@ func (v *TypeChecker) VisitInterfaceDeclaration(n *ast.InterfaceDeclaration) (in
 }
 
 func (v *TypeChecker) VisitIntegerLiteral(n *ast.IntegerLiteral) (interface{}, error) {
-	return ast.VisitIntegerLiteral(v, n)
+	return ast.IntegerType, nil
 }
 
 func (v *TypeChecker) VisitParameter(n *ast.Parameter) (interface{}, error) {
@@ -61,23 +65,29 @@ func (v *TypeChecker) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) 
 }
 
 func (v *TypeChecker) VisitBooleanLiteral(n *ast.BooleanLiteral) (interface{}, error) {
-	return ast.VisitBooleanLiteral(v, n)
+	return ast.BooleanType, nil
 }
 
 func (v *TypeChecker) VisitBreak(n *ast.Break) (interface{}, error) {
-	return ast.VisitBreak(v, n)
+	// Check For/While Loop
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitContinue(n *ast.Continue) (interface{}, error) {
-	return ast.VisitContinue(v, n)
+	// Check For/While Loop
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitDml(n *ast.Dml) (interface{}, error) {
-	return ast.VisitDml(v, n)
+	_, err := n.Expression.Accept(v)
+	if err != nil {
+		// v.Errors
+	}
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitDoubleLiteral(n *ast.DoubleLiteral) (interface{}, error) {
-	return ast.VisitDoubleLiteral(v, n)
+	return ast.DoubleType, nil
 }
 
 func (v *TypeChecker) VisitFieldDeclaration(n *ast.FieldDeclaration) (interface{}, error) {
@@ -85,23 +95,39 @@ func (v *TypeChecker) VisitFieldDeclaration(n *ast.FieldDeclaration) (interface{
 }
 
 func (v *TypeChecker) VisitTry(n *ast.Try) (interface{}, error) {
-	return ast.VisitTry(v, n)
+	n.Block.Accept(v)
+	for _, c := range n.CatchClause {
+		c.Accept(v)
+	}
+	n.FinallyBlock.Accept(v)
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitCatch(n *ast.Catch) (interface{}, error) {
-	return ast.VisitCatch(v, n)
+	t := ResolveType(n.Type, v.Context)
+	v.Context.Env.Set(n.Identifier, t) // TODO: append scope
+	n.Block.Accept(v)
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitFinally(n *ast.Finally) (interface{}, error) {
-	return ast.VisitFinally(v, n)
+	n.Block.Accept(v)
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitFor(n *ast.For) (interface{}, error) {
-	return ast.VisitFor(v, n)
+	n.Control.Accept(v)
+	n.Statements.Accept(v)
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitForControl(n *ast.ForControl) (interface{}, error) {
-	return ast.VisitForControl(v, n)
+	n.ForInit.Accept(v)
+	for _, u := range n.ForUpdate {
+		u.Accept(v)
+	}
+	n.Expression.Accept(v)
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitEnhancedForControl(n *ast.EnhancedForControl) (interface{}, error) {
@@ -109,7 +135,16 @@ func (v *TypeChecker) VisitEnhancedForControl(n *ast.EnhancedForControl) (interf
 }
 
 func (v *TypeChecker) VisitIf(n *ast.If) (interface{}, error) {
-	return ast.VisitIf(v, n)
+	t, err := n.Condition.Accept(v)
+	if err != nil {
+		// v.Errors
+	}
+	if t != ast.BooleanType {
+		// v.Errors
+	}
+	n.IfStatement.Accept(v)
+	n.ElseStatement.Accept(v)
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitMethodDeclaration(n *ast.MethodDeclaration) (interface{}, error) {
@@ -126,6 +161,7 @@ func (v *TypeChecker) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 }
 
 func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{}, error) {
+	// Use Resolver
 	return ast.VisitMethodInvocation(v, n)
 }
 
@@ -134,7 +170,7 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitNullLiteral(n *ast.NullLiteral) (interface{}, error) {
-	return ast.VisitNullLiteral(v, n)
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, error) {
@@ -142,15 +178,43 @@ func (v *TypeChecker) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, err
 }
 
 func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, error) {
-	return ast.VisitBinaryOperator(v, n)
+	l, err := n.Left.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	r, err := n.Right.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	if n.Op == "+" {
+		if l != ast.IntegerType && l != ast.StringType && l != ast.DoubleType {
+			// v.Errors
+		}
+	}
+	if r != l {
+		// v.Errors
+	}
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitReturn(n *ast.Return) (interface{}, error) {
-	return ast.VisitReturn(v, n)
+	exp, err := n.Expression.Accept(v)
+	if err != nil {
+		v.Errors = append(v.Errors, err)
+	}
+	if v.Context.CurrentMethod.ReturnType != exp {
+		// v.Errors
+	}
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitThrow(n *ast.Throw) (interface{}, error) {
-	return ast.VisitThrow(v, n)
+	_, err := n.Expression.Accept(v)
+	if err != nil {
+		// v.Errors
+	}
+	// Check Subclass of Exception
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitSoql(n *ast.Soql) (interface{}, error) {
@@ -162,27 +226,54 @@ func (v *TypeChecker) VisitSosl(n *ast.Sosl) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitStringLiteral(n *ast.StringLiteral) (interface{}, error) {
-	return ast.VisitStringLiteral(v, n)
+	return ast.StringType, nil
 }
 
 func (v *TypeChecker) VisitSwitch(n *ast.Switch) (interface{}, error) {
-	return ast.VisitSwitch(v, n)
+	exp, err := n.Expression.Accept(v)
+	if err != nil {
+		// v.Errors
+	}
+	for _, w := range n.WhenStatements {
+		t, err := w.Accept(v)
+		if err != nil {
+			// v.Errors
+		}
+		if t != exp {
+			// v.Errors
+		}
+	}
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitTrigger(n *ast.Trigger) (interface{}, error) {
-	return ast.VisitTrigger(v, n)
+	panic("Not pass")
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitTriggerTiming(n *ast.TriggerTiming) (interface{}, error) {
-	return ast.VisitTriggerTiming(v, n)
+	panic("Not pass")
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (interface{}, error) {
-	return ast.VisitVariableDeclaration(v, n)
+	declType := ResolveType(n.Type, v.Context)
+	for _, d := range n.Declarators {
+		t, err := d.Accept(v)
+		if err != nil {
+			// v.Errors
+		}
+		decl := d.(*ast.VariableDeclarator)
+		v.Context.Env.Set(decl.Name, ResolveType(n.Type, v.Context))
+		if declType != t {
+			// v.Errors
+		}
+	}
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitVariableDeclarator(n *ast.VariableDeclarator) (interface{}, error) {
-	return ast.VisitVariableDeclarator(v, n)
+	return n.Expression.Accept(v)
 }
 
 func (v *TypeChecker) VisitWhen(n *ast.When) (interface{}, error) {
@@ -194,27 +285,49 @@ func (v *TypeChecker) VisitWhenType(n *ast.WhenType) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitWhile(n *ast.While) (interface{}, error) {
+	t, err := n.Condition.Accept(v)
+	if err != nil {
+		// v.Errors
+	}
+	if t != ast.BooleanType {
+		// v.Errors
+	}
+	for _, stmt := range n.Statements {
+		stmt.Accept(v)
+	}
 	return ast.VisitWhile(v, n)
 }
 
 func (v *TypeChecker) VisitNothingStatement(n *ast.NothingStatement) (interface{}, error) {
-	return ast.VisitNothingStatement(v, n)
+	panic("Not pass")
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitCastExpression(n *ast.CastExpression) (interface{}, error) {
-	return ast.VisitCastExpression(v, n)
+	t := ResolveType(n.CastType, v.Context)
+	exp, err := n.Expression.Accept(v)
+	if err != nil {
+		// v.Errors
+	}
+	if t != exp {
+		// v.Errors
+	}
+	return t, nil
 }
 
 func (v *TypeChecker) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) {
-	return ast.VisitFieldAccess(v, n)
+	return ResolveType(n, v.Context), nil
 }
 
 func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
-	return ast.VisitType(v, n)
+	return ResolveType(n, v.Context), nil
 }
 
 func (v *TypeChecker) VisitBlock(n *ast.Block) (interface{}, error) {
-	return ast.VisitBlock(v, n)
+	for _, stmt := range n.Statements {
+		stmt.Accept(v)
+	}
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitGetterSetter(n *ast.GetterSetter) (interface{}, error) {
@@ -250,15 +363,12 @@ func (v *TypeChecker) VisitSetCreator(n *ast.SetCreator) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitName(n *ast.Name) (interface{}, error) {
+	// Use Resolver
 	return ast.VisitName(v, n)
 }
 
 func (v *TypeChecker) VisitConstructorDeclaration(n *ast.ConstructorDeclaration) (interface{}, error) {
 	return ast.VisitConstructorDeclaration(v, n)
-}
-
-func (v *TypeChecker) CheckType(n ast.Node) {
-
 }
 
 func ResolveType(n ast.Node, ctx *Context) ast.Type {

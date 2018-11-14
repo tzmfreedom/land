@@ -41,7 +41,7 @@ func TestToString(t *testing.T) {
 					},
 				},
 			},
-			"String s",
+			"String s;",
 		},
 		{
 			&VariableDeclaration{
@@ -55,7 +55,7 @@ func TestToString(t *testing.T) {
 					},
 				},
 			},
-			"Integer i = 1",
+			"Integer i = 1;",
 		},
 		{
 			&BinaryOperator{
@@ -81,15 +81,23 @@ func TestToString(t *testing.T) {
 		},
 		{
 			&Break{},
-			"break",
+			"break;",
 		},
 		{
 			&Continue{},
-			"continue",
+			"continue;",
+		},
+		{
+			&Return{
+				Expression: &StringLiteral{
+					Value: "foo",
+				},
+			},
+			"return 'foo';",
 		},
 		{
 			&Dml{
-				Type: "insert",
+				Type:       "insert",
 				Expression: &Name{Value: "foo"},
 			},
 			"insert foo",
@@ -108,7 +116,8 @@ func TestToString(t *testing.T) {
 					&Annotation{Name: "@annotation"},
 				},
 			},
-			`@annotation public class foo extends bar implements baz {
+			`@annotation
+public class foo extends bar implements baz {
 }`,
 		},
 	}

@@ -47,15 +47,19 @@ func (v *TosVisitor) VisitClassDeclaration(n *ClassDeclaration) (interface{}, er
 	if len(implements) != 0 {
 		implString = "implements " + strings.Join(implements, ", ")
 	}
+	body := ""
+	if len(declarations) != 0 {
+		body = fmt.Sprintf("%s\n", strings.Join(declarations, "\n"))
+	}
 	return fmt.Sprintf(
 		`%s class %s %s %s {
-%s
-}`,
+%s%s`,
 		strings.Join(modifiers, " "),
 		n.Name,
 		super,
 		implString,
-		strings.Join(declarations, "\n"),
+		body,
+		v.withIndent("}"),
 	), nil
 }
 
@@ -80,13 +84,17 @@ func (v *TosVisitor) VisitInterfaceDeclaration(n *InterfaceDeclaration) (interfa
 			methods[i], _ = r.(string)
 		}
 	})
+	body := ""
+	if len(methods) != 0 {
+		body = fmt.Sprintf("%s\n", strings.Join(methods, "\n"))
+	}
+
 	return fmt.Sprintf(
 		`%s interface %s {
-%s
-%s`,
+%s%s`,
 		strings.Join(modifiers, " "),
 		n.Name,
-		strings.Join(methods, "\n"),
+		body,
 		v.withIndent("}"),
 	), nil
 }
@@ -191,10 +199,12 @@ func (v *TosVisitor) VisitCatch(n *Catch) (interface{}, error) {
 		r, _ := n.Block.Accept(v)
 		stmt = r.(string)
 	})
+	if stmt != "" {
+		stmt = fmt.Sprintf("%s\n", stmt)
+	}
 	return fmt.Sprintf(
 		` catch (%s %s) {
-%s
-%s`,
+%s%s`,
 		t.(string),
 		n.Identifier,
 		stmt,
@@ -208,10 +218,12 @@ func (v *TosVisitor) VisitFinally(n *Finally) (interface{}, error) {
 		r, _ := n.Block.Accept(v)
 		stmt = r.(string)
 	})
+	if stmt != "" {
+		stmt = fmt.Sprintf("%s\n", stmt)
+	}
 	return fmt.Sprintf(
 		` finally {
-%s
-%s`,
+%s%s`,
 		stmt,
 		v.withIndent("}"),
 	), nil
@@ -224,10 +236,12 @@ func (v *TosVisitor) VisitFor(n *For) (interface{}, error) {
 		r, _ := n.Statements.Accept(v)
 		stmt = r.(string)
 	})
+	if stmt != "" {
+		stmt = fmt.Sprintf("%s\n", stmt)
+	}
 	return fmt.Sprintf(
 		`for (%s) {
-%s
-%s`,
+%s%s`,
 		control.(string),
 		stmt,
 		v.withIndent("}"),
@@ -268,12 +282,18 @@ func (v *TosVisitor) VisitIf(n *If) (interface{}, error) {
 		r, _ := n.IfStatement.Accept(v)
 		ifStmt = r.(string)
 	})
+	if ifStmt != "" {
+		ifStmt = fmt.Sprintf("%s\n", ifStmt)
+	}
 	elseStmt := ""
 	if n.ElseStatement != nil {
 		v.AddIndent(func() {
 			r, _ := n.IfStatement.Accept(v)
 			elseStmt = r.(string)
 		})
+		if elseStmt != "" {
+			elseStmt = fmt.Sprintf("%s\n", elseStmt)
+		}
 		elseStmt = fmt.Sprintf(
 			` else {
 %s
@@ -284,8 +304,7 @@ func (v *TosVisitor) VisitIf(n *If) (interface{}, error) {
 	}
 	return fmt.Sprintf(
 		`if (%s) {
-%s
-%s%s`,
+%s%s%s`,
 		cond.(string),
 		ifStmt,
 		v.withIndent("}"),
@@ -314,10 +333,12 @@ func (v *TosVisitor) VisitMethodDeclaration(n *MethodDeclaration) (interface{}, 
 		r, _ := n.Statements.Accept(v)
 		block = r.(string)
 	})
+	if block != "" {
+		block = fmt.Sprintf("%s\n", block)
+	}
 	return fmt.Sprintf(
 		`%s %s %s (%s) {
-%s
-%s`,
+%s%s`,
 		v.withIndent(strings.Join(modifiers, " ")),
 		returnType,
 		n.Name,

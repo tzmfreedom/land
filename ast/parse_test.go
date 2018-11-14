@@ -29,14 +29,14 @@ func TestParse(t *testing.T) {
 					},
 				},
 				Name: "Foo",
-				SuperClass: &Type{
+				SuperClass: &TypeRef{
 					Name: []string{
 						"Bar",
 					},
 					Parameters: []Node{},
 				},
 				ImplementClasses: []Node{
-					&Type{
+					&TypeRef{
 						Name: []string{
 							"Baz",
 						},
@@ -61,7 +61,7 @@ public void method(){ }
 				Name:        "Foo",
 				Declarations: []Node{
 					&FieldDeclaration{
-						Type: &Type{
+						Type: &TypeRef{
 							Name: []string{
 								"Integer",
 							},
@@ -80,7 +80,7 @@ public void method(){ }
 						},
 					},
 					&FieldDeclaration{
-						Type: &Type{
+						Type: &TypeRef{
 							Name: []string{
 								"Double",
 							},
@@ -101,7 +101,7 @@ public void method(){ }
 						},
 					},
 					&FieldDeclaration{
-						Type: &Type{
+						Type: &TypeRef{
 							Name: []string{
 								"String",
 							},
@@ -123,7 +123,7 @@ public void method(){ }
 						},
 					},
 					&FieldDeclaration{
-						Type: &Type{
+						Type: &TypeRef{
 							Name: []string{
 								"Boolean",
 							},
@@ -156,7 +156,7 @@ public void method(){ }
 								Name: "static",
 							},
 						},
-						ReturnType: &Type{
+						ReturnType: &TypeRef{
 							Name: []string{
 								"String",
 							},
@@ -165,7 +165,7 @@ public void method(){ }
 						Parameters: []Node{
 							&Parameter{
 								Modifiers: []Node{},
-								Type: &Type{
+								Type: &TypeRef{
 									Name: []string{
 										"Boolean",
 									},
@@ -187,7 +187,7 @@ public void method(){ }
 								Name: "public",
 							},
 						},
-						ReturnType: VoidType,
+						ReturnType: nil,
 						Parameters: []Node{},
 						Throws:     []Node{},
 						Statements: &Block{
@@ -211,7 +211,7 @@ Integer i;
 			createExpectedClass([]Node{
 				&VariableDeclaration{
 					Modifiers: []Node{},
-					Type: &Type{
+					Type: &TypeRef{
 						Name: []string{
 							"Integer",
 						},
@@ -228,7 +228,7 @@ Integer i;
 				},
 				&VariableDeclaration{
 					Modifiers: []Node{},
-					Type: &Type{
+					Type: &TypeRef{
 						Name: []string{
 							"String",
 						},
@@ -245,7 +245,7 @@ Integer i;
 				},
 				&VariableDeclaration{
 					Modifiers: []Node{},
-					Type: &Type{
+					Type: &TypeRef{
 						Name: []string{
 							"Double",
 						},
@@ -262,7 +262,7 @@ Integer i;
 				},
 				&VariableDeclaration{
 					Modifiers: []Node{},
-					Type: &Type{
+					Type: &TypeRef{
 						Name: []string{
 							"Boolean",
 						},
@@ -279,7 +279,7 @@ Integer i;
 				},
 				&VariableDeclaration{
 					Modifiers: []Node{},
-					Type: &Type{
+					Type: &TypeRef{
 						Name: []string{
 							"Integer",
 						},
@@ -525,7 +525,7 @@ public void action(){
 						&When{
 							Condition: []Node{
 								&WhenType{
-									Type: &Type{
+									Type: &TypeRef{
 										Name: []string{
 											"Account",
 										},
@@ -575,7 +575,7 @@ public void action(){
 					Control: &ForControl{
 						ForInit: &VariableDeclaration{
 							Modifiers: []Node{},
-							Type: &Type{
+							Type: &TypeRef{
 								Name: []string{
 									"Integer",
 								},
@@ -646,7 +646,7 @@ public void action(){
 				&For{
 					Control: &EnhancedForControl{
 						Modifiers: []Node{},
-						Type: &Type{
+						Type: &TypeRef{
 							Name: []string{
 								"Account",
 							},
@@ -695,7 +695,7 @@ try {
 					CatchClause: []Node{
 						&Catch{
 							Modifiers: []Node{},
-							Type: &Type{
+							Type: &TypeRef{
 								Name: []string{
 									"Exception",
 								},
@@ -781,7 +781,7 @@ func createExpectedClass(statements []Node) *ClassDeclaration {
 						Name: "public",
 					},
 				},
-				ReturnType: VoidType,
+				ReturnType: nil,
 				Parameters: []Node{},
 				Throws:     []Node{},
 				Statements: &Block{

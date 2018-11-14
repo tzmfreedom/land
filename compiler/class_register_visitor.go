@@ -203,7 +203,7 @@ func (v *ClassRegisterVisitor) VisitFieldAccess(n *ast.FieldAccess) (interface{}
 	return ast.VisitFieldAccess(v, n)
 }
 
-func (v *ClassRegisterVisitor) VisitType(n *ast.Type) (interface{}, error) {
+func (v *ClassRegisterVisitor) VisitType(n *ast.TypeRef) (interface{}, error) {
 	return ast.VisitType(v, n)
 }
 

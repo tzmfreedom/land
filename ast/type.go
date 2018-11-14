@@ -1,5 +1,7 @@
 package ast
 
+type Type interface{}
+
 type ClassType struct {
 	Annotations      []Node
 	Modifiers        []Node
@@ -15,9 +17,10 @@ type ClassType struct {
 	Parent           Node
 }
 
-var (
-	BooleanType = &Type{Name: []string{"Boolean"}}
-	IntegerType = &Type{Name: []string{"Integer"}}
-	StringType  = &Type{Name: []string{"String"}}
-	DoubleType  = &Type{Name: []string{"Double"}}
+const (
+	VoidType = iota
+	BooleanType
+	IntegerType
+	StringType
+	DoubleType
 )

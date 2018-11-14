@@ -347,7 +347,7 @@ type FieldAccess struct {
 	Parent     Node
 }
 
-type Type struct {
+type TypeRef struct {
 	Name       []string
 	Parameters []Node
 	Location   *Location
@@ -481,7 +481,7 @@ type Visitor interface {
 	VisitNothingStatement(*NothingStatement) (interface{}, error)
 	VisitCastExpression(*CastExpression) (interface{}, error)
 	VisitFieldAccess(*FieldAccess) (interface{}, error)
-	VisitType(*Type) (interface{}, error)
+	VisitType(*TypeRef) (interface{}, error)
 	VisitBlock(*Block) (interface{}, error)
 	VisitGetterSetter(*GetterSetter) (interface{}, error)
 	VisitPropertyDeclaration(*PropertyDeclaration) (interface{}, error)
@@ -494,8 +494,6 @@ type Visitor interface {
 	VisitName(*Name) (interface{}, error)
 	VisitConstructorDeclaration(*ConstructorDeclaration) (interface{}, error)
 }
-
-var VoidType = &Type{}
 
 type Node interface {
 	Accept(Visitor) (interface{}, error)
@@ -986,11 +984,11 @@ func (n *FieldAccess) GetChildren() []interface{} {
 	}
 }
 
-func (n *Type) Accept(v Visitor) (interface{}, error) {
+func (n *TypeRef) Accept(v Visitor) (interface{}, error) {
 	return v.VisitType(n)
 }
 
-func (n *Type) GetChildren() []interface{} {
+func (n *TypeRef) GetChildren() []interface{} {
 	return []interface{}{
 		n.Name,
 		n.Parameters,
@@ -1243,7 +1241,7 @@ func (n *CastExpression) GetType() string {
 func (n *FieldAccess) GetType() string {
 	return "FieldAccess"
 }
-func (n *Type) GetType() string {
+func (n *TypeRef) GetType() string {
 	return "Type"
 }
 func (n *Block) GetType() string {
@@ -1406,7 +1404,7 @@ func (n *CastExpression) GetParent() Node {
 func (n *FieldAccess) GetParent() Node {
 	return n.Parent
 }
-func (n *Type) GetParent() Node {
+func (n *TypeRef) GetParent() Node {
 	return n.Parent
 }
 func (n *Block) GetParent() Node {
@@ -1611,7 +1609,7 @@ func (n *FieldAccess) SetParent(parent Node) {
 	n.Parent = parent
 }
 
-func (n *Type) SetParent(parent Node) {
+func (n *TypeRef) SetParent(parent Node) {
 	n.Parent = parent
 }
 

@@ -191,7 +191,7 @@ func VisitFieldAccess(v Visitor, n *FieldAccess) (interface{}, error) {
 	return visitChildren(v, n)
 }
 
-func VisitType(v Visitor, n *Type) (interface{}, error) {
+func VisitType(v Visitor, n *TypeRef) (interface{}, error) {
 	return visitChildren(v, n)
 }
 

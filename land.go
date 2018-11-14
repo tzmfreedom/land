@@ -63,13 +63,12 @@ func semantic_analysis(n ast.Node) error {
 	if err != nil {
 		return err
 	}
-	classTypes := make([]ast.ClassType, 1)
-	if tp, ok := t.(ast.ClassType); ok {
-		classTypes[1] = tp
+	classTypes := &compiler.ClassMap{}
+	if tp, ok := t.(*ast.ClassType); ok {
+		classTypes.Set(tp.Name, tp)
 	}
-	typeChecker := &compiler.TypeChecker{
-		ClassTypes: classTypes,
-	}
+	typeChecker := &compiler.TypeChecker{}
+	typeChecker.Context.ClassTypes = classTypes
 	_, err = n.Accept(typeChecker)
 	if err != nil {
 		return err

@@ -20,7 +20,7 @@ func TestClassRegister(t *testing.T) {
 				Name:        "Foo",
 				Declarations: []ast.Node{
 					&ast.FieldDeclaration{
-						Type: &ast.Type{
+						Type: &ast.TypeRef{
 							Name: []string{
 								"Integer",
 							},
@@ -39,7 +39,7 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 					&ast.FieldDeclaration{
-						Type: &ast.Type{
+						Type: &ast.TypeRef{
 							Name: []string{
 								"Double",
 							},
@@ -60,7 +60,7 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 					&ast.FieldDeclaration{
-						Type: &ast.Type{
+						Type: &ast.TypeRef{
 							Name: []string{
 								"String",
 							},
@@ -82,7 +82,7 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 					&ast.FieldDeclaration{
-						Type: &ast.Type{
+						Type: &ast.TypeRef{
 							Name: []string{
 								"Boolean",
 							},
@@ -115,7 +115,7 @@ func TestClassRegister(t *testing.T) {
 								Name: "static",
 							},
 						},
-						ReturnType: &ast.Type{
+						ReturnType: &ast.TypeRef{
 							Name: []string{
 								"String",
 							},
@@ -124,7 +124,7 @@ func TestClassRegister(t *testing.T) {
 						Parameters: []ast.Node{
 							&ast.Parameter{
 								Modifiers: []ast.Node{},
-								Type: &ast.Type{
+								Type: &ast.TypeRef{
 									Name: []string{
 										"Boolean",
 									},
@@ -146,7 +146,7 @@ func TestClassRegister(t *testing.T) {
 								Name: "public",
 							},
 						},
-						ReturnType: ast.VoidType,
+						ReturnType: nil,
 						Parameters: []ast.Node{},
 						Throws:     []ast.Node{},
 						Statements: &ast.Block{
@@ -168,7 +168,7 @@ func TestClassRegister(t *testing.T) {
 								Name: "public",
 							},
 						},
-						ReturnType: ast.VoidType,
+						ReturnType: nil,
 						Parameters: []ast.Node{},
 						Throws:     []ast.Node{},
 						Statements: &ast.Block{
@@ -188,7 +188,7 @@ func TestClassRegister(t *testing.T) {
 								Name: "static",
 							},
 						},
-						ReturnType: &ast.Type{
+						ReturnType: &ast.TypeRef{
 							Name: []string{
 								"String",
 							},
@@ -197,7 +197,7 @@ func TestClassRegister(t *testing.T) {
 						Parameters: []ast.Node{
 							&ast.Parameter{
 								Modifiers: []ast.Node{},
-								Type: &ast.Type{
+								Type: &ast.TypeRef{
 									Name: []string{
 										"Boolean",
 									},
@@ -215,7 +215,7 @@ func TestClassRegister(t *testing.T) {
 				},
 				InstanceFields: []ast.Node{
 					&ast.FieldDeclaration{
-						Type: &ast.Type{
+						Type: &ast.TypeRef{
 							Name: []string{
 								"Integer",
 							},
@@ -234,7 +234,7 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 					&ast.FieldDeclaration{
-						Type: &ast.Type{
+						Type: &ast.TypeRef{
 							Name: []string{
 								"Double",
 							},
@@ -257,7 +257,7 @@ func TestClassRegister(t *testing.T) {
 				},
 				StaticFields: []ast.Node{
 					&ast.FieldDeclaration{
-						Type: &ast.Type{
+						Type: &ast.TypeRef{
 							Name: []string{
 								"String",
 							},
@@ -279,7 +279,7 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 					&ast.FieldDeclaration{
-						Type: &ast.Type{
+						Type: &ast.TypeRef{
 							Name: []string{
 								"Boolean",
 							},

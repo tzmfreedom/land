@@ -185,7 +185,7 @@ func (v *SoqlChecker) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) 
 	return ast.VisitFieldAccess(v, n)
 }
 
-func (v *SoqlChecker) VisitType(n *ast.Type) (interface{}, error) {
+func (v *SoqlChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
 	return ast.VisitType(v, n)
 }
 

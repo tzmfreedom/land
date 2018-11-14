@@ -543,7 +543,7 @@ func (v *TosVisitor) VisitFieldAccess(n *FieldAccess) (interface{}, error) {
 	return fmt.Sprintf("%s.%s", exp.(string), n.FieldName), nil
 }
 
-func (v *TosVisitor) VisitType(n *Type) (interface{}, error) {
+func (v *TosVisitor) VisitType(n *TypeRef) (interface{}, error) {
 	paramString := ""
 	params := make([]string, len(n.Parameters))
 	for i, param := range n.Parameters {

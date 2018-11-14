@@ -232,7 +232,7 @@ func (v *Builder) VisitMethodDeclaration(ctx *parser.MethodDeclarationContext) i
 	if ctx.ApexType() != nil {
 		n.ReturnType = ctx.ApexType().Accept(v).(Node)
 	} else {
-		n.ReturnType = VoidType
+		n.ReturnType = nil
 	}
 	n.Parameters = ctx.FormalParameters().Accept(v).([]Node)
 	if ctx.QualifiedNameList() != nil {
@@ -425,7 +425,7 @@ func (v *Builder) VisitTypedArray(ctx *parser.TypedArrayContext) interface{} {
 }
 
 func (v *Builder) VisitClassOrInterfaceType(ctx *parser.ClassOrInterfaceTypeContext) interface{} {
-	t := &Type{Location: v.newLocation(ctx)}
+	t := &TypeRef{Location: v.newLocation(ctx)}
 	arguments := ctx.AllTypeArguments()
 	t.Parameters = make([]Node, len(arguments))
 	for i, argument := range arguments {
@@ -443,7 +443,7 @@ func (v *Builder) VisitClassOrInterfaceType(ctx *parser.ClassOrInterfaceTypeCont
 }
 
 func (v *Builder) VisitPrimitiveType(ctx *parser.PrimitiveTypeContext) interface{} {
-	return &Type{
+	return &TypeRef{
 		Name:       []string{ctx.GetText()},
 		Parameters: []Node{},
 		Location:   v.newLocation(ctx),
@@ -519,7 +519,7 @@ func (v *Builder) VisitQualifiedName(ctx *parser.QualifiedNameContext) interface
 		ident := identifier.Accept(v)
 		identifiers[i], _ = ident.(string)
 	}
-	n := &Type{Location: v.newLocation(ctx)}
+	n := &TypeRef{Location: v.newLocation(ctx)}
 	n.Name = identifiers
 	return n
 }
@@ -549,7 +549,7 @@ func (v *Builder) VisitLiteral(ctx *parser.LiteralContext) interface{} {
 }
 
 func (v *Builder) VisitAnnotation(ctx *parser.AnnotationContext) interface{} {
-	name := ctx.AnnotationName().Accept(v).(*Type)
+	name := ctx.AnnotationName().Accept(v).(*TypeRef)
 	annotation := &Annotation{}
 	// TODO: implement annotationName
 	annotation.Name = name.Name[0]
@@ -984,7 +984,7 @@ func (v *Builder) VisitCreator(ctx *parser.CreatorContext) interface{} {
 
 func (v *Builder) VisitCreatedName(ctx *parser.CreatedNameContext) interface{} {
 	if identifiers := ctx.AllApexIdentifier(); len(identifiers) != 0 {
-		n := &Type{Location: v.newLocation(ctx)}
+		n := &TypeRef{Location: v.newLocation(ctx)}
 		if types := ctx.AllTypeArgumentsOrDiamond(); len(types) != 0 {
 			// n.Parameters = ctx.TypeArgumentsOrDiamond(0).Accept(v)
 		}

@@ -322,7 +322,7 @@ func (v *Interpreter) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) 
 	return ast.VisitFieldAccess(v, n)
 }
 
-func (v *Interpreter) VisitType(n *ast.Type) (interface{}, error) {
+func (v *Interpreter) VisitType(n *ast.TypeRef) (interface{}, error) {
 	return ast.VisitType(v, n)
 }
 

@@ -3,14 +3,12 @@ package compiler
 import "github.com/tzmfreedom/goland/ast"
 
 type TypeChecker struct {
-	ClassTypes    []ast.ClassType
-	CurrentMethod string
-	CurrentClass  string
-	Env           *ast.Env
-	Errors        []error
+	Context *Context
+	Errors  []error
 }
 
 func (v *TypeChecker) VisitClassType(n *ast.ClassType) (interface{}, error) {
+	v.Context.CurrentClass = n
 	for _, f := range n.StaticFields {
 		_, err := f.Accept(v)
 		v.Errors = append(v.Errors, err)
@@ -30,6 +28,7 @@ func (v *TypeChecker) VisitClassType(n *ast.ClassType) (interface{}, error) {
 		_, err := m.Accept(v)
 		v.Errors = append(v.Errors, err)
 	}
+	v.Context.CurrentClass = nil
 	return nil, nil
 }
 
@@ -114,6 +113,15 @@ func (v *TypeChecker) VisitIf(n *ast.If) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitMethodDeclaration(n *ast.MethodDeclaration) (interface{}, error) {
+	v.Context.CurrentMethod = n
+	env := newTypeEnv(nil)
+	v.Context.Env = env
+	for _, param := range n.Parameters {
+		p := param.(*ast.Parameter)
+		env.Set(p.Name, ResolveType(p.Type, v.Context))
+	}
+	n.Statements.Accept(v)
+	v.Context.CurrentMethod = nil
 	return ast.VisitMethodDeclaration(v, n)
 }
 
@@ -201,7 +209,7 @@ func (v *TypeChecker) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) 
 	return ast.VisitFieldAccess(v, n)
 }
 
-func (v *TypeChecker) VisitType(n *ast.Type) (interface{}, error) {
+func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
 	return ast.VisitType(v, n)
 }
 
@@ -247,4 +255,30 @@ func (v *TypeChecker) VisitName(n *ast.Name) (interface{}, error) {
 
 func (v *TypeChecker) VisitConstructorDeclaration(n *ast.ConstructorDeclaration) (interface{}, error) {
 	return ast.VisitConstructorDeclaration(v, n)
+}
+
+func (v *TypeChecker) CheckType(n ast.Node) {
+
+}
+
+func ResolveType(n ast.Node, ctx *Context) ast.Type {
+	t := n.(*ast.TypeRef)
+	if len(t.Name) == 1 {
+		v, ok := PrimitiveMap[t.Name[0]]
+		if ok {
+			return v
+		}
+		classType, ok := ctx.ClassTypes.Get(t.Name[0])
+		if ok {
+			return classType
+		}
+	}
+	return nil
+}
+
+var PrimitiveMap = map[string]ast.Type{
+	"Integer": ast.IntegerType,
+	"String":  ast.StringType,
+	"Double":  ast.DoubleType,
+	"Boolean": ast.BooleanType,
 }

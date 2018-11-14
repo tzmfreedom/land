@@ -104,7 +104,7 @@ func (v *TypeChecker) VisitTry(n *ast.Try) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitCatch(n *ast.Catch) (interface{}, error) {
-	t := ResolveType(n.Type, v.Context)
+	t, _ := n.Type.Accept(v)
 	v.Context.Env.Set(n.Identifier, t) // TODO: append scope
 	n.Block.Accept(v)
 	return nil, nil
@@ -153,7 +153,8 @@ func (v *TypeChecker) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 	v.Context.Env = env
 	for _, param := range n.Parameters {
 		p := param.(*ast.Parameter)
-		env.Set(p.Name, ResolveType(p.Type, v.Context))
+		t, _ := p.Type.Accept(v)
+		env.Set(p.Name, t)
 	}
 	n.Statements.Accept(v)
 	v.Context.CurrentMethod = nil
@@ -257,14 +258,14 @@ func (v *TypeChecker) VisitTriggerTiming(n *ast.TriggerTiming) (interface{}, err
 }
 
 func (v *TypeChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (interface{}, error) {
-	declType := ResolveType(n.Type, v.Context)
+	declType, _ := n.Type.Accept(v)
 	for _, d := range n.Declarators {
 		t, err := d.Accept(v)
 		if err != nil {
 			// v.Errors
 		}
 		decl := d.(*ast.VariableDeclarator)
-		v.Context.Env.Set(decl.Name, ResolveType(n.Type, v.Context))
+		v.Context.Env.Set(decl.Name, declType)
 		if declType != t {
 			// v.Errors
 		}
@@ -304,11 +305,8 @@ func (v *TypeChecker) VisitNothingStatement(n *ast.NothingStatement) (interface{
 }
 
 func (v *TypeChecker) VisitCastExpression(n *ast.CastExpression) (interface{}, error) {
-	t := ResolveType(n.CastType, v.Context)
-	exp, err := n.Expression.Accept(v)
-	if err != nil {
-		// v.Errors
-	}
+	t, _ := n.CastType.Accept(v)
+	exp, _ := n.Expression.Accept(v)
 	if t != exp {
 		// v.Errors
 	}
@@ -316,11 +314,11 @@ func (v *TypeChecker) VisitCastExpression(n *ast.CastExpression) (interface{}, e
 }
 
 func (v *TypeChecker) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) {
-	return ResolveType(n, v.Context), nil
+	return v.ResolveVariable(n), nil
 }
 
 func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
-	return ResolveType(n, v.Context), nil
+	return v.ResolveType(n), nil
 }
 
 func (v *TypeChecker) VisitBlock(n *ast.Block) (interface{}, error) {
@@ -371,18 +369,23 @@ func (v *TypeChecker) VisitConstructorDeclaration(n *ast.ConstructorDeclaration)
 	return ast.VisitConstructorDeclaration(v, n)
 }
 
-func ResolveType(n ast.Node, ctx *Context) ast.Type {
+func (v *TypeChecker) ResolveType(n ast.Node) ast.Type {
 	t := n.(*ast.TypeRef)
 	if len(t.Name) == 1 {
-		v, ok := PrimitiveMap[t.Name[0]]
+		val, ok := PrimitiveMap[t.Name[0]]
 		if ok {
-			return v
+			return val
 		}
-		classType, ok := ctx.ClassTypes.Get(t.Name[0])
+		classType, ok := v.Context.ClassTypes.Get(t.Name[0])
 		if ok {
 			return classType
 		}
 	}
+	return nil
+}
+
+func (v *TypeChecker) ResolveVariable(n ast.Node) error {
+	// VariableResolver.resolve(n, v.Context)
 	return nil
 }
 

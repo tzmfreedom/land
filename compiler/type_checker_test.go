@@ -91,20 +91,20 @@ func TestTypeChecker(t *testing.T) {
 						Statements: &ast.Block{
 							Statements: []ast.Node{
 								&ast.While{
-									Condition:     &ast.BooleanLiteral{},
-									Statements:   []ast.Node{},
+									Condition:  &ast.BooleanLiteral{},
+									Statements: []ast.Node{},
 								},
 								&ast.While{
-									Condition:     &ast.StringLiteral{},
-									Statements:   []ast.Node{},
+									Condition:  &ast.StringLiteral{},
+									Statements: []ast.Node{},
 								},
 								&ast.While{
-									Condition:     &ast.IntegerLiteral{},
-									Statements:   []ast.Node{},
+									Condition:  &ast.IntegerLiteral{},
+									Statements: []ast.Node{},
 								},
 								&ast.While{
-									Condition:     &ast.DoubleLiteral{},
-									Statements:   []ast.Node{},
+									Condition:  &ast.DoubleLiteral{},
+									Statements: []ast.Node{},
 								},
 							},
 						},
@@ -130,23 +130,23 @@ func TestTypeChecker(t *testing.T) {
 						Statements: &ast.Block{
 							Statements: []ast.Node{
 								&ast.TernalyExpression{
-									Condition:     &ast.BooleanLiteral{},
-									TrueExpression:   &ast.IntegerLiteral{},
+									Condition:       &ast.BooleanLiteral{},
+									TrueExpression:  &ast.IntegerLiteral{},
 									FalseExpression: &ast.IntegerLiteral{},
 								},
 								&ast.TernalyExpression{
-									Condition:     &ast.StringLiteral{},
-									TrueExpression:   &ast.IntegerLiteral{},
+									Condition:       &ast.StringLiteral{},
+									TrueExpression:  &ast.IntegerLiteral{},
 									FalseExpression: &ast.IntegerLiteral{},
 								},
 								&ast.TernalyExpression{
-									Condition:     &ast.IntegerLiteral{},
-									TrueExpression:   &ast.IntegerLiteral{},
+									Condition:       &ast.IntegerLiteral{},
+									TrueExpression:  &ast.IntegerLiteral{},
 									FalseExpression: &ast.IntegerLiteral{},
 								},
 								&ast.TernalyExpression{
-									Condition:     &ast.DoubleLiteral{},
-									TrueExpression:   &ast.IntegerLiteral{},
+									Condition:       &ast.DoubleLiteral{},
+									TrueExpression:  &ast.IntegerLiteral{},
 									FalseExpression: &ast.IntegerLiteral{},
 								},
 							},
@@ -174,7 +174,7 @@ func TestTypeChecker(t *testing.T) {
 						Statements: &ast.Block{
 							Statements: []ast.Node{
 								&ast.Return{
-									Expression:     &ast.StringLiteral{},
+									Expression: &ast.StringLiteral{},
 								},
 							},
 						},
@@ -184,7 +184,7 @@ func TestTypeChecker(t *testing.T) {
 						Statements: &ast.Block{
 							Statements: []ast.Node{
 								&ast.Return{
-									Expression:     &ast.IntegerLiteral{},
+									Expression: &ast.IntegerLiteral{},
 								},
 							},
 						},
@@ -194,7 +194,7 @@ func TestTypeChecker(t *testing.T) {
 						Statements: &ast.Block{
 							Statements: []ast.Node{
 								&ast.Return{
-									Expression:     &ast.DoubleLiteral{},
+									Expression: &ast.DoubleLiteral{},
 								},
 							},
 						},
@@ -204,7 +204,7 @@ func TestTypeChecker(t *testing.T) {
 						Statements: &ast.Block{
 							Statements: []ast.Node{
 								&ast.Return{
-									Expression:     &ast.BooleanLiteral{},
+									Expression: &ast.BooleanLiteral{},
 								},
 							},
 						},
@@ -220,6 +220,84 @@ func TestTypeChecker(t *testing.T) {
 				},
 				{
 					Message: "return type <boolean> does not match integer",
+				},
+			},
+		},
+		{
+			&ast.ClassType{
+				InstanceMethods: []ast.Node{
+					&ast.MethodDeclaration{
+						Statements: &ast.Block{
+							Statements: []ast.Node{
+								&ast.For{
+									Control: &ast.ForControl{
+										Expression: &ast.IntegerLiteral{},
+									},
+								},
+								&ast.For{
+									Control: &ast.ForControl{
+										Expression: &ast.StringLiteral{},
+									},
+								},
+								&ast.For{
+									Control: &ast.ForControl{
+										Expression: &ast.DoubleLiteral{},
+									},
+								},
+								&ast.For{
+									Control: &ast.ForControl{
+										Expression: &ast.BooleanLiteral{},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			[]*Error{
+				{
+					Message: "condition <integer> must be boolean expression",
+				},
+				{
+					Message: "condition <string> must be boolean expression",
+				},
+				{
+					Message: "condition <double> must be boolean expression",
+				},
+			},
+		},
+		{
+			&ast.ClassType{
+				InstanceMethods: []ast.Node{
+					&ast.MethodDeclaration{
+						Statements: &ast.Block{
+							Statements: []ast.Node{
+								&ast.UnaryOperator{
+									Expression: &ast.IntegerLiteral{},
+								},
+								&ast.UnaryOperator{
+									Expression: &ast.StringLiteral{},
+								},
+								&ast.UnaryOperator{
+									Expression: &ast.DoubleLiteral{},
+								},
+								&ast.UnaryOperator{
+									Expression: &ast.BooleanLiteral{},
+								},
+							},
+						},
+					},
+				},
+			},
+			[]*Error{
+				{
+					Message: "expression <string> must be integer",
+				},
+				{
+					Message: "expression <double> must be integer",
+				},
+				{
+					Message: "expression <boolean> must be integer",
 				},
 			},
 		},

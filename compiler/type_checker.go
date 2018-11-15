@@ -130,16 +130,27 @@ func (v *TypeChecker) VisitFinally(n *ast.Finally) (interface{}, error) {
 
 func (v *TypeChecker) VisitFor(n *ast.For) (interface{}, error) {
 	n.Control.Accept(v)
-	n.Statements.Accept(v)
+	if n.Statements != nil {
+		n.Statements.Accept(v)
+	}
 	return nil, nil
 }
 
 func (v *TypeChecker) VisitForControl(n *ast.ForControl) (interface{}, error) {
-	n.ForInit.Accept(v)
-	for _, u := range n.ForUpdate {
-		u.Accept(v)
+	if n.ForInit != nil {
+		n.ForInit.Accept(v)
 	}
-	n.Expression.Accept(v)
+	if n.ForUpdate != nil {
+		for _, u := range n.ForUpdate {
+			u.Accept(v)
+		}
+	}
+	if n.Expression != nil {
+		t, _ := n.Expression.Accept(v)
+		if t != ast.BooleanType {
+			v.AddError(fmt.Sprintf("condition <%s> must be boolean expression", ast.TypeName(t)), n.Expression)
+		}
+	}
 	return nil, nil
 }
 
@@ -177,7 +188,11 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 }
 
 func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
-	return ast.VisitNew(v, n)
+	n.Type.Accept(v)
+	for _, p := range n.Parameters {
+		p.Accept(v)
+	}
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitNullLiteral(n *ast.NullLiteral) (interface{}, error) {
@@ -185,7 +200,11 @@ func (v *TypeChecker) VisitNullLiteral(n *ast.NullLiteral) (interface{}, error) 
 }
 
 func (v *TypeChecker) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, error) {
-	return ast.VisitUnaryOperator(v, n)
+	t, _ := n.Expression.Accept(v)
+	if t != ast.IntegerType {
+		v.AddError(fmt.Sprintf("expression <%s> must be integer", ast.TypeName(t)), n.Expression)
+	}
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, error) {
@@ -199,11 +218,18 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 	}
 	if n.Op == "+" {
 		if l != ast.IntegerType && l != ast.StringType && l != ast.DoubleType {
-			// v.Errors
+			v.AddError(fmt.Sprintf("expression <%s> must be integer, string or double", ast.TypeName(l)), n.Left)
 		}
 	}
-	if r != l {
-		// v.Errors
+	if n.Op == "-" || n.Op == "*" || n.Op == "/" || n.Op == "%" {
+		if l != ast.IntegerType && l != ast.DoubleType {
+			v.AddError(fmt.Sprintf("expression <%s> must be integer or double", ast.TypeName(l)), n.Left)
+		}
+	}
+	if n.Op == "=" || n.Op == "+=" || n.Op == "-=" || n.Op == "*=" || n.Op == "/=" || n.Op == "%=" {
+		if l != r {
+			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", ast.TypeName(l), ast.TypeName(r)), n.Left)
+		}
 	}
 	return nil, nil
 }
@@ -218,10 +244,7 @@ func (v *TypeChecker) VisitReturn(n *ast.Return) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitThrow(n *ast.Throw) (interface{}, error) {
-	_, err := n.Expression.Accept(v)
-	if err != nil {
-		// v.Errors
-	}
+	_, _ = n.Expression.Accept(v)
 	// Check Subclass of Exception
 	return nil, nil
 }
@@ -239,15 +262,9 @@ func (v *TypeChecker) VisitStringLiteral(n *ast.StringLiteral) (interface{}, err
 }
 
 func (v *TypeChecker) VisitSwitch(n *ast.Switch) (interface{}, error) {
-	exp, err := n.Expression.Accept(v)
-	if err != nil {
-		// v.Errors
-	}
+	exp, _ := n.Expression.Accept(v)
 	for _, w := range n.WhenStatements {
-		t, err := w.Accept(v)
-		if err != nil {
-			// v.Errors
-		}
+		t, _ := w.Accept(v)
 		if t != exp {
 			// v.Errors
 		}
@@ -268,10 +285,7 @@ func (v *TypeChecker) VisitTriggerTiming(n *ast.TriggerTiming) (interface{}, err
 func (v *TypeChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (interface{}, error) {
 	declType, _ := n.Type.Accept(v)
 	for _, d := range n.Declarators {
-		t, err := d.Accept(v)
-		if err != nil {
-			// v.Errors
-		}
+		t, _ := d.Accept(v)
 		decl := d.(*ast.VariableDeclarator)
 		v.Context.Env.Set(decl.Name, declType)
 		if declType != t {
@@ -294,10 +308,7 @@ func (v *TypeChecker) VisitWhenType(n *ast.WhenType) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitWhile(n *ast.While) (interface{}, error) {
-	t, err := n.Condition.Accept(v)
-	if err != nil {
-		// v.Errors
-	}
+	t, _ := n.Condition.Accept(v)
 	if t != ast.BooleanType {
 		v.AddError(fmt.Sprintf("condition <%s> must be boolean expression", ast.TypeName(t)), n.Condition)
 	}

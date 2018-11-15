@@ -1,40 +1,46 @@
 package compiler
 
 import (
+	"fmt"
+
 	"github.com/tzmfreedom/goland/ast"
 )
 
 type TypeChecker struct {
 	Context *Context
-	Errors  []error
+	Errors  []*Error
+}
+
+func NewTypeChecker() *TypeChecker {
+	return &TypeChecker{
+		Context: &Context{},
+		Errors:  []*Error{},
+	}
 }
 
 func (v *TypeChecker) VisitClassType(n *ast.ClassType) (interface{}, error) {
 	v.Context.CurrentClass = n
 	for _, f := range n.StaticFields {
-		_, err := f.Accept(v)
-		v.Errors = append(v.Errors, err)
+		f.Accept(v)
 	}
 
 	for _, f := range n.InstanceFields {
-		_, err := f.Accept(v)
-		v.Errors = append(v.Errors, err)
+		f.Accept(v)
 	}
 
 	for _, m := range n.StaticMethods {
-		_, err := m.Accept(v)
-		v.Errors = append(v.Errors, err)
+		m.Accept(v)
 	}
 
 	for _, m := range n.InstanceMethods {
-		_, err := m.Accept(v)
-		v.Errors = append(v.Errors, err)
+		m.Accept(v)
 	}
 	v.Context.CurrentClass = nil
 	return nil, nil
 }
 
 func (v *TypeChecker) VisitClassDeclaration(n *ast.ClassDeclaration) (interface{}, error) {
+	panic("Not pass")
 	return ast.VisitClassDeclaration(v, n)
 }
 
@@ -49,6 +55,7 @@ func (v *TypeChecker) VisitAnnotation(n *ast.Annotation) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitInterfaceDeclaration(n *ast.InterfaceDeclaration) (interface{}, error) {
+	panic("Not pass")
 	return ast.VisitInterfaceDeclaration(v, n)
 }
 
@@ -57,11 +64,17 @@ func (v *TypeChecker) VisitIntegerLiteral(n *ast.IntegerLiteral) (interface{}, e
 }
 
 func (v *TypeChecker) VisitParameter(n *ast.Parameter) (interface{}, error) {
-	return ast.VisitParameter(v, n)
+	n.Type.Accept(v)
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) {
-	return ast.VisitArrayAccess(v, n)
+	n.Receiver.Accept(v)
+	t, _ := n.Key.Accept(v)
+	if t != ast.IntegerType && t != ast.StringType {
+		v.AddError(fmt.Sprintf("array key <%v> must be integer or string", ast.TypeName(t)), n.Key)
+	}
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitBooleanLiteral(n *ast.BooleanLiteral) (interface{}, error) {
@@ -135,12 +148,9 @@ func (v *TypeChecker) VisitEnhancedForControl(n *ast.EnhancedForControl) (interf
 }
 
 func (v *TypeChecker) VisitIf(n *ast.If) (interface{}, error) {
-	t, err := n.Condition.Accept(v)
-	if err != nil {
-		// v.Errors
-	}
+	t, _ := n.Condition.Accept(v)
 	if t != ast.BooleanType {
-		// v.Errors
+		v.AddError(fmt.Sprintf("condition <%s> must be boolean expression", ast.TypeName(t)), n.Condition)
 	}
 	n.IfStatement.Accept(v)
 	n.ElseStatement.Accept(v)
@@ -158,7 +168,7 @@ func (v *TypeChecker) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 	}
 	n.Statements.Accept(v)
 	v.Context.CurrentMethod = nil
-	return ast.VisitMethodDeclaration(v, n)
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{}, error) {
@@ -199,12 +209,10 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 }
 
 func (v *TypeChecker) VisitReturn(n *ast.Return) (interface{}, error) {
-	exp, err := n.Expression.Accept(v)
-	if err != nil {
-		v.Errors = append(v.Errors, err)
-	}
-	if v.Context.CurrentMethod.ReturnType != exp {
-		// v.Errors
+	exp, _ := n.Expression.Accept(v)
+	retType, _ := v.Context.CurrentMethod.ReturnType.Accept(v)
+	if retType != exp {
+		v.AddError(fmt.Sprintf("return type <%s> does not match %v", ast.TypeName(exp), ast.TypeName(retType)), n.Expression)
 	}
 	return nil, nil
 }
@@ -291,7 +299,7 @@ func (v *TypeChecker) VisitWhile(n *ast.While) (interface{}, error) {
 		// v.Errors
 	}
 	if t != ast.BooleanType {
-		// v.Errors
+		v.AddError(fmt.Sprintf("condition <%s> must be boolean expression", ast.TypeName(t)), n.Condition)
 	}
 	for _, stmt := range n.Statements {
 		stmt.Accept(v)
@@ -349,7 +357,16 @@ func (v *TypeChecker) VisitSoqlBindVariable(n *ast.SoqlBindVariable) (interface{
 }
 
 func (v *TypeChecker) VisitTernalyExpression(n *ast.TernalyExpression) (interface{}, error) {
-	return ast.VisitTernalyExpression(v, n)
+	c, _ := n.Condition.Accept(v)
+	if c != ast.BooleanType {
+		v.AddError(fmt.Sprintf("condition <%s> must be boolean expression", ast.TypeName(c)), n.Condition)
+	}
+	t, _ := n.TrueExpression.Accept(v)
+	f, _ := n.FalseExpression.Accept(v)
+	if t != f {
+		v.AddError(fmt.Sprintf("condition does not match %s != %s", ast.TypeName(t), ast.TypeName(f)), n.TrueExpression)
+	}
+	return t, nil
 }
 
 func (v *TypeChecker) VisitMapCreator(n *ast.MapCreator) (interface{}, error) {
@@ -384,9 +401,18 @@ func (v *TypeChecker) ResolveType(n ast.Node) ast.Type {
 	return nil
 }
 
+func (v *TypeChecker) AddError(msg string, node ast.Node) {
+	v.Errors = append(v.Errors, &Error{Message: msg, Node: node})
+}
+
 func (v *TypeChecker) ResolveVariable(n ast.Node) error {
 	// VariableResolver.resolve(n, v.Context)
 	return nil
+}
+
+type Error struct {
+	Message string
+	Node    ast.Node
 }
 
 var PrimitiveMap = map[string]ast.Type{

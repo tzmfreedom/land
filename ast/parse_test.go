@@ -306,7 +306,7 @@ i = (1 + 2) * 3;
 				&BinaryOperator{
 					Op: "=",
 					Left: &Name{
-						Value: "i",
+						Value: []string{"i"},
 					},
 					Right: &BinaryOperator{
 						Op: "+",
@@ -327,7 +327,7 @@ i = (1 + 2) * 3;
 				&BinaryOperator{
 					Op: "=",
 					Left: &Name{
-						Value: "i",
+						Value: []string{"i"},
 					},
 					Right: &BinaryOperator{
 						Op: "+",
@@ -348,7 +348,7 @@ i = (1 + 2) * 3;
 				&BinaryOperator{
 					Op: "=",
 					Left: &Name{
-						Value: "i",
+						Value: []string{"i"},
 					},
 					Right: &BinaryOperator{
 						Op: "*",
@@ -380,7 +380,7 @@ foo(1, s, false);
 				&FieldAccess{
 					Expression: &FieldAccess{
 						Expression: &Name{
-							Value: "foo",
+							Value: []string{"foo"},
 						},
 						FieldName: "bar",
 					},
@@ -390,7 +390,7 @@ foo(1, s, false);
 					NameOrExpression: &FieldAccess{
 						Expression: &FieldAccess{
 							Expression: &Name{
-								Value: "foo",
+								Value: []string{"foo"},
 							},
 							FieldName: "bar",
 						},
@@ -400,14 +400,14 @@ foo(1, s, false);
 				},
 				&MethodInvocation{
 					NameOrExpression: &Name{
-						Value: "foo",
+						Value: []string{"foo"},
 					},
 					Parameters: []Node{
 						&IntegerLiteral{
 							Value: 1,
 						},
 						&Name{
-							Value: "s",
+							Value: []string{"s"},
 						},
 						&BooleanLiteral{
 							Value: false,
@@ -447,7 +447,7 @@ public void action(){
 					Condition: &BinaryOperator{
 						Op: "==",
 						Left: &Name{
-							Value: "i",
+							Value: []string{"i"},
 						},
 						Right: &IntegerLiteral{
 							Value: 1,
@@ -464,7 +464,7 @@ public void action(){
 						Condition: &BinaryOperator{
 							Op: "==",
 							Left: &Name{
-								Value: "i",
+								Value: []string{"i"},
 							},
 							Right: &IntegerLiteral{
 								Value: 2,
@@ -488,7 +488,7 @@ public void action(){
 				},
 				&Switch{
 					Expression: &Name{
-						Value: "i",
+						Value: []string{"i"},
 					},
 					WhenStatements: []Node{
 						&When{
@@ -593,17 +593,17 @@ public void action(){
 						Expression: &BinaryOperator{
 							Op: "<",
 							Left: &Name{
-								Value: "i",
+								Value: []string{"i"},
 							},
 							Right: &Name{
-								Value: "imax",
+								Value: []string{"imax"},
 							},
 						},
 						ForUpdate: []Node{
 							&UnaryOperator{
 								Op: "++",
 								Expression: &Name{
-									Value: "i",
+									Value: []string{"i"},
 								},
 								IsPrefix: false,
 							},
@@ -654,7 +654,7 @@ public void action(){
 						},
 						VariableDeclaratorId: "acc",
 						Expression: &Name{
-							Value: "accounts",
+							Value: []string{"accounts"},
 						},
 					},
 					Statements: &Block{
@@ -687,7 +687,7 @@ try {
 						Statements: []Node{
 							&Throw{
 								Expression: &Name{
-									Value: "a",
+									Value: []string{"a"},
 								},
 							},
 						},

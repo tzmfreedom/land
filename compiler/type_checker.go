@@ -187,16 +187,11 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 	resolver := TypeResolver{}
 
 	nameOrExp := n.NameOrExpression
-	if _, ok := nameOrExp.(*ast.Name); ok {
-		// pass only this context method.
+	if name, ok := nameOrExp.(*ast.Name); ok {
+		resolver.ResolveMethod(name.Value, v.Context)
 	} else if fieldAccess, ok := nameOrExp.(*ast.FieldAccess); ok {
-		//
-		exp, _ := fieldAccess.Expression.Accept(v)
-		return resolver.ResolveMethod(
-			exp.(*ast.ClassType),
-			fieldAccess.FieldName,
-			v.Context,
-		), nil
+		_, _ = fieldAccess.Expression.Accept(v)
+		// fieldAccess.FieldName
 	}
 	return nil, nil
 }
@@ -405,7 +400,7 @@ func (v *TypeChecker) VisitSetCreator(n *ast.SetCreator) (interface{}, error) {
 func (v *TypeChecker) VisitName(n *ast.Name) (interface{}, error) {
 	pp.Print(n.Value)
 	resolver := TypeResolver{}
-	return resolver.ResolveVariable(n.Value, v.Context), nil
+	return resolver.ResolveVariable(n.Value, v.Context)
 }
 
 func (v *TypeChecker) VisitConstructorDeclaration(n *ast.ConstructorDeclaration) (interface{}, error) {

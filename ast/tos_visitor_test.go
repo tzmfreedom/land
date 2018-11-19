@@ -67,14 +67,14 @@ func TestToString(t *testing.T) {
 		},
 		{
 			&ArrayAccess{
-				Receiver: &Name{Value: "foo"},
+				Receiver: &Name{Value: []string{"foo"}},
 				Key:      &StringLiteral{Value: "bar"},
 			},
 			"foo['bar']",
 		},
 		{
 			&ArrayAccess{
-				Receiver: &Name{Value: "foo"},
+				Receiver: &Name{Value: []string{"foo"}},
 				Key:      &IntegerLiteral{Value: 1},
 			},
 			"foo[1]",
@@ -98,7 +98,7 @@ func TestToString(t *testing.T) {
 		{
 			&Dml{
 				Type:       "insert",
-				Expression: &Name{Value: "foo"},
+				Expression: &Name{Value: []string{"foo"}},
 			},
 			"insert foo",
 		},

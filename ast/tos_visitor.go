@@ -637,7 +637,7 @@ func (v *TosVisitor) VisitSetCreator(n *SetCreator) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitName(n *Name) (interface{}, error) {
-	return n.Value, nil
+	return strings.Join(n.Value, "."), nil
 }
 
 func (v *TosVisitor) VisitConstructorDeclaration(n *ConstructorDeclaration) (interface{}, error) {

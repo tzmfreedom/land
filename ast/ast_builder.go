@@ -946,6 +946,14 @@ func (v *Builder) VisitShiftExpression(ctx *parser.ShiftExpressionContext) inter
 func (v *Builder) VisitFieldAccess(ctx *parser.FieldAccessContext) interface{} {
 	expression := ctx.Expression().Accept(v).(Node)
 	fieldName := ctx.ApexIdentifier().Accept(v).(string)
+	if name := expression.(*Name); name != nil {
+		value := append(name.Value, fieldName)
+		return &Name{
+			Value:    value,
+			Location: name.Location,
+			Parent:   name.Parent,
+		}
+	}
 	return &FieldAccess{
 		Expression: expression,
 		FieldName:  fieldName,
@@ -964,7 +972,8 @@ func (v *Builder) VisitPrimary(ctx *parser.PrimaryContext) interface{} {
 		return l.Accept(v)
 	} else if i := ctx.ApexIdentifier(); i != nil {
 		n := &Name{Location: v.newLocation(ctx)}
-		n.Value = i.Accept(v).(string)
+		value := i.Accept(v).(string)
+		n.Value = []string{value}
 		return n
 	} else if l := ctx.SoqlLiteral(); l != nil {
 		return l.Accept(v)
@@ -974,7 +983,8 @@ func (v *Builder) VisitPrimary(ctx *parser.PrimaryContext) interface{} {
 		return t.Accept(v)
 	}
 	n := &Name{Location: v.newLocation(ctx)}
-	n.Value = ctx.PrimitiveType().GetText()
+	value := ctx.PrimitiveType().GetText()
+	n.Value = []string{value}
 	return n
 }
 

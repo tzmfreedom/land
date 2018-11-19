@@ -40,10 +40,7 @@ func main() {
 		if err != nil {
 			handleError(err)
 		}
-		err = check(root)
-		if err != nil {
-			handleError(err)
-		}
+		semantic_analysis(root)
 	}
 }
 
@@ -63,13 +60,14 @@ func semantic_analysis(n ast.Node) error {
 	if err != nil {
 		return err
 	}
-	classTypes := &compiler.ClassMap{}
+	classTypes := compiler.NewClassMap()
 	if tp, ok := t.(*ast.ClassType); ok {
 		classTypes.Set(tp.Name, tp)
 	}
 	typeChecker := &compiler.TypeChecker{}
+	typeChecker.Context = &compiler.Context{}
 	typeChecker.Context.ClassTypes = classTypes
-	_, err = n.Accept(typeChecker)
+	_, err = typeChecker.VisitClassType(t.(*ast.ClassType))
 	if err != nil {
 		return err
 	}

@@ -136,9 +136,10 @@ func (v *Interpreter) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 
 func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{}, error) {
 	switch exp := n.NameOrExpression.(type) {
-	case *ast.FieldAccess:
-		if exp.Expression.(*ast.Name).Value == "System" &&
-			exp.FieldName == "debug" {
+	case *ast.Name:
+		if len(exp.Value) == 2 &&
+			exp.Value[0] == "System" &&
+			exp.Value[1] == "debug" {
 			for _, p := range n.Parameters {
 				res, err := p.Accept(v)
 				if err != nil {
@@ -147,6 +148,7 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 				pp.Println(res)
 			}
 		}
+	case *ast.FieldAccess:
 	}
 	return ast.VisitMethodInvocation(v, n)
 }

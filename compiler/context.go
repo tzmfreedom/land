@@ -11,6 +11,7 @@ type Env interface{}
 type Context struct {
 	Env           *TypeEnv
 	ClassTypes    *ClassMap
+	NameSpaces    *TypeEnv
 	CurrentMethod *ast.MethodDeclaration
 	CurrentClass  *ast.ClassType
 }
@@ -62,7 +63,7 @@ type TypeEnv struct {
 
 func newTypeEnv(p *TypeEnv) *TypeEnv {
 	return &TypeEnv{
-		Data:   &TypeMap{},
+		Data:   newTypeMap(),
 		Parent: p,
 	}
 }
@@ -86,6 +87,12 @@ type TypeMap struct {
 	Data map[string]ast.Type
 }
 
+func newTypeMap() *TypeMap {
+	return &TypeMap{
+		Data: map[string]ast.Type{},
+	}
+}
+
 func (m *TypeMap) Set(k string, n ast.Type) {
 	m.Data[strings.ToLower(k)] = n
 }
@@ -97,6 +104,12 @@ func (m *TypeMap) Get(k string) (ast.Type, bool) {
 
 type ClassMap struct {
 	Data map[string]*ast.ClassType
+}
+
+func NewClassMap() *ClassMap {
+	return &ClassMap{
+		Data: map[string]*ast.ClassType{},
+	}
 }
 
 func (m *ClassMap) Set(k string, n *ast.ClassType) {

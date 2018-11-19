@@ -3,6 +3,7 @@ package compiler
 import (
 	"fmt"
 
+	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
 )
 
@@ -183,8 +184,21 @@ func (v *TypeChecker) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 }
 
 func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{}, error) {
-	// Use Resolver
-	return ast.VisitMethodInvocation(v, n)
+	resolver := TypeResolver{}
+
+	nameOrExp := n.NameOrExpression
+	if _, ok := nameOrExp.(*ast.Name); ok {
+		// pass only this context method.
+	} else if fieldAccess, ok := nameOrExp.(*ast.FieldAccess); ok {
+		//
+		exp, _ := fieldAccess.Expression.Accept(v)
+		return resolver.ResolveMethod(
+			exp.(*ast.ClassType),
+			fieldAccess.FieldName,
+			v.Context,
+		), nil
+	}
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
@@ -389,8 +403,9 @@ func (v *TypeChecker) VisitSetCreator(n *ast.SetCreator) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitName(n *ast.Name) (interface{}, error) {
-	// Use Resolver
-	return ast.VisitName(v, n)
+	pp.Print(n.Value)
+	resolver := TypeResolver{}
+	return resolver.ResolveVariable(n.Value, v.Context), nil
 }
 
 func (v *TypeChecker) VisitConstructorDeclaration(n *ast.ConstructorDeclaration) (interface{}, error) {

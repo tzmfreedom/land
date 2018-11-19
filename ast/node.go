@@ -422,7 +422,7 @@ type SetCreator struct {
 }
 
 type Name struct {
-	Value    string
+	Value    []string
 	Location *Location
 	Parent   Node
 }

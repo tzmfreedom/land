@@ -1,6 +1,8 @@
 package compiler
 
 import (
+	"strings"
+
 	"github.com/pkg/errors"
 	"github.com/tzmfreedom/goland/ast"
 )
@@ -101,7 +103,11 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (interface{},
 
 func (r *TypeResolver) ResolveType(names []string, ctx *Context) (interface{}, error) {
 	if len(names) == 1 {
-		return ast.IntegerType, nil
+		if strings.ToLower(names[0]) == "integer" {
+			return ast.IntegerType, nil
+		}
+		class, _ := ctx.ClassTypes.Get(names[0])
+		return class, nil
 		// search for Primitive or System or UserClass
 	} else if len(names) == 2 {
 		// search for UserClass.InnerClass

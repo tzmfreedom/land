@@ -42,6 +42,48 @@ func TestResolve(t *testing.T) {
 			nil,
 			errors.New("i is not found in this scope"),
 		},
+		{
+			[]string{"i", "j"},
+			&Context{
+				Env: &TypeEnv{
+					Data: &TypeMap{
+						Data: map[string]ast.Type{
+							"i": &ast.ClassType{
+								InstanceFields: &ast.FieldMap{
+									Data: map[string]*ast.Field{
+										"j": {
+											Type: &ast.TypeRef{
+												Name: []string{"Integer"},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			ast.IntegerType,
+			nil,
+		},
+		{
+			[]string{"i", "j"},
+			&Context{
+				Env: &TypeEnv{
+					Data: &TypeMap{
+						Data: map[string]ast.Type{
+							"i": &ast.ClassType{
+								InstanceFields: &ast.FieldMap{
+									Data: map[string]*ast.Field{},
+								},
+							},
+						},
+					},
+				},
+			},
+			nil,
+			errors.New("j is not found in this scope"),
+		},
 	}
 	typeResolver := &TypeResolver{}
 	for _, testCase := range testCases {

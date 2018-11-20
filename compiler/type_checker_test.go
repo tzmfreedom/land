@@ -3,7 +3,6 @@ package compiler
 import (
 	"testing"
 
-	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
 )
 
@@ -340,7 +339,6 @@ func TestTypeChecker(t *testing.T) {
 		checker := NewTypeChecker()
 		checker.VisitClassType(testCase.Input)
 
-		pp.Print(checker)
 		for i, actual := range checker.Errors {
 			expected := testCase.ExpectErrors[i]
 			if expected.Message != actual.Message {

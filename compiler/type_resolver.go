@@ -19,7 +19,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (interface{
 			for _, f := range names[1:] {
 				instanceField, ok := fieldType.(*ast.ClassType).InstanceFields.Get(f)
 				if !ok {
-					return nil, errors.Errorf("%s is not found in this scope", names[0])
+					return nil, errors.Errorf("%s is not found in this scope", f)
 				}
 				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
 			}
@@ -32,7 +32,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (interface{
 				for _, f := range names[2:] {
 					instanceField, ok := fieldType.(*ast.ClassType).InstanceFields.Get(f)
 					if !ok {
-						return nil, errors.Errorf("%s is not found in this scope", names[0])
+						return nil, errors.Errorf("%s is not found in this scope", f)
 					}
 					fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
 				}
@@ -47,7 +47,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (interface{
 					for _, f := range names[3:] {
 						instanceField, ok := fieldType.(*ast.ClassType).InstanceFields.Get(f)
 						if !ok {
-							return nil, errors.Errorf("%s is not found in this scope", names[0])
+							return nil, errors.Errorf("%s is not found in this scope", f)
 						}
 						fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
 					}
@@ -101,7 +101,13 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (interface{},
 
 func (r *TypeResolver) ResolveType(names []string, ctx *Context) (interface{}, error) {
 	if len(names) == 1 {
-
+		return ast.IntegerType, nil
+		// search for Primitive or System or UserClass
+	} else if len(names) == 2 {
+		// search for UserClass.InnerClass
+		// search for NameSpace.UserClass
+	} else if len(names) == 3 {
+		// search for NameSpace.UserClass.InnerClass
 	}
 	return nil, nil
 }

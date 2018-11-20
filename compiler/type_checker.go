@@ -3,7 +3,6 @@ package compiler
 import (
 	"fmt"
 
-	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
 )
 
@@ -418,7 +417,6 @@ func (v *TypeChecker) VisitSetCreator(n *ast.SetCreator) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitName(n *ast.Name) (interface{}, error) {
-	pp.Print(n.Value)
 	resolver := TypeResolver{}
 	return resolver.ResolveVariable(n.Value, v.Context)
 }

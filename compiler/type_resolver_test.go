@@ -1,0 +1,60 @@
+package compiler
+
+import (
+	"errors"
+	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/k0kubun/pp"
+	"github.com/tzmfreedom/goland/ast"
+)
+
+func TestResolve(t *testing.T) {
+	testCases := []struct {
+		Input    []string
+		Context  *Context
+		Expected ast.Type
+		Error    error
+	}{
+		{
+			[]string{"i"},
+			&Context{
+				Env: &TypeEnv{
+					Data: &TypeMap{
+						Data: map[string]ast.Type{
+							"i": ast.IntegerType,
+						},
+					},
+				},
+			},
+			ast.IntegerType,
+			nil,
+		},
+		{
+			[]string{"i"},
+			&Context{
+				Env: &TypeEnv{
+					Data: &TypeMap{
+						Data: map[string]ast.Type{},
+					},
+				},
+			},
+			nil,
+			errors.New("i is not found in this scope"),
+		},
+	}
+	typeResolver := &TypeResolver{}
+	for _, testCase := range testCases {
+		actual, err := typeResolver.ResolveVariable(testCase.Input, testCase.Context)
+		if testCase.Error != nil && testCase.Error.Error() != err.Error() {
+			diff := cmp.Diff(testCase.Error.Error(), err.Error())
+			t.Errorf(diff)
+		}
+
+		if ok := cmp.Equal(testCase.Expected, actual); !ok {
+			diff := cmp.Diff(testCase.Expected, actual)
+			pp.Print(actual)
+			t.Errorf(diff)
+		}
+	}
+}

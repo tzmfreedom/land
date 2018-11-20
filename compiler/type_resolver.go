@@ -1,6 +1,9 @@
 package compiler
 
-import "github.com/tzmfreedom/goland/ast"
+import (
+	"github.com/pkg/errors"
+	"github.com/tzmfreedom/goland/ast"
+)
 
 type TypeResolver struct{}
 
@@ -9,6 +12,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (interface{
 		if v, ok := ctx.Env.Get(names[0]); ok {
 			return v, nil
 		}
+		return nil, errors.Errorf("%s is not found in this scope", names[0])
 	} else {
 		name := names[0]
 		if fieldType, ok := ctx.Env.Get(name); ok {

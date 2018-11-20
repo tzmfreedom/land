@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/tzmfreedom/goland/ast"
@@ -81,13 +82,13 @@ func TestTypeChecker(t *testing.T) {
 			},
 			[]*Error{
 				{
-					Message: "condition <string> must be boolean expression",
+					Message: "condition <double> must be boolean expression",
 				},
 				{
 					Message: "condition <integer> must be boolean expression",
 				},
 				{
-					Message: "condition <double> must be boolean expression",
+					Message: "condition <string> must be boolean expression",
 				},
 			},
 		},
@@ -124,13 +125,13 @@ func TestTypeChecker(t *testing.T) {
 			},
 			[]*Error{
 				{
-					Message: "condition <string> must be boolean expression",
+					Message: "condition <double> must be boolean expression",
 				},
 				{
 					Message: "condition <integer> must be boolean expression",
 				},
 				{
-					Message: "condition <double> must be boolean expression",
+					Message: "condition <string> must be boolean expression",
 				},
 			},
 		},
@@ -171,13 +172,13 @@ func TestTypeChecker(t *testing.T) {
 			},
 			[]*Error{
 				{
-					Message: "condition <string> must be boolean expression",
+					Message: "condition <double> must be boolean expression",
 				},
 				{
 					Message: "condition <integer> must be boolean expression",
 				},
 				{
-					Message: "condition <double> must be boolean expression",
+					Message: "condition <string> must be boolean expression",
 				},
 			},
 		},
@@ -238,13 +239,13 @@ func TestTypeChecker(t *testing.T) {
 			},
 			[]*Error{
 				{
-					Message: "return type <string> does not match integer",
+					Message: "return type <boolean> does not match integer",
 				},
 				{
 					Message: "return type <double> does not match integer",
 				},
 				{
-					Message: "return type <boolean> does not match integer",
+					Message: "return type <string> does not match integer",
 				},
 			},
 		},
@@ -285,13 +286,13 @@ func TestTypeChecker(t *testing.T) {
 			},
 			[]*Error{
 				{
+					Message: "condition <double> must be boolean expression",
+				},
+				{
 					Message: "condition <integer> must be boolean expression",
 				},
 				{
 					Message: "condition <string> must be boolean expression",
-				},
-				{
-					Message: "condition <double> must be boolean expression",
 				},
 			},
 		},
@@ -324,13 +325,13 @@ func TestTypeChecker(t *testing.T) {
 			},
 			[]*Error{
 				{
-					Message: "expression <string> must be integer",
+					Message: "expression <boolean> must be integer",
 				},
 				{
 					Message: "expression <double> must be integer",
 				},
 				{
-					Message: "expression <boolean> must be integer",
+					Message: "expression <string> must be integer",
 				},
 			},
 		},
@@ -339,10 +340,18 @@ func TestTypeChecker(t *testing.T) {
 		checker := NewTypeChecker()
 		checker.VisitClassType(testCase.Input)
 
-		for i, actual := range checker.Errors {
+		messages := make([]string, len(checker.Errors))
+		for i, err := range checker.Errors {
+			messages[i] = err.Message
+		}
+		sort.Slice(messages, func(i, j int) bool {
+			return messages[i] < messages[j]
+		})
+
+		for i, message := range messages {
 			expected := testCase.ExpectErrors[i]
-			if expected.Message != actual.Message {
-				t.Errorf("expected: %s, actual: %s", expected.Message, actual.Message)
+			if expected.Message != message {
+				t.Errorf("expected: %s, actual: %s", expected.Message, message)
 			}
 		}
 	}

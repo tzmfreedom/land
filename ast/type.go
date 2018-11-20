@@ -1,5 +1,7 @@
 package ast
 
+import "strings"
+
 type Type interface{}
 
 type ClassType struct {
@@ -8,13 +10,85 @@ type ClassType struct {
 	Name             string
 	SuperClass       Node
 	ImplementClasses []Node
-	InstanceFields   []Node
-	StaticFields     []Node
-	InstanceMethods  []Node
-	StaticMethods    []Node
-	InnerClasses     []Node
+	InstanceFields   *FieldMap
+	StaticFields     *FieldMap
+	InstanceMethods  *MethodMap
+	StaticMethods    *MethodMap
+	InnerClasses     map[string]*ClassType
 	Location         *Location
 	Parent           Node
+}
+
+type Field struct {
+	Type       Node
+	Modifiers  []Node
+	Name       string
+	Expression Node
+	Location   *Location
+	Parent     Node
+}
+
+type FieldMap struct {
+	Data map[string]*Field
+}
+
+func NewFieldMap() *FieldMap {
+	return &FieldMap{
+		Data: map[string]*Field{},
+	}
+}
+
+func (m *FieldMap) Set(k string, n *Field) {
+	m.Data[strings.ToLower(k)] = n
+}
+
+func (m *FieldMap) Get(k string) (*Field, bool) {
+	n, ok := m.Data[strings.ToLower(k)]
+	return n, ok
+}
+
+func (m *FieldMap) All() []*Field {
+	fields := make([]*Field, len(m.Data))
+	for _, v := range m.Data {
+		fields = append(fields, v)
+	}
+	return fields
+}
+
+type MethodMap struct {
+	Data map[string][]Node
+}
+
+func NewMethodMap() *MethodMap {
+	return &MethodMap{
+		Data: map[string][]Node{},
+	}
+}
+
+func (m *MethodMap) Add(k string, n Node) {
+	if data, ok := m.Get(k); ok {
+		data = append(data, n)
+		m.Set(k, data)
+	} else {
+		m.Set(k, []Node{n})
+	}
+}
+
+func (m *MethodMap) Set(k string, n []Node) {
+	m.Data[strings.ToLower(k)] = n
+}
+
+func (m *MethodMap) Get(k string) ([]Node, bool) {
+	n, ok := m.Data[strings.ToLower(k)]
+	return n, ok
+}
+
+func (m *MethodMap) All() [][]Node {
+	fields := make([][]Node, len(m.Data))
+	for _, v := range m.Data {
+		fields = append(fields, v)
+	}
+	return fields
 }
 
 const (

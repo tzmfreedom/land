@@ -11,28 +11,55 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 	t.Name = n.Name
 	t.Modifiers = n.Modifiers
 	t.ImplementClasses = n.ImplementClasses
-	t.InnerClasses = n.InnerClasses
+	t.InnerClasses = map[string]*ast.ClassType{}
+	for _, c := range n.InnerClasses {
+		r, _ := c.Accept(v)
+		class := r.(*ast.ClassType)
+		t.InnerClasses[class.Name] = class
+	}
 	t.SuperClass = n.SuperClass
 	t.Location = n.Location
 	t.Annotations = n.Annotations
 	t.Parent = n.Parent
-	t.InstanceFields = []ast.Node{}
-	t.StaticFields = []ast.Node{}
-	t.InstanceMethods = []ast.Node{}
-	t.StaticMethods = []ast.Node{}
+	t.InstanceFields = ast.NewFieldMap()
+	t.StaticFields = ast.NewFieldMap()
+	t.InstanceMethods = ast.NewMethodMap()
+	t.StaticMethods = ast.NewMethodMap()
 	for _, d := range n.Declarations {
 		switch decl := d.(type) {
 		case *ast.MethodDeclaration:
 			if decl.IsStatic() {
-				t.StaticMethods = append(t.StaticMethods, decl)
+				t.StaticMethods.Add(decl.Name, decl)
 			} else {
-				t.InstanceMethods = append(t.InstanceMethods, decl)
+				t.InstanceMethods.Add(decl.Name, decl)
 			}
 		case *ast.FieldDeclaration:
 			if decl.IsStatic() {
-				t.StaticFields = append(t.StaticFields, decl)
+				for _, d := range decl.Declarators {
+					varDecl := d.(*ast.VariableDeclarator)
+					t.StaticFields.Set(
+						varDecl.Name,
+						&ast.Field{
+							Type:       decl.Type,
+							Modifiers:  decl.Modifiers,
+							Name:       varDecl.Name,
+							Expression: varDecl.Expression,
+						},
+					)
+				}
 			} else {
-				t.InstanceFields = append(t.InstanceFields, decl)
+				for _, d := range decl.Declarators {
+					varDecl := d.(*ast.VariableDeclarator)
+					t.InstanceFields.Set(
+						varDecl.Name,
+						&ast.Field{
+							Type:       decl.Type,
+							Modifiers:  decl.Modifiers,
+							Name:       varDecl.Name,
+							Expression: varDecl.Expression,
+						},
+					)
+				}
 			}
 		}
 	}

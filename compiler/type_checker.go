@@ -21,20 +21,40 @@ func NewTypeChecker() *TypeChecker {
 
 func (v *TypeChecker) VisitClassType(n *ast.ClassType) (interface{}, error) {
 	v.Context.CurrentClass = n
-	for _, f := range n.StaticFields {
-		f.Accept(v)
+	if n.StaticFields != nil {
+		for _, f := range n.StaticFields.All() {
+			t, _ := f.Type.Accept(v)
+			e, _ := f.Expression.Accept(v)
+			if t != e {
+				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", ast.TypeName(e), ast.TypeName(t)), f.Expression)
+			}
+		}
 	}
 
-	for _, f := range n.InstanceFields {
-		f.Accept(v)
+	if n.InstanceFields != nil {
+		for _, f := range n.InstanceFields.All() {
+			t, _ := f.Type.Accept(v)
+			e, _ := f.Expression.Accept(v)
+			if t != e {
+				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", ast.TypeName(e), ast.TypeName(t)), f.Expression)
+			}
+		}
 	}
 
-	for _, m := range n.StaticMethods {
-		m.Accept(v)
+	if n.StaticMethods != nil {
+		for _, methods := range n.StaticMethods.All() {
+			for _, m := range methods {
+				m.Accept(v)
+			}
+		}
 	}
 
-	for _, m := range n.InstanceMethods {
-		m.Accept(v)
+	if n.InstanceMethods != nil {
+		for _, methods := range n.InstanceMethods.All() {
+			for _, m := range methods {
+				m.Accept(v)
+			}
+		}
 	}
 	v.Context.CurrentClass = nil
 	return nil, nil

@@ -157,148 +157,145 @@ func TestClassRegister(t *testing.T) {
 				},
 			},
 			&ast.ClassType{
-				Modifiers:   []ast.Node{},
-				Annotations: []ast.Node{},
-				Name:        "Foo",
-				InstanceMethods: []ast.Node{
-					&ast.MethodDeclaration{
-						Name: "method",
-						Modifiers: []ast.Node{
-							&ast.Modifier{
-								Name: "public",
+				Modifiers:    []ast.Node{},
+				Annotations:  []ast.Node{},
+				Name:         "Foo",
+				InnerClasses: map[string]*ast.ClassType{},
+				InstanceMethods: &ast.MethodMap{
+					Data: map[string][]ast.Node{
+						"method": {
+							&ast.MethodDeclaration{
+								Name: "method",
+								Modifiers: []ast.Node{
+									&ast.Modifier{
+										Name: "public",
+									},
+								},
+								ReturnType: nil,
+								Parameters: []ast.Node{},
+								Throws:     []ast.Node{},
+								Statements: &ast.Block{
+									Statements: []ast.Node{},
+								},
+								NativeFunction: nil,
 							},
 						},
-						ReturnType: nil,
-						Parameters: []ast.Node{},
-						Throws:     []ast.Node{},
-						Statements: &ast.Block{
-							Statements: []ast.Node{},
-						},
-						NativeFunction: nil,
 					},
 				},
-				StaticMethods: []ast.Node{
-					&ast.MethodDeclaration{
-						Name: "static_method",
-						Modifiers: []ast.Node{
-							&ast.Modifier{
-								Name: "public",
-							},
-							&ast.Modifier{
-								Name: "static",
-							},
-						},
-						ReturnType: &ast.TypeRef{
-							Name: []string{
-								"String",
-							},
-							Parameters: []ast.Node{},
-						},
-						Parameters: []ast.Node{
-							&ast.Parameter{
-								Modifiers: []ast.Node{},
-								Type: &ast.TypeRef{
+				StaticMethods: &ast.MethodMap{
+					Data: map[string][]ast.Node{
+						"static_method": {
+							&ast.MethodDeclaration{
+								Name: "static_method",
+								Modifiers: []ast.Node{
+									&ast.Modifier{
+										Name: "public",
+									},
+									&ast.Modifier{
+										Name: "static",
+									},
+								},
+								ReturnType: &ast.TypeRef{
 									Name: []string{
-										"Boolean",
+										"String",
 									},
 									Parameters: []ast.Node{},
 								},
-								Name: "p1",
-							},
-						},
-						Throws: []ast.Node{},
-						Statements: &ast.Block{
-							Statements: []ast.Node{},
-						},
-						NativeFunction: nil,
-					},
-				},
-				InstanceFields: []ast.Node{
-					&ast.FieldDeclaration{
-						Type: &ast.TypeRef{
-							Name: []string{
-								"Integer",
-							},
-							Parameters: []ast.Node{},
-						},
-						Modifiers: []ast.Node{
-							&ast.Modifier{
-								Name: "public",
-							},
-						},
-						Declarators: []ast.Node{
-							&ast.VariableDeclarator{
-								Name:       "field",
-								Expression: nil,
-							},
-						},
-					},
-					&ast.FieldDeclaration{
-						Type: &ast.TypeRef{
-							Name: []string{
-								"Double",
-							},
-							Parameters: []ast.Node{},
-						},
-						Modifiers: []ast.Node{
-							&ast.Modifier{
-								Name: "public",
-							},
-						},
-						Declarators: []ast.Node{
-							&ast.VariableDeclarator{
-								Name: "field_with_init",
-								Expression: &ast.IntegerLiteral{
-									Value: 2,
+								Parameters: []ast.Node{
+									&ast.Parameter{
+										Modifiers: []ast.Node{},
+										Type: &ast.TypeRef{
+											Name: []string{
+												"Boolean",
+											},
+											Parameters: []ast.Node{},
+										},
+										Name: "p1",
+									},
 								},
+								Throws: []ast.Node{},
+								Statements: &ast.Block{
+									Statements: []ast.Node{},
+								},
+								NativeFunction: nil,
 							},
 						},
 					},
 				},
-				StaticFields: []ast.Node{
-					&ast.FieldDeclaration{
-						Type: &ast.TypeRef{
-							Name: []string{
-								"String",
+				InstanceFields: &ast.FieldMap{
+					Data: map[string]*ast.Field{
+						"field": {
+							Type: &ast.TypeRef{
+								Name: []string{
+									"Integer",
+								},
+								Parameters: []ast.Node{},
 							},
-							Parameters: []ast.Node{},
+							Modifiers: []ast.Node{
+								&ast.Modifier{
+									Name: "public",
+								},
+							},
+							Name:       "field",
+							Expression: nil,
 						},
-						Modifiers: []ast.Node{
-							&ast.Modifier{
-								Name: "public",
+						"field_with_init": {
+							Type: &ast.TypeRef{
+								Name: []string{
+									"Double",
+								},
+								Parameters: []ast.Node{},
 							},
-							&ast.Modifier{
-								Name: "static",
+							Modifiers: []ast.Node{
+								&ast.Modifier{
+									Name: "public",
+								},
 							},
-						},
-						Declarators: []ast.Node{
-							&ast.VariableDeclarator{
-								Name:       "static_field",
-								Expression: nil,
+							Name: "field_with_init",
+							Expression: &ast.IntegerLiteral{
+								Value: 2,
 							},
 						},
 					},
-					&ast.FieldDeclaration{
-						Type: &ast.TypeRef{
-							Name: []string{
-								"Boolean",
-							},
-							Parameters: []ast.Node{},
-						},
-						Modifiers: []ast.Node{
-							&ast.Modifier{
-								Name: "public",
-							},
-							&ast.Modifier{
-								Name: "static",
-							},
-						},
-						Declarators: []ast.Node{
-							&ast.VariableDeclarator{
-								Name: "static_field_with_init",
-								Expression: &ast.IntegerLiteral{
-									Value: 1,
+				},
+				StaticFields: &ast.FieldMap{
+					Data: map[string]*ast.Field{
+						"static_field": {
+							Type: &ast.TypeRef{
+								Name: []string{
+									"String",
 								},
+								Parameters: []ast.Node{},
+							},
+							Modifiers: []ast.Node{
+								&ast.Modifier{
+									Name: "public",
+								},
+								&ast.Modifier{
+									Name: "static",
+								},
+							},
+							Name:       "static_field",
+							Expression: nil,
+						},
+						"static_field_with_init": {
+							Type: &ast.TypeRef{
+								Name: []string{
+									"Boolean",
+								},
+								Parameters: []ast.Node{},
+							},
+							Modifiers: []ast.Node{
+								&ast.Modifier{
+									Name: "public",
+								},
+								&ast.Modifier{
+									Name: "static",
+								},
+							},
+							Name: "static_field_with_init",
+							Expression: &ast.IntegerLiteral{
+								Value: 1,
 							},
 						},
 					},

@@ -7,24 +7,24 @@ import (
 type ClassRegisterVisitor struct{}
 
 func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (interface{}, error) {
-	t := &ast.ClassType{}
+	t := &ClassType{}
 	t.Name = n.Name
 	t.Modifiers = n.Modifiers
 	t.ImplementClasses = n.ImplementClasses
-	t.InnerClasses = map[string]*ast.ClassType{}
+	t.InnerClasses = NewClassMap()
 	for _, c := range n.InnerClasses {
 		r, _ := c.Accept(v)
-		class := r.(*ast.ClassType)
-		t.InnerClasses[class.Name] = class
+		class := r.(*ClassType)
+		t.InnerClasses.Set(class.Name, class)
 	}
 	t.SuperClass = n.SuperClass
 	t.Location = n.Location
 	t.Annotations = n.Annotations
 	t.Parent = n.Parent
-	t.InstanceFields = ast.NewFieldMap()
-	t.StaticFields = ast.NewFieldMap()
-	t.InstanceMethods = ast.NewMethodMap()
-	t.StaticMethods = ast.NewMethodMap()
+	t.InstanceFields = NewFieldMap()
+	t.StaticFields = NewFieldMap()
+	t.InstanceMethods = NewMethodMap()
+	t.StaticMethods = NewMethodMap()
 	for _, d := range n.Declarations {
 		switch decl := d.(type) {
 		case *ast.MethodDeclaration:
@@ -39,7 +39,7 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 					varDecl := d.(*ast.VariableDeclarator)
 					t.StaticFields.Set(
 						varDecl.Name,
-						&ast.Field{
+						&Field{
 							Type:       decl.Type,
 							Modifiers:  decl.Modifiers,
 							Name:       varDecl.Name,
@@ -52,7 +52,7 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 					varDecl := d.(*ast.VariableDeclarator)
 					t.InstanceFields.Set(
 						varDecl.Name,
-						&ast.Field{
+						&Field{
 							Type:       decl.Type,
 							Modifiers:  decl.Modifiers,
 							Name:       varDecl.Name,

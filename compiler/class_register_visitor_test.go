@@ -11,7 +11,7 @@ import (
 func TestClassRegister(t *testing.T) {
 	testCases := []struct {
 		Input    ast.Node
-		Expected *ast.ClassType
+		Expected *ClassType
 	}{
 		{
 			&ast.ClassDeclaration{
@@ -156,12 +156,12 @@ func TestClassRegister(t *testing.T) {
 					},
 				},
 			},
-			&ast.ClassType{
+			&ClassType{
 				Modifiers:    []ast.Node{},
 				Annotations:  []ast.Node{},
 				Name:         "Foo",
-				InnerClasses: map[string]*ast.ClassType{},
-				InstanceMethods: &ast.MethodMap{
+				InnerClasses: NewClassMap(),
+				InstanceMethods: &MethodMap{
 					Data: map[string][]ast.Node{
 						"method": {
 							&ast.MethodDeclaration{
@@ -182,7 +182,7 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 				},
-				StaticMethods: &ast.MethodMap{
+				StaticMethods: &MethodMap{
 					Data: map[string][]ast.Node{
 						"static_method": {
 							&ast.MethodDeclaration{
@@ -222,8 +222,8 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 				},
-				InstanceFields: &ast.FieldMap{
-					Data: map[string]*ast.Field{
+				InstanceFields: &FieldMap{
+					Data: map[string]*Field{
 						"field": {
 							Type: &ast.TypeRef{
 								Name: []string{
@@ -258,8 +258,8 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 				},
-				StaticFields: &ast.FieldMap{
-					Data: map[string]*ast.Field{
+				StaticFields: &FieldMap{
+					Data: map[string]*Field{
 						"static_field": {
 							Type: &ast.TypeRef{
 								Name: []string{
@@ -310,11 +310,11 @@ func TestClassRegister(t *testing.T) {
 			panic(err)
 		}
 
-		equalNode(t, testCase.Expected, actual.(*ast.ClassType))
+		equalNode(t, testCase.Expected, actual.(*ClassType))
 	}
 }
 
-func equalNode(t *testing.T, expected *ast.ClassType, actual *ast.ClassType) {
+func equalNode(t *testing.T, expected *ClassType, actual *ClassType) {
 	if ok := cmp.Equal(expected, actual); !ok {
 		diff := cmp.Diff(expected, actual)
 		pp.Print(actual)

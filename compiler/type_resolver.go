@@ -19,7 +19,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (interface{
 		name := names[0]
 		if fieldType, ok := ctx.Env.Get(name); ok {
 			for _, f := range names[1:] {
-				instanceField, ok := fieldType.(*ast.ClassType).InstanceFields.Get(f)
+				instanceField, ok := fieldType.(*ClassType).InstanceFields.Get(f)
 				if !ok {
 					return nil, errors.Errorf("%s is not found in this scope", f)
 				}
@@ -32,7 +32,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (interface{
 				t := n.Type.(*ast.TypeRef)
 				fieldType, _ := r.ResolveType(t.Name, ctx)
 				for _, f := range names[2:] {
-					instanceField, ok := fieldType.(*ast.ClassType).InstanceFields.Get(f)
+					instanceField, ok := fieldType.(*ClassType).InstanceFields.Get(f)
 					if !ok {
 						return nil, errors.Errorf("%s is not found in this scope", f)
 					}
@@ -47,7 +47,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (interface{
 					t := field.Type.(*ast.TypeRef)
 					fieldType, _ := r.ResolveType(t.Name, ctx)
 					for _, f := range names[3:] {
-						instanceField, ok := fieldType.(*ast.ClassType).InstanceFields.Get(f)
+						instanceField, ok := fieldType.(*ClassType).InstanceFields.Get(f)
 						if !ok {
 							return nil, errors.Errorf("%s is not found in this scope", f)
 						}
@@ -71,7 +71,7 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (interface{},
 		name := names[0]
 		if fieldType, ok := ctx.Env.Get(name); ok {
 			for _, f := range names[1:] {
-				instanceField, _ := fieldType.(*ast.ClassType).InstanceFields.Get(f)
+				instanceField, _ := fieldType.(*ClassType).InstanceFields.Get(f)
 				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
 			}
 			return fieldType, nil
@@ -81,7 +81,7 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (interface{},
 			t := n.Type.(*ast.TypeRef)
 			fieldType, _ := r.ResolveType(t.Name, ctx)
 			for _, f := range names[2:] {
-				instanceField, _ := fieldType.(*ast.ClassType).InstanceFields.Get(f)
+				instanceField, _ := fieldType.(*ClassType).InstanceFields.Get(f)
 				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
 			}
 			return fieldType, nil
@@ -92,7 +92,7 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (interface{},
 			t := field.Type.(*ast.TypeRef)
 			fieldType, _ := r.ResolveType(t.Name, ctx)
 			for _, f := range names[3:] {
-				instanceField, _ := fieldType.(*ast.ClassType).InstanceFields.Get(f)
+				instanceField, _ := fieldType.(*ClassType).InstanceFields.Get(f)
 				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
 			}
 			return fieldType, nil
@@ -103,17 +103,40 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (interface{},
 
 func (r *TypeResolver) ResolveType(names []string, ctx *Context) (interface{}, error) {
 	if len(names) == 1 {
-		if strings.ToLower(names[0]) == "integer" {
-			return ast.IntegerType, nil
+		className := names[0]
+		if strings.ToLower(className) == "integer" {
+			return IntegerType, nil
 		}
-		class, _ := ctx.ClassTypes.Get(names[0])
-		return class, nil
-		// search for Primitive or System or UserClass
+		if class, ok := ctx.ClassTypes.Get(className); ok {
+			return class, nil
+		}
+		if classTypes, ok := ctx.NameSpaces.Get("System"); ok {
+			if class, ok := classTypes.Get(className); ok {
+				return class, nil
+			}
+		}
 	} else if len(names) == 2 {
 		// search for UserClass.InnerClass
+		if class, ok := ctx.ClassTypes.Get(names[0]); ok {
+			if inner, ok := class.InnerClasses.Get(names[1]); ok {
+				return inner, nil
+			}
+		}
 		// search for NameSpace.UserClass
+		if classTypes, ok := ctx.NameSpaces.Get(names[0]); ok {
+			if class, ok := classTypes.Get(names[1]); ok {
+				return class, nil
+			}
+		}
 	} else if len(names) == 3 {
 		// search for NameSpace.UserClass.InnerClass
+		if classTypes, ok := ctx.NameSpaces.Get(names[0]); ok {
+			if class, ok := classTypes.Get(names[1]); ok {
+				if inner, ok := class.InnerClasses.Get(names[2]); ok {
+					return inner, nil
+				}
+			}
+		}
 	}
 	return nil, nil
 }

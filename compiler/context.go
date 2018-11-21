@@ -15,7 +15,7 @@ type Context struct {
 	NameSpaces  *NameSpaceStore // NameSpaces and Related Classes
 
 	CurrentMethod *ast.MethodDeclaration
-	CurrentClass  *ast.ClassType
+	CurrentClass  *ClassType
 }
 
 /**
@@ -79,7 +79,7 @@ func newTypeEnv(p *TypeEnv) *TypeEnv {
 	}
 }
 
-func (e *TypeEnv) Get(k string) (ast.Type, bool) {
+func (e *TypeEnv) Get(k string) (Type, bool) {
 	n, ok := e.Data.Get(k)
 	if ok {
 		return n, true
@@ -90,7 +90,7 @@ func (e *TypeEnv) Get(k string) (ast.Type, bool) {
 	return nil, false
 }
 
-func (e *TypeEnv) Set(k string, n ast.Type) {
+func (e *TypeEnv) Set(k string, n Type) {
 	e.Data.Set(k, n)
 }
 
@@ -98,42 +98,20 @@ func (e *TypeEnv) Set(k string, n ast.Type) {
  * TypeMap
  */
 type TypeMap struct {
-	Data map[string]ast.Type
+	Data map[string]Type
 }
 
 func newTypeMap() *TypeMap {
 	return &TypeMap{
-		Data: map[string]ast.Type{},
+		Data: map[string]Type{},
 	}
 }
 
-func (m *TypeMap) Set(k string, n ast.Type) {
+func (m *TypeMap) Set(k string, n Type) {
 	m.Data[strings.ToLower(k)] = n
 }
 
-func (m *TypeMap) Get(k string) (ast.Type, bool) {
-	n, ok := m.Data[strings.ToLower(k)]
-	return n, ok
-}
-
-/**
- * ClassMap
- */
-type ClassMap struct {
-	Data map[string]*ast.ClassType
-}
-
-func NewClassMap() *ClassMap {
-	return &ClassMap{
-		Data: map[string]*ast.ClassType{},
-	}
-}
-
-func (m *ClassMap) Set(k string, n *ast.ClassType) {
-	m.Data[strings.ToLower(k)] = n
-}
-
-func (m *ClassMap) Get(k string) (*ast.ClassType, bool) {
+func (m *TypeMap) Get(k string) (Type, bool) {
 	n, ok := m.Data[strings.ToLower(k)]
 	return n, ok
 }
@@ -151,7 +129,7 @@ func NewNameSpaceStore() *NameSpaceStore {
 	}
 }
 
-func (m *NameSpaceStore) Add(k string, n *ast.ClassType) {
+func (m *NameSpaceStore) Add(k string, n *ClassType) {
 	classMap, _ := m.Get(k)
 	classMap.Set(k, n)
 }
@@ -178,7 +156,7 @@ func NewStaticFieldMap() *StaticFieldMap {
 	}
 }
 
-func (m *StaticFieldMap) Add(k string, n *ast.Type) {
+func (m *StaticFieldMap) Add(k string, n *Type) {
 	typeMap, _ := m.Get(k)
 	typeMap.Set(k, n)
 }

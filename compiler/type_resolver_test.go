@@ -13,7 +13,7 @@ func TestResolve(t *testing.T) {
 	testCases := []struct {
 		Input    []string
 		Context  *Context
-		Expected ast.Type
+		Expected Type
 		Error    error
 	}{
 		{
@@ -21,13 +21,13 @@ func TestResolve(t *testing.T) {
 			&Context{
 				Env: &TypeEnv{
 					Data: &TypeMap{
-						Data: map[string]ast.Type{
-							"i": ast.IntegerType,
+						Data: map[string]Type{
+							"i": IntegerType,
 						},
 					},
 				},
 			},
-			ast.IntegerType,
+			IntegerType,
 			nil,
 		},
 		{
@@ -35,7 +35,7 @@ func TestResolve(t *testing.T) {
 			&Context{
 				Env: &TypeEnv{
 					Data: &TypeMap{
-						Data: map[string]ast.Type{},
+						Data: map[string]Type{},
 					},
 				},
 			},
@@ -47,10 +47,10 @@ func TestResolve(t *testing.T) {
 			&Context{
 				Env: &TypeEnv{
 					Data: &TypeMap{
-						Data: map[string]ast.Type{
-							"i": &ast.ClassType{
-								InstanceFields: &ast.FieldMap{
-									Data: map[string]*ast.Field{
+						Data: map[string]Type{
+							"i": &ClassType{
+								InstanceFields: &FieldMap{
+									Data: map[string]*Field{
 										"j": {
 											Type: &ast.TypeRef{
 												Name: []string{"Integer"},
@@ -63,7 +63,7 @@ func TestResolve(t *testing.T) {
 					},
 				},
 			},
-			ast.IntegerType,
+			IntegerType,
 			nil,
 		},
 		{
@@ -71,10 +71,10 @@ func TestResolve(t *testing.T) {
 			&Context{
 				Env: &TypeEnv{
 					Data: &TypeMap{
-						Data: map[string]ast.Type{
-							"i": &ast.ClassType{
-								InstanceFields: &ast.FieldMap{
-									Data: map[string]*ast.Field{},
+						Data: map[string]Type{
+							"i": &ClassType{
+								InstanceFields: &FieldMap{
+									Data: map[string]*Field{},
 								},
 							},
 						},
@@ -91,10 +91,10 @@ func TestResolve(t *testing.T) {
 					Data: &TypeMap{},
 				},
 				ClassTypes: &ClassMap{
-					Data: map[string]*ast.ClassType{
+					Data: map[string]*ClassType{
 						"i": {
-							StaticFields: &ast.FieldMap{
-								Data: map[string]*ast.Field{
+							StaticFields: &FieldMap{
+								Data: map[string]*Field{
 									"j": {
 										Type: &ast.TypeRef{
 											Name: []string{"Integer"},
@@ -106,7 +106,7 @@ func TestResolve(t *testing.T) {
 					},
 				},
 			},
-			ast.IntegerType,
+			IntegerType,
 			nil,
 		},
 		{
@@ -116,10 +116,10 @@ func TestResolve(t *testing.T) {
 					Data: &TypeMap{},
 				},
 				ClassTypes: &ClassMap{
-					Data: map[string]*ast.ClassType{
+					Data: map[string]*ClassType{
 						"foo": {
-							InstanceFields: &ast.FieldMap{
-								Data: map[string]*ast.Field{
+							InstanceFields: &FieldMap{
+								Data: map[string]*Field{
 									"k": {
 										Type: &ast.TypeRef{
 											Name: []string{"Integer"},
@@ -129,8 +129,8 @@ func TestResolve(t *testing.T) {
 							},
 						},
 						"i": {
-							StaticFields: &ast.FieldMap{
-								Data: map[string]*ast.Field{
+							StaticFields: &FieldMap{
+								Data: map[string]*Field{
 									"j": {
 										Type: &ast.TypeRef{
 											Name: []string{"foo"},
@@ -142,7 +142,7 @@ func TestResolve(t *testing.T) {
 					},
 				},
 			},
-			ast.IntegerType,
+			IntegerType,
 			nil,
 		},
 		{
@@ -155,10 +155,10 @@ func TestResolve(t *testing.T) {
 				NameSpaces: &NameSpaceStore{
 					Data: map[string]*ClassMap{
 						"i": {
-							Data: map[string]*ast.ClassType{
+							Data: map[string]*ClassType{
 								"j": {
-									StaticFields: &ast.FieldMap{
-										Data: map[string]*ast.Field{
+									StaticFields: &FieldMap{
+										Data: map[string]*Field{
 											"k": {
 												Type: &ast.TypeRef{
 													Name: []string{"integer"},
@@ -172,7 +172,7 @@ func TestResolve(t *testing.T) {
 					},
 				},
 			},
-			ast.IntegerType,
+			IntegerType,
 			nil,
 		},
 	}

@@ -61,13 +61,13 @@ func semantic_analysis(n ast.Node) error {
 		return err
 	}
 	classTypes := compiler.NewClassMap()
-	if tp, ok := t.(*ast.ClassType); ok {
+	if tp, ok := t.(*compiler.ClassType); ok {
 		classTypes.Set(tp.Name, tp)
 	}
 	typeChecker := &compiler.TypeChecker{}
 	typeChecker.Context = &compiler.Context{}
 	typeChecker.Context.ClassTypes = classTypes
-	_, err = typeChecker.VisitClassType(t.(*ast.ClassType))
+	_, err = typeChecker.VisitClassType(t.(*compiler.ClassType))
 	if err != nil {
 		return err
 	}

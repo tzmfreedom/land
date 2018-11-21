@@ -9,12 +9,12 @@ import (
 
 func TestTypeChecker(t *testing.T) {
 	testCases := []struct {
-		Input        *ast.ClassType
+		Input        *ClassType
 		ExpectErrors []*Error
 	}{
 		{
-			&ast.ClassType{
-				InstanceMethods: &ast.MethodMap{
+			&ClassType{
+				InstanceMethods: &MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{
@@ -46,8 +46,8 @@ func TestTypeChecker(t *testing.T) {
 			},
 		},
 		{
-			&ast.ClassType{
-				InstanceMethods: &ast.MethodMap{
+			&ClassType{
+				InstanceMethods: &MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{
@@ -93,8 +93,8 @@ func TestTypeChecker(t *testing.T) {
 			},
 		},
 		{
-			&ast.ClassType{
-				InstanceMethods: &ast.MethodMap{
+			&ClassType{
+				InstanceMethods: &MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{
@@ -136,8 +136,8 @@ func TestTypeChecker(t *testing.T) {
 			},
 		},
 		{
-			&ast.ClassType{
-				InstanceMethods: &ast.MethodMap{
+			&ClassType{
+				InstanceMethods: &MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{
@@ -183,8 +183,8 @@ func TestTypeChecker(t *testing.T) {
 			},
 		},
 		{
-			&ast.ClassType{
-				InstanceMethods: &ast.MethodMap{
+			&ClassType{
+				InstanceMethods: &MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{
@@ -250,8 +250,8 @@ func TestTypeChecker(t *testing.T) {
 			},
 		},
 		{
-			&ast.ClassType{
-				InstanceMethods: &ast.MethodMap{
+			&ClassType{
+				InstanceMethods: &MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{
@@ -297,8 +297,8 @@ func TestTypeChecker(t *testing.T) {
 			},
 		},
 		{
-			&ast.ClassType{
-				InstanceMethods: &ast.MethodMap{
+			&ClassType{
+				InstanceMethods: &MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{

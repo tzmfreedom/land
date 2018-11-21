@@ -209,8 +209,11 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 	if name, ok := nameOrExp.(*ast.Name); ok {
 		resolver.ResolveMethod(name.Value, v.Context)
 	} else if fieldAccess, ok := nameOrExp.(*ast.FieldAccess); ok {
-		_, _ = fieldAccess.Expression.Accept(v)
-		// fieldAccess.FieldName
+		classType, _ := fieldAccess.Expression.Accept(v)
+		if methods, ok := classType.(*ClassType).InstanceMethods.Get(fieldAccess.FieldName); ok {
+			t, _ := methods[0].(*ast.MethodDeclaration).ReturnType.Accept(v)
+			return t, nil
+		}
 	}
 	return nil, nil
 }

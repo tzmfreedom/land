@@ -1,6 +1,8 @@
 package compiler
 
 import (
+	"strings"
+
 	"github.com/pkg/errors"
 	"github.com/tzmfreedom/goland/ast"
 )
@@ -61,42 +63,87 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (interface{
 
 func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (interface{}, error) {
 	if len(names) == 1 {
-		// this.method()
+		methodName := names[0]
 		if v, ok := ctx.Env.Get("this"); ok {
-			return v, nil
+			if methods, ok := v.(*ClassType).InstanceMethods.Get(methodName); ok {
+				return methods[0], nil
+			}
+			return nil, errors.Errorf("%s is not found in this scope", methodName)
 		}
 	} else {
-		name := names[0]
-		if fieldType, ok := ctx.Env.Get(name); ok {
-			for _, f := range names[1:] {
-				instanceField, _ := fieldType.(*ClassType).InstanceFields.Get(f)
+		first := names[0]
+		methodName := names[len(names)-1]
+		fields := names[1 : len(names)-1]
+		if fieldType, ok := ctx.Env.Get(first); ok {
+			for _, f := range fields {
+				instanceField, ok := fieldType.(*ClassType).InstanceFields.Get(f)
+				if !ok {
+					return nil, errors.Errorf("%s is not found in this scope", f)
+				}
 				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
 			}
-			return fieldType, nil
+			methods, ok := fieldType.(*ClassType).InstanceMethods.Get(methodName)
+			if ok {
+				return methods[0], nil
+			}
+			return nil, errors.Errorf("%s is not found in this scope", methodName)
 		}
-		if v, ok := ctx.ClassTypes.Get(name); ok {
-			n, _ := v.StaticFields.Get(names[1])
-			t := n.Type.(*ast.TypeRef)
-			fieldType, _ := r.ResolveType(t.Name, ctx)
-			for _, f := range names[2:] {
-				instanceField, _ := fieldType.(*ClassType).InstanceFields.Get(f)
-				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
+		if len(names) == 2 {
+			if v, ok := ctx.ClassTypes.Get(first); ok {
+				if methods, ok := v.StaticMethods.Get(methodName); ok {
+					return methods[0], nil
+				}
+				return nil, errors.Errorf("%s is not found in this scope", methodName)
 			}
-			return fieldType, nil
 		}
-		if v, ok := ctx.NameSpaces.Get(name); ok {
-			classType, _ := v.Get(names[1])
-			field, _ := classType.StaticFields.Get(names[2])
-			t := field.Type.(*ast.TypeRef)
-			fieldType, _ := r.ResolveType(t.Name, ctx)
-			for _, f := range names[3:] {
-				instanceField, _ := fieldType.(*ClassType).InstanceFields.Get(f)
-				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
+		if v, ok := ctx.ClassTypes.Get(first); ok {
+			if n, ok := v.StaticFields.Get(names[1]); ok {
+				t := n.Type.(*ast.TypeRef)
+				fieldType, _ := r.ResolveType(t.Name, ctx)
+				for _, f := range names[2 : len(names)-1] {
+					instanceField, ok := fieldType.(*ClassType).InstanceFields.Get(f)
+					if !ok {
+						return nil, errors.Errorf("%s is not found in this scope", f)
+					}
+					fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
+				}
+				methods, ok := fieldType.(*ClassType).InstanceMethods.Get(methodName)
+				if ok {
+					return methods[0], nil
+				}
+				return nil, errors.Errorf("%s is not found in this scope", methodName)
 			}
-			return fieldType, nil
+		}
+		if v, ok := ctx.NameSpaces.Get(first); ok {
+			if classType, ok := v.Get(names[1]); ok {
+				if len(names) > 3 {
+					if field, ok := classType.StaticFields.Get(names[2]); ok {
+						t := field.Type.(*ast.TypeRef)
+						fieldType, _ := r.ResolveType(t.Name, ctx)
+						for _, f := range names[3 : len(names)-1] {
+							instanceField, ok := fieldType.(*ClassType).InstanceFields.Get(f)
+							if !ok {
+								return nil, errors.Errorf("%s is not found in this scope", f)
+							}
+							fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
+						}
+						methods, ok := fieldType.(*ClassType).InstanceMethods.Get(methodName)
+						if ok {
+							return methods[0], nil
+						}
+						return nil, errors.Errorf("%s is not found in this scope", methodName)
+					}
+				} else {
+					methods, ok := classType.StaticMethods.Get(methodName)
+					if ok {
+						return methods[0], nil
+					}
+					return nil, errors.Errorf("%s is not found in this scope", methodName)
+				}
+			}
 		}
 	}
-	return nil, nil
+	return nil, errors.Errorf("%s is not found in this scope", strings.Join(names, "."))
 }
 
 func (r *TypeResolver) ResolveType(names []string, ctx *Context) (interface{}, error) {

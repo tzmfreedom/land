@@ -340,3 +340,163 @@ func TestResolveType(t *testing.T) {
 		}
 	}
 }
+
+func TestResolveMethod(t *testing.T) {
+	testCases := []struct {
+		Input    []string
+		Context  *Context
+		Expected *ast.MethodDeclaration
+		Error    error
+	}{
+		{
+			[]string{"foo"},
+			&Context{
+				Env: &TypeEnv{
+					Data: &TypeMap{
+						Data: map[string]Type{
+							"this": &ClassType{
+								Name: "klass",
+								InstanceMethods: &MethodMap{
+									Data: map[string][]ast.Node{
+										"foo": {
+											&ast.MethodDeclaration{
+												Name: "foo",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			&ast.MethodDeclaration{Name: "foo"},
+			nil,
+		},
+		{
+			[]string{"foo", "bar"},
+			&Context{
+				Env: &TypeEnv{
+					Data: &TypeMap{
+						Data: map[string]Type{
+							"foo": &ClassType{
+								Name: "klass",
+								InstanceMethods: &MethodMap{
+									Data: map[string][]ast.Node{
+										"bar": {
+											&ast.MethodDeclaration{
+												Name: "bar",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			&ast.MethodDeclaration{Name: "bar"},
+			nil,
+		},
+		{
+			[]string{"klass", "foo"},
+			&Context{
+				ClassTypes: &ClassMap{
+					Data: map[string]*ClassType{
+						"klass": {
+							StaticMethods: &MethodMap{
+								Data: map[string][]ast.Node{
+									"foo": {
+										&ast.MethodDeclaration{
+											Name: "foo",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				Env: newTypeEnv(nil),
+			},
+			&ast.MethodDeclaration{Name: "foo"},
+			nil,
+		},
+		{
+			[]string{"klass", "foo", "bar"},
+			&Context{
+				ClassTypes: &ClassMap{
+					Data: map[string]*ClassType{
+						"klass": {
+							StaticFields: &FieldMap{
+								Data: map[string]*Field{
+									"foo": {
+										Name: "foo",
+										Type: &ast.TypeRef{
+											Name: []string{"klass2"},
+										},
+									},
+								},
+							},
+						},
+						"klass2": {
+							InstanceMethods: &MethodMap{
+								Data: map[string][]ast.Node{
+									"bar": {
+										&ast.MethodDeclaration{
+											Name: "bar",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				Env: newTypeEnv(nil),
+			},
+			&ast.MethodDeclaration{Name: "bar"},
+			nil,
+		},
+		{
+			[]string{"namespace", "klass", "foo"},
+			&Context{
+				Env:        newTypeEnv(nil),
+				ClassTypes: NewClassMap(),
+				NameSpaces: &NameSpaceStore{
+					Data: map[string]*ClassMap{
+						"namespace": {
+							Data: map[string]*ClassType{
+								"klass": {
+									StaticMethods: &MethodMap{
+										Data: map[string][]ast.Node{
+											"foo": {
+												&ast.MethodDeclaration{
+													Name: "foo",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			&ast.MethodDeclaration{Name: "foo"},
+			nil,
+		},
+	}
+	typeResolver := &TypeResolver{}
+	for _, testCase := range testCases {
+		actual, err := typeResolver.ResolveMethod(testCase.Input, testCase.Context)
+		if testCase.Error != nil && testCase.Error.Error() != err.Error() {
+			diff := cmp.Diff(testCase.Error.Error(), err.Error())
+			t.Errorf(diff)
+		}
+
+		if ok := cmp.Equal(testCase.Expected, actual); !ok {
+			diff := cmp.Diff(testCase.Expected, actual)
+			pp.Print(actual)
+			t.Errorf(diff)
+		}
+	}
+}

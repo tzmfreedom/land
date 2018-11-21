@@ -12,6 +12,7 @@ func TestTypeChecker(t *testing.T) {
 		Input        *ClassType
 		ExpectErrors []*Error
 	}{
+		// Array Access
 		{
 			&ClassType{
 				InstanceMethods: &MethodMap{
@@ -45,6 +46,7 @@ func TestTypeChecker(t *testing.T) {
 				},
 			},
 		},
+		// If, Else
 		{
 			&ClassType{
 				InstanceMethods: &MethodMap{
@@ -92,6 +94,7 @@ func TestTypeChecker(t *testing.T) {
 				},
 			},
 		},
+		// While
 		{
 			&ClassType{
 				InstanceMethods: &MethodMap{
@@ -135,6 +138,7 @@ func TestTypeChecker(t *testing.T) {
 				},
 			},
 		},
+		// Ternaly
 		{
 			&ClassType{
 				InstanceMethods: &MethodMap{
@@ -182,6 +186,7 @@ func TestTypeChecker(t *testing.T) {
 				},
 			},
 		},
+		// Return Type
 		{
 			&ClassType{
 				InstanceMethods: &MethodMap{
@@ -249,6 +254,7 @@ func TestTypeChecker(t *testing.T) {
 				},
 			},
 		},
+		// For
 		{
 			&ClassType{
 				InstanceMethods: &MethodMap{
@@ -296,6 +302,7 @@ func TestTypeChecker(t *testing.T) {
 				},
 			},
 		},
+		// Unary Operator
 		{
 			&ClassType{
 				InstanceMethods: &MethodMap{
@@ -335,6 +342,162 @@ func TestTypeChecker(t *testing.T) {
 				},
 			},
 		},
+		// Variable Declaration, Variable Assignment
+		{
+			&ClassType{
+				InstanceMethods: &MethodMap{
+					Data: map[string][]ast.Node{
+						"foo": {
+							&ast.MethodDeclaration{
+								Statements: &ast.Block{
+									Statements: []ast.Node{
+										&ast.VariableDeclaration{
+											Type: &ast.TypeRef{Name: []string{"Integer"}},
+											Declarators: []ast.Node{
+												&ast.VariableDeclarator{
+													Name:       "i",
+													Expression: &ast.IntegerLiteral{},
+												},
+											},
+										},
+										&ast.VariableDeclaration{
+											Type: &ast.TypeRef{Name: []string{"String"}},
+											Declarators: []ast.Node{
+												&ast.VariableDeclarator{
+													Name:       "j",
+													Expression: &ast.IntegerLiteral{},
+												},
+											},
+										},
+										&ast.BinaryOperator{
+											Op:    "=",
+											Left:  &ast.Name{Value: []string{"i"}},
+											Right: &ast.IntegerLiteral{},
+										},
+										&ast.BinaryOperator{
+											Op:    "=",
+											Left:  &ast.Name{Value: []string{"i"}},
+											Right: &ast.StringLiteral{},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			[]*Error{
+				{
+					Message: "expression <Integer> does not match <String>",
+				},
+				{
+					Message: "expression <String> does not match <Integer>",
+				},
+			},
+		},
+		//
+		{
+			&ClassType{
+				InstanceMethods: &MethodMap{
+					Data: map[string][]ast.Node{
+						"foo": {
+							&ast.MethodDeclaration{
+								Statements: &ast.Block{
+									Statements: []ast.Node{
+										&ast.BinaryOperator{
+											Op:    "+",
+											Left:  &ast.IntegerLiteral{},
+											Right: &ast.IntegerLiteral{},
+										},
+										&ast.BinaryOperator{
+											Op:    "-",
+											Left:  &ast.IntegerLiteral{},
+											Right: &ast.IntegerLiteral{},
+										},
+										&ast.BinaryOperator{
+											Op:    "*",
+											Left:  &ast.IntegerLiteral{},
+											Right: &ast.IntegerLiteral{},
+										},
+										&ast.BinaryOperator{
+											Op:    "/",
+											Left:  &ast.IntegerLiteral{},
+											Right: &ast.IntegerLiteral{},
+										},
+										&ast.BinaryOperator{
+											Op:    "%",
+											Left:  &ast.IntegerLiteral{},
+											Right: &ast.IntegerLiteral{},
+										},
+										// failure
+										&ast.BinaryOperator{
+											Op:    "+",
+											Left:  &ast.StringLiteral{},
+											Right: &ast.IntegerLiteral{},
+										},
+										// failure
+										&ast.BinaryOperator{
+											Op:    "-",
+											Left:  &ast.StringLiteral{},
+											Right: &ast.IntegerLiteral{},
+										},
+										// failure
+										&ast.BinaryOperator{
+											Op:    "*",
+											Left:  &ast.StringLiteral{},
+											Right: &ast.IntegerLiteral{},
+										},
+										// failure
+										&ast.BinaryOperator{
+											Op:    "/",
+											Left:  &ast.StringLiteral{},
+											Right: &ast.IntegerLiteral{},
+										},
+										// failure
+										&ast.BinaryOperator{
+											Op:    "%",
+											Left:  &ast.StringLiteral{},
+											Right: &ast.IntegerLiteral{},
+										},
+										&ast.BinaryOperator{
+											Op:    "+",
+											Left:  &ast.StringLiteral{},
+											Right: &ast.StringLiteral{},
+										},
+										// failure
+										&ast.BinaryOperator{
+											Op:    "+",
+											Left:  &ast.BooleanLiteral{},
+											Right: &ast.BooleanLiteral{},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			[]*Error{
+				{
+					Message: "expression <Boolean> must be Integer, String or Double",
+				},
+				{
+					Message: "expression <String> does not match <Integer>",
+				},
+				{
+					Message: "expression <String> must be Integer or Double",
+				},
+				{
+					Message: "expression <String> must be Integer or Double",
+				},
+				{
+					Message: "expression <String> must be Integer or Double",
+				},
+				{
+					Message: "expression <String> must be Integer or Double",
+				},
+			},
+		},
 	}
 	for _, testCase := range testCases {
 		checker := NewTypeChecker()
@@ -342,6 +505,7 @@ func TestTypeChecker(t *testing.T) {
 		checker.Context.ClassTypes = &ClassMap{
 			Data: map[string]*ClassType{
 				"integer": IntegerType,
+				"string":  StringType,
 			},
 		}
 		checker.VisitClassType(testCase.Input)
@@ -354,10 +518,14 @@ func TestTypeChecker(t *testing.T) {
 			return messages[i] < messages[j]
 		})
 
-		for i, message := range messages {
-			expected := testCase.ExpectErrors[i]
-			if expected.Message != message {
-				t.Errorf("expected: %s, actual: %s", expected.Message, message)
+		if len(messages) != len(testCase.ExpectErrors) {
+			t.Errorf("error size is not match: %d != %d", len(messages), len(testCase.ExpectErrors))
+		} else {
+			for i, message := range messages {
+				expected := testCase.ExpectErrors[i]
+				if expected.Message != message {
+					t.Errorf("expected: %s, actual: %s", expected.Message, message)
+				}
 			}
 		}
 	}

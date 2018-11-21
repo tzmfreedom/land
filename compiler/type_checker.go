@@ -251,10 +251,15 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		if l != IntegerType && l != StringType && l != DoubleType {
 			v.AddError(fmt.Sprintf("expression <%s> must be Integer, String or Double", TypeName(l)), n.Left)
 		}
+		if (l == StringType || r == StringType) && l != r {
+			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", TypeName(l), TypeName(r)), n.Left)
+		}
 	}
 	if n.Op == "-" || n.Op == "*" || n.Op == "/" || n.Op == "%" {
 		if l != IntegerType && l != DoubleType {
 			v.AddError(fmt.Sprintf("expression <%s> must be Integer or Double", TypeName(l)), n.Left)
+		} else if r != IntegerType && r != DoubleType {
+			v.AddError(fmt.Sprintf("expression <%s> must be Integer or Double", TypeName(r)), n.Right)
 		}
 	}
 	if n.Op == "=" || n.Op == "+=" || n.Op == "-=" || n.Op == "*=" || n.Op == "/=" || n.Op == "%=" {
@@ -320,7 +325,7 @@ func (v *TypeChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (inte
 		decl := d.(*ast.VariableDeclarator)
 		v.Context.Env.Set(decl.Name, declType)
 		if declType != t {
-			// v.Errors
+			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", TypeName(declType), TypeName(t)), n.Type)
 		}
 	}
 	return nil, nil

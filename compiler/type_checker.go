@@ -364,11 +364,14 @@ func (v *TypeChecker) VisitCastExpression(n *ast.CastExpression) (interface{}, e
 }
 
 func (v *TypeChecker) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) {
-	return v.ResolveVariable(n), nil
+	classType, _ := n.Expression.Accept(v)
+	f, _ := classType.(*ClassType).InstanceFields.Get(n.FieldName)
+	return f, nil
 }
 
 func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
-	return v.ResolveType(n), nil
+	resolver := &TypeResolver{}
+	return resolver.ResolveType(n.Name, v.Context)
 }
 
 func (v *TypeChecker) VisitBlock(n *ast.Block) (interface{}, error) {
@@ -428,28 +431,8 @@ func (v *TypeChecker) VisitConstructorDeclaration(n *ast.ConstructorDeclaration)
 	return ast.VisitConstructorDeclaration(v, n)
 }
 
-func (v *TypeChecker) ResolveType(n ast.Node) Type {
-	t := n.(*ast.TypeRef)
-	if len(t.Name) == 1 {
-		val, ok := PrimitiveMap[t.Name[0]]
-		if ok {
-			return val
-		}
-		classType, ok := v.Context.ClassTypes.Get(t.Name[0])
-		if ok {
-			return classType
-		}
-	}
-	return nil
-}
-
 func (v *TypeChecker) AddError(msg string, node ast.Node) {
 	v.Errors = append(v.Errors, &Error{Message: msg, Node: node})
-}
-
-func (v *TypeChecker) ResolveVariable(n ast.Node) error {
-	// VariableResolver.resolve(n, v.Context)
-	return nil
 }
 
 type Error struct {

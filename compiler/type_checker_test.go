@@ -338,6 +338,12 @@ func TestTypeChecker(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		checker := NewTypeChecker()
+		checker.Context = &Context{}
+		checker.Context.ClassTypes = &ClassMap{
+			Data: map[string]*ClassType{
+				"integer": IntegerType,
+			},
+		}
 		checker.VisitClassType(testCase.Input)
 
 		messages := make([]string, len(checker.Errors))

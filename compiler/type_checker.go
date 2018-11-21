@@ -102,12 +102,16 @@ func (v *TypeChecker) VisitBooleanLiteral(n *ast.BooleanLiteral) (interface{}, e
 }
 
 func (v *TypeChecker) VisitBreak(n *ast.Break) (interface{}, error) {
-	// Check For/While Loop
+	if !ast.IsDecendants(n, "For") && !ast.IsDecendants(n, "While") {
+		v.AddError("break must be in for/while loop", n)
+	}
 	return nil, nil
 }
 
 func (v *TypeChecker) VisitContinue(n *ast.Continue) (interface{}, error) {
-	// Check For/While Loop
+	if !ast.IsDecendants(n, "For") && !ast.IsDecendants(n, "While") {
+		v.AddError("continue must be in for/while loop", n)
+	}
 	return nil, nil
 }
 
@@ -219,11 +223,11 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 }
 
 func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
-	n.Type.Accept(v)
+	t, _ := n.Type.Accept(v)
 	for _, p := range n.Parameters {
 		p.Accept(v)
 	}
-	return nil, nil
+	return t, nil
 }
 
 func (v *TypeChecker) VisitNullLiteral(n *ast.NullLiteral) (interface{}, error) {
@@ -239,14 +243,8 @@ func (v *TypeChecker) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, err
 }
 
 func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, error) {
-	l, err := n.Left.Accept(v)
-	if err != nil {
-		return nil, err
-	}
-	r, err := n.Right.Accept(v)
-	if err != nil {
-		return nil, err
-	}
+	l, _ := n.Left.Accept(v)
+	r, _ := n.Right.Accept(v)
 	if n.Op == "+" {
 		if l != IntegerType && l != StringType && l != DoubleType {
 			v.AddError(fmt.Sprintf("expression <%s> must be Integer, String or Double", TypeName(l)), n.Left)
@@ -370,13 +368,20 @@ func (v *TypeChecker) VisitCastExpression(n *ast.CastExpression) (interface{}, e
 
 func (v *TypeChecker) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) {
 	classType, _ := n.Expression.Accept(v)
-	f, _ := classType.(*ClassType).InstanceFields.Get(n.FieldName)
+	f, ok := classType.(*ClassType).InstanceFields.Get(n.FieldName)
+	if !ok {
+		v.AddError(fmt.Sprintf("field <%s> does not exist", n.FieldName), n)
+	}
 	return f, nil
 }
 
 func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
 	resolver := &TypeResolver{}
-	return resolver.ResolveType(n.Name, v.Context)
+	t, err := resolver.ResolveType(n.Name, v.Context)
+	if err != nil {
+		v.AddError(err.Error(), n)
+	}
+	return t, nil
 }
 
 func (v *TypeChecker) VisitBlock(n *ast.Block) (interface{}, error) {
@@ -429,11 +434,23 @@ func (v *TypeChecker) VisitSetCreator(n *ast.SetCreator) (interface{}, error) {
 
 func (v *TypeChecker) VisitName(n *ast.Name) (interface{}, error) {
 	resolver := TypeResolver{}
-	return resolver.ResolveVariable(n.Value, v.Context)
+	t, err := resolver.ResolveVariable(n.Value, v.Context)
+	if err != nil {
+		v.AddError(err.Error(), n)
+	}
+	return t, nil
 }
 
 func (v *TypeChecker) VisitConstructorDeclaration(n *ast.ConstructorDeclaration) (interface{}, error) {
-	return ast.VisitConstructorDeclaration(v, n)
+	env := newTypeEnv(nil)
+	v.Context.Env = env
+	for _, param := range n.Parameters {
+		p := param.(*ast.Parameter)
+		t, _ := p.Type.Accept(v)
+		env.Set(p.Name, t)
+	}
+	n.Statements.Accept(v)
+	return nil, nil
 }
 
 func (v *TypeChecker) AddError(msg string, node ast.Node) {

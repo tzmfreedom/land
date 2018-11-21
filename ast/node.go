@@ -432,7 +432,7 @@ type ConstructorDeclaration struct {
 	ReturnType     Node
 	Parameters     []Node
 	Throws         []Node
-	Statements     []Node
+	Statements     Node
 	NativeFunction Node
 	Location       *Location
 	Parent         Node

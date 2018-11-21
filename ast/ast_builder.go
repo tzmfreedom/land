@@ -258,7 +258,7 @@ func (v *Builder) VisitConstructorDeclaration(ctx *parser.ConstructorDeclaration
 	} else {
 		throws = []Node{}
 	}
-	body := ctx.ConstructorBody().Accept(v).([]Node)
+	body := ctx.ConstructorBody().Accept(v).(Node)
 	return &ConstructorDeclaration{
 		Parameters: parameters,
 		Throws:     throws,

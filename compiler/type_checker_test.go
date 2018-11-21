@@ -263,11 +263,21 @@ func TestTypeChecker(t *testing.T) {
 							&ast.MethodDeclaration{
 								Statements: &ast.Block{
 									Statements: []ast.Node{
-										&ast.For{
-											Control: &ast.ForControl{
-												Expression: &ast.IntegerLiteral{},
-											},
-										},
+										func() *ast.For {
+											t := &ast.For{
+												Control: &ast.ForControl{
+													Expression: &ast.IntegerLiteral{},
+												},
+											}
+											b := &ast.Block{
+												Statements: []ast.Node{},
+												Parent:     t,
+											}
+											b.Statements = append(b.Statements, &ast.Break{Parent: b})
+											b.Statements = append(b.Statements, &ast.Continue{Parent: b})
+											t.Statements = b
+											return t
+										}(),
 										&ast.For{
 											Control: &ast.ForControl{
 												Expression: &ast.StringLiteral{},
@@ -283,6 +293,8 @@ func TestTypeChecker(t *testing.T) {
 												Expression: &ast.BooleanLiteral{},
 											},
 										},
+										&ast.Break{},
+										&ast.Continue{},
 									},
 								},
 							},
@@ -292,6 +304,9 @@ func TestTypeChecker(t *testing.T) {
 			},
 			[]*Error{
 				{
+					Message: "break must be in for/while loop",
+				},
+				{
 					Message: "condition <Double> must be Boolean expression",
 				},
 				{
@@ -299,6 +314,9 @@ func TestTypeChecker(t *testing.T) {
 				},
 				{
 					Message: "condition <String> must be Boolean expression",
+				},
+				{
+					Message: "continue must be in for/while loop",
 				},
 			},
 		},

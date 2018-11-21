@@ -121,13 +121,13 @@ func (v *SoqlChecker) VisitThrow(n *ast.Throw) (interface{}, error) {
 }
 
 func (v *SoqlChecker) VisitSoql(n *ast.Soql) (interface{}, error) {
-	if isDecendants(n, "For") &&
-		!isParent(n, "Return") &&
-		!isParent(n, "For") {
+	if ast.IsDecendants(n, "For") &&
+		!ast.IsParent(n, "Return") &&
+		!ast.IsParent(n, "For") {
 		return nil, errors.New("SOQL IN FOR LOOP")
 	}
 
-	if isDecendants(n, "While") {
+	if ast.IsDecendants(n, "While") {
 		return nil, errors.New("SOQL IN WHILE LOOP")
 	}
 	return nil, nil
@@ -231,26 +231,4 @@ func (v *SoqlChecker) VisitName(n *ast.Name) (interface{}, error) {
 
 func (v *SoqlChecker) VisitConstructorDeclaration(n *ast.ConstructorDeclaration) (interface{}, error) {
 	return ast.VisitConstructorDeclaration(v, n)
-}
-
-func isDecendants(n ast.Node, typeName string) bool {
-	parent := n.GetParent()
-	if parent == nil {
-		return false
-	}
-	if parent.GetType() == typeName {
-		return true
-	}
-	return isDecendants(parent, typeName)
-}
-
-func isParent(n ast.Node, typeName string) bool {
-	parent := n.GetParent()
-	if parent == nil {
-		return false
-	}
-	if parent.GetType() == typeName {
-		return true
-	}
-	return false
 }

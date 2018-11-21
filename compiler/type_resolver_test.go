@@ -484,6 +484,49 @@ func TestResolveMethod(t *testing.T) {
 			&ast.MethodDeclaration{Name: "foo"},
 			nil,
 		},
+		{
+			[]string{"namespace", "klass", "foo", "bar"},
+			&Context{
+				Env: newTypeEnv(nil),
+				ClassTypes: &ClassMap{
+					Data: map[string]*ClassType{
+						"klass2": {
+							InstanceMethods: &MethodMap{
+								Data: map[string][]ast.Node{
+									"bar": {
+										&ast.MethodDeclaration{
+											Name: "bar",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				NameSpaces: &NameSpaceStore{
+					Data: map[string]*ClassMap{
+						"namespace": {
+							Data: map[string]*ClassType{
+								"klass": {
+									StaticFields: &FieldMap{
+										Data: map[string]*Field{
+											"foo": {
+												Type: &ast.TypeRef{
+													Name: []string{"klass2"},
+												},
+												Name: "foo",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			&ast.MethodDeclaration{Name: "bar"},
+			nil,
+		},
 	}
 	typeResolver := &TypeResolver{}
 	for _, testCase := range testCases {

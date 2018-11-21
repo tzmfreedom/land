@@ -119,25 +119,8 @@ func (m *ClassMap) Get(k string) (*ClassType, bool) {
 
 const (
 	VoidType = iota
-	BooleanType
-	IntegerType
-	StringType
-	DoubleType
 )
 
 func TypeName(v interface{}) string {
-	switch v {
-	case VoidType:
-		return "void"
-	case BooleanType:
-		return "boolean"
-	case IntegerType:
-		return "integer"
-	case StringType:
-		return "string"
-	case DoubleType:
-		return "double"
-	default:
-		return ""
-	}
+	return v.(*ClassType).Name
 }

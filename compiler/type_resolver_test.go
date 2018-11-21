@@ -9,7 +9,7 @@ import (
 	"github.com/tzmfreedom/goland/ast"
 )
 
-func TestResolve(t *testing.T) {
+func TestResolveVariable(t *testing.T) {
 	testCases := []struct {
 		Input    []string
 		Context  *Context
@@ -19,6 +19,11 @@ func TestResolve(t *testing.T) {
 		{
 			[]string{"i"},
 			&Context{
+				ClassTypes: &ClassMap{
+					Data: map[string]*ClassType{
+						"integer": IntegerType,
+					},
+				},
 				Env: &TypeEnv{
 					Data: &TypeMap{
 						Data: map[string]Type{
@@ -33,6 +38,11 @@ func TestResolve(t *testing.T) {
 		{
 			[]string{"i"},
 			&Context{
+				ClassTypes: &ClassMap{
+					Data: map[string]*ClassType{
+						"integer": IntegerType,
+					},
+				},
 				Env: &TypeEnv{
 					Data: &TypeMap{
 						Data: map[string]Type{},
@@ -45,6 +55,11 @@ func TestResolve(t *testing.T) {
 		{
 			[]string{"i", "j"},
 			&Context{
+				ClassTypes: &ClassMap{
+					Data: map[string]*ClassType{
+						"integer": IntegerType,
+					},
+				},
 				Env: &TypeEnv{
 					Data: &TypeMap{
 						Data: map[string]Type{
@@ -69,6 +84,11 @@ func TestResolve(t *testing.T) {
 		{
 			[]string{"i", "j"},
 			&Context{
+				ClassTypes: &ClassMap{
+					Data: map[string]*ClassType{
+						"integer": IntegerType,
+					},
+				},
 				Env: &TypeEnv{
 					Data: &TypeMap{
 						Data: map[string]Type{
@@ -92,6 +112,7 @@ func TestResolve(t *testing.T) {
 				},
 				ClassTypes: &ClassMap{
 					Data: map[string]*ClassType{
+						"integer": IntegerType,
 						"i": {
 							StaticFields: &FieldMap{
 								Data: map[string]*Field{
@@ -117,6 +138,7 @@ func TestResolve(t *testing.T) {
 				},
 				ClassTypes: &ClassMap{
 					Data: map[string]*ClassType{
+						"integer": IntegerType,
 						"foo": {
 							InstanceFields: &FieldMap{
 								Data: map[string]*Field{
@@ -151,7 +173,11 @@ func TestResolve(t *testing.T) {
 				Env: &TypeEnv{
 					Data: &TypeMap{},
 				},
-				ClassTypes: &ClassMap{},
+				ClassTypes: &ClassMap{
+					Data: map[string]*ClassType{
+						"integer": IntegerType,
+					},
+				},
 				NameSpaces: &NameSpaceStore{
 					Data: map[string]*ClassMap{
 						"i": {
@@ -161,7 +187,7 @@ func TestResolve(t *testing.T) {
 										Data: map[string]*Field{
 											"k": {
 												Type: &ast.TypeRef{
-													Name: []string{"integer"},
+													Name: []string{"Integer"},
 												},
 											},
 										},
@@ -179,6 +205,129 @@ func TestResolve(t *testing.T) {
 	typeResolver := &TypeResolver{}
 	for _, testCase := range testCases {
 		actual, err := typeResolver.ResolveVariable(testCase.Input, testCase.Context)
+		if testCase.Error != nil && testCase.Error.Error() != err.Error() {
+			diff := cmp.Diff(testCase.Error.Error(), err.Error())
+			t.Errorf(diff)
+		}
+
+		if ok := cmp.Equal(testCase.Expected, actual); !ok {
+			diff := cmp.Diff(testCase.Expected, actual)
+			pp.Print(actual)
+			t.Errorf(diff)
+		}
+	}
+}
+
+func TestResolveType(t *testing.T) {
+	testCases := []struct {
+		Input    []string
+		Context  *Context
+		Expected Type
+		Error    error
+	}{
+		{
+			[]string{"i"},
+			&Context{
+				ClassTypes: &ClassMap{
+					Data: map[string]*ClassType{
+						"i": {
+							Name: "i",
+						},
+					},
+				},
+			},
+			&ClassType{Name: "i"},
+			nil,
+		},
+		{
+			[]string{"i"},
+			&Context{
+				ClassTypes: NewClassMap(),
+				NameSpaces: &NameSpaceStore{
+					Data: map[string]*ClassMap{
+						"system": {
+							Data: map[string]*ClassType{
+								"i": {
+									Name: "i",
+								},
+							},
+						},
+					},
+				},
+			},
+			&ClassType{Name: "i"},
+			nil,
+		},
+		{
+			[]string{"i", "j"},
+			&Context{
+				ClassTypes: &ClassMap{
+					Data: map[string]*ClassType{
+						"i": {
+							Name: "i",
+							InnerClasses: &ClassMap{
+								Data: map[string]*ClassType{
+									"j": {
+										Name: "j",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			&ClassType{Name: "j"},
+			nil,
+		},
+		{
+			[]string{"i", "j"},
+			&Context{
+				ClassTypes: NewClassMap(),
+				NameSpaces: &NameSpaceStore{
+					Data: map[string]*ClassMap{
+						"i": {
+							Data: map[string]*ClassType{
+								"j": {
+									Name: "j",
+								},
+							},
+						},
+					},
+				},
+			},
+			&ClassType{Name: "j"},
+			nil,
+		},
+		{
+			[]string{"i", "j", "k"},
+			&Context{
+				ClassTypes: NewClassMap(),
+				NameSpaces: &NameSpaceStore{
+					Data: map[string]*ClassMap{
+						"i": {
+							Data: map[string]*ClassType{
+								"j": {
+									Name: "j",
+									InnerClasses: &ClassMap{
+										Data: map[string]*ClassType{
+											"k": {
+												Name: "k",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			&ClassType{Name: "k"},
+			nil,
+		},
+	}
+	typeResolver := &TypeResolver{}
+	for _, testCase := range testCases {
+		actual, err := typeResolver.ResolveType(testCase.Input, testCase.Context)
 		if testCase.Error != nil && testCase.Error.Error() != err.Error() {
 			diff := cmp.Diff(testCase.Error.Error(), err.Error())
 			t.Errorf(diff)

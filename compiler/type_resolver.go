@@ -1,8 +1,6 @@
 package compiler
 
 import (
-	"strings"
-
 	"github.com/pkg/errors"
 	"github.com/tzmfreedom/goland/ast"
 )
@@ -104,9 +102,6 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (interface{},
 func (r *TypeResolver) ResolveType(names []string, ctx *Context) (interface{}, error) {
 	if len(names) == 1 {
 		className := names[0]
-		if strings.ToLower(className) == "integer" {
-			return IntegerType, nil
-		}
 		if class, ok := ctx.ClassTypes.Get(className); ok {
 			return class, nil
 		}

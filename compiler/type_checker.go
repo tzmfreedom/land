@@ -92,7 +92,7 @@ func (v *TypeChecker) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) 
 	n.Receiver.Accept(v)
 	t, _ := n.Key.Accept(v)
 	if t != IntegerType && t != StringType {
-		v.AddError(fmt.Sprintf("array key <%v> must be integer or string", TypeName(t)), n.Key)
+		v.AddError(fmt.Sprintf("array key <%v> must be Integer or string", TypeName(t)), n.Key)
 	}
 	return nil, nil
 }
@@ -168,7 +168,7 @@ func (v *TypeChecker) VisitForControl(n *ast.ForControl) (interface{}, error) {
 	if n.Expression != nil {
 		t, _ := n.Expression.Accept(v)
 		if t != BooleanType {
-			v.AddError(fmt.Sprintf("condition <%s> must be boolean expression", TypeName(t)), n.Expression)
+			v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", TypeName(t)), n.Expression)
 		}
 	}
 	return nil, nil
@@ -181,7 +181,7 @@ func (v *TypeChecker) VisitEnhancedForControl(n *ast.EnhancedForControl) (interf
 func (v *TypeChecker) VisitIf(n *ast.If) (interface{}, error) {
 	t, _ := n.Condition.Accept(v)
 	if t != BooleanType {
-		v.AddError(fmt.Sprintf("condition <%s> must be boolean expression", TypeName(t)), n.Condition)
+		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", TypeName(t)), n.Condition)
 	}
 	n.IfStatement.Accept(v)
 	n.ElseStatement.Accept(v)
@@ -230,7 +230,7 @@ func (v *TypeChecker) VisitNullLiteral(n *ast.NullLiteral) (interface{}, error) 
 func (v *TypeChecker) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, error) {
 	t, _ := n.Expression.Accept(v)
 	if t != IntegerType {
-		v.AddError(fmt.Sprintf("expression <%s> must be integer", TypeName(t)), n.Expression)
+		v.AddError(fmt.Sprintf("expression <%s> must be Integer", TypeName(t)), n.Expression)
 	}
 	return nil, nil
 }
@@ -246,12 +246,12 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 	}
 	if n.Op == "+" {
 		if l != IntegerType && l != StringType && l != DoubleType {
-			v.AddError(fmt.Sprintf("expression <%s> must be integer, string or double", TypeName(l)), n.Left)
+			v.AddError(fmt.Sprintf("expression <%s> must be Integer, String or Double", TypeName(l)), n.Left)
 		}
 	}
 	if n.Op == "-" || n.Op == "*" || n.Op == "/" || n.Op == "%" {
 		if l != IntegerType && l != DoubleType {
-			v.AddError(fmt.Sprintf("expression <%s> must be integer or double", TypeName(l)), n.Left)
+			v.AddError(fmt.Sprintf("expression <%s> must be Integer or Double", TypeName(l)), n.Left)
 		}
 	}
 	if n.Op == "=" || n.Op == "+=" || n.Op == "-=" || n.Op == "*=" || n.Op == "/=" || n.Op == "%=" {
@@ -338,7 +338,7 @@ func (v *TypeChecker) VisitWhenType(n *ast.WhenType) (interface{}, error) {
 func (v *TypeChecker) VisitWhile(n *ast.While) (interface{}, error) {
 	t, _ := n.Condition.Accept(v)
 	if t != BooleanType {
-		v.AddError(fmt.Sprintf("condition <%s> must be boolean expression", TypeName(t)), n.Condition)
+		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", TypeName(t)), n.Condition)
 	}
 	for _, stmt := range n.Statements {
 		stmt.Accept(v)
@@ -398,7 +398,7 @@ func (v *TypeChecker) VisitSoqlBindVariable(n *ast.SoqlBindVariable) (interface{
 func (v *TypeChecker) VisitTernalyExpression(n *ast.TernalyExpression) (interface{}, error) {
 	c, _ := n.Condition.Accept(v)
 	if c != BooleanType {
-		v.AddError(fmt.Sprintf("condition <%s> must be boolean expression", TypeName(c)), n.Condition)
+		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", TypeName(c)), n.Condition)
 	}
 	t, _ := n.TrueExpression.Accept(v)
 	f, _ := n.FalseExpression.Accept(v)

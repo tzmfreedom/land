@@ -346,10 +346,8 @@ func (v *TypeChecker) VisitWhile(n *ast.While) (interface{}, error) {
 	if t != BooleanType {
 		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", TypeName(t)), n.Condition)
 	}
-	for _, stmt := range n.Statements {
-		stmt.Accept(v)
-	}
-	return ast.VisitWhile(v, n)
+	n.Statements.Accept(v)
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitNothingStatement(n *ast.NothingStatement) (interface{}, error) {

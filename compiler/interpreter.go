@@ -12,18 +12,22 @@ type Interpreter struct {
 }
 
 func (v *Interpreter) VisitClassDeclaration(n *ast.ClassDeclaration) (interface{}, error) {
+	panic("not pass")
 	return ast.VisitClassDeclaration(v, n)
 }
 
 func (v *Interpreter) VisitModifier(n *ast.Modifier) (interface{}, error) {
+	panic("not pass")
 	return ast.VisitModifier(v, n)
 }
 
 func (v *Interpreter) VisitAnnotation(n *ast.Annotation) (interface{}, error) {
+	panic("not pass")
 	return ast.VisitAnnotation(v, n)
 }
 
 func (v *Interpreter) VisitInterfaceDeclaration(n *ast.InterfaceDeclaration) (interface{}, error) {
+	panic("not pass")
 	return ast.VisitInterfaceDeclaration(v, n)
 }
 
@@ -40,18 +44,15 @@ func (v *Interpreter) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) 
 }
 
 func (v *Interpreter) VisitBooleanLiteral(n *ast.BooleanLiteral) (interface{}, error) {
-	t := createObject(BooleanType)
-	t.Extra["value"] = n.Value
-	t.ToString = returnStringFromBool
-	return t, nil
+	return newBoolean(n.Value), nil
 }
 
 func (v *Interpreter) VisitBreak(n *ast.Break) (interface{}, error) {
-	return &BreakValue{}, nil
+	return &Break{}, nil
 }
 
 func (v *Interpreter) VisitContinue(n *ast.Continue) (interface{}, error) {
-	return &ContinueValue{}, nil
+	return &Continue{}, nil
 }
 
 func (v *Interpreter) VisitDml(n *ast.Dml) (interface{}, error) {
@@ -59,10 +60,7 @@ func (v *Interpreter) VisitDml(n *ast.Dml) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitDoubleLiteral(n *ast.DoubleLiteral) (interface{}, error) {
-	t := createObject(DoubleType)
-	t.Extra["value"] = n.Value
-	t.ToString = returnStringFromDouble
-	return t, nil
+	return newDouble(n.Value), nil
 }
 
 func (v *Interpreter) VisitFieldDeclaration(n *ast.FieldDeclaration) (interface{}, error) {
@@ -75,8 +73,8 @@ func (v *Interpreter) VisitTry(n *ast.Try) (interface{}, error) {
 		return nil, err
 	}
 	switch res.(type) {
-	case *RaiseValue:
-		_ = res.(*RaiseValue)
+	case *Raise:
+		_ = res.(*Raise)
 		// TODO: implement
 	default:
 		res, err = n.FinallyBlock.Accept(v)
@@ -116,7 +114,7 @@ func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
 			break
 		}
 	}
-	return ast.VisitFor(v, n)
+	return nil, nil
 }
 
 func (v *Interpreter) VisitForControl(n *ast.ForControl) (interface{}, error) {
@@ -456,7 +454,7 @@ func (v *Interpreter) VisitReturn(n *ast.Return) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ReturnValue{res}, nil
+	return &Return{res}, nil
 }
 
 func (v *Interpreter) VisitThrow(n *ast.Throw) (interface{}, error) {
@@ -464,7 +462,7 @@ func (v *Interpreter) VisitThrow(n *ast.Throw) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &RaiseValue{res}, nil
+	return &Raise{res}, nil
 }
 
 func (v *Interpreter) VisitSoql(n *ast.Soql) (interface{}, error) {
@@ -476,10 +474,7 @@ func (v *Interpreter) VisitSosl(n *ast.Sosl) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitStringLiteral(n *ast.StringLiteral) (interface{}, error) {
-	t := createObject(StringType)
-	t.Extra["value"] = n.Value
-	t.ToString = returnString
-	return t, nil
+	return newString(n.Value), nil
 }
 
 func (v *Interpreter) VisitSwitch(n *ast.Switch) (interface{}, error) {
@@ -511,7 +506,20 @@ func (v *Interpreter) VisitWhenType(n *ast.WhenType) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitWhile(n *ast.While) (interface{}, error) {
-	return ast.VisitWhile(v, n)
+	for {
+		c, err := n.Condition.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+		if !c.(*Object).BoolValue() {
+			break
+		}
+		_, err = n.Statements.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return nil, nil
 }
 
 func (v *Interpreter) VisitNothingStatement(n *ast.NothingStatement) (interface{}, error) {
@@ -670,14 +678,14 @@ func createObject(t *ClassType) *Object {
 	}
 }
 
-type ReturnValue struct {
+type Return struct {
 	Value interface{}
 }
 
-type BreakValue struct{}
+type Break struct{}
 
-type ContinueValue struct{}
+type Continue struct{}
 
-type RaiseValue struct {
+type Raise struct {
 	Value interface{}
 }

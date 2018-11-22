@@ -672,12 +672,7 @@ func (v *Builder) VisitStatement(ctx *parser.StatementContext) interface{} {
 	} else if s := ctx.WHILE(); s != nil {
 		n := &While{Location: v.newLocation(ctx)}
 		n.Condition = ctx.ParExpression().Accept(v).(Node)
-		statements := ctx.AllStatement()
-		n.Statements = make([]Node, len(statements))
-		for i, statement := range statements {
-			n.Statements[i] = statement.Accept(v).(Node)
-			n.Statements[i].SetParent(n)
-		}
+		n.Statements = ctx.Statement(0).Accept(v).(Node)
 		n.IsDo = ctx.DO() != nil
 		return n
 	} else if s := ctx.RETURN(); s != nil {

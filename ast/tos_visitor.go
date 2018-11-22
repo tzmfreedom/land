@@ -546,19 +546,17 @@ func (v *TosVisitor) VisitWhenType(n *WhenType) (interface{}, error) {
 
 func (v *TosVisitor) VisitWhile(n *While) (interface{}, error) {
 	cond, _ := n.Condition.Accept(v)
-	statements := make([]string, len(n.Statements))
+	statements := ""
 	v.AddIndent(func() {
-		for i, stmt := range n.Statements {
-			r, _ := stmt.Accept(v)
-			statements[i] = v.withIndent(r.(string))
-		}
+		r, _ := n.Statements.Accept(v)
+		statements = r.(string)
 	})
 	return fmt.Sprintf(
 		`while (%s) {
 %s
 %s`,
 		cond.(string),
-		strings.Join(statements, "\n"),
+		statements,
 		v.withIndent("}"),
 	), nil
 }

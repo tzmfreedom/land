@@ -321,7 +321,7 @@ type WhenType struct {
 
 type While struct {
 	Condition  Node
-	Statements []Node
+	Statements Node
 	IsDo       bool
 	Location   *Location
 	Parent     Node

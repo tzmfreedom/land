@@ -619,11 +619,9 @@ public void action(){
 					Condition: &BooleanLiteral{
 						Value: true,
 					},
-					Statements: []Node{
-						&Block{
-							Statements: []Node{
-								&Break{},
-							},
+					Statements: &Block{
+						Statements: []Node{
+							&Break{},
 						},
 					},
 					IsDo: false,
@@ -632,12 +630,10 @@ public void action(){
 					Condition: &BooleanLiteral{
 						Value: false,
 					},
-					Statements: []Node{
-						&Block{
-							Statements: []Node{
-								&Return{
-									Expression: nil,
-								},
+					Statements: &Block{
+						Statements: []Node{
+							&Return{
+								Expression: nil,
 							},
 						},
 					},

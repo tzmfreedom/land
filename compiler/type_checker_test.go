@@ -105,19 +105,19 @@ func TestTypeChecker(t *testing.T) {
 									Statements: []ast.Node{
 										&ast.While{
 											Condition:  &ast.BooleanLiteral{},
-											Statements: []ast.Node{},
+											Statements: &ast.Block{},
 										},
 										&ast.While{
 											Condition:  &ast.StringLiteral{},
-											Statements: []ast.Node{},
+											Statements: &ast.Block{},
 										},
 										&ast.While{
 											Condition:  &ast.IntegerLiteral{},
-											Statements: []ast.Node{},
+											Statements: &ast.Block{},
 										},
 										&ast.While{
 											Condition:  &ast.DoubleLiteral{},
-											Statements: []ast.Node{},
+											Statements: &ast.Block{},
 										},
 									},
 								},

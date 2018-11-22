@@ -116,9 +116,9 @@ func (v *TypeChecker) VisitContinue(n *ast.Continue) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitDml(n *ast.Dml) (interface{}, error) {
-	_, err := n.Expression.Accept(v)
-	if err != nil {
-		// v.Errors
+	t, _ := n.Expression.Accept(v)
+	if t != ListType {
+
 	}
 	return nil, nil
 }

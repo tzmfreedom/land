@@ -433,7 +433,7 @@ type ConstructorDeclaration struct {
 	Parameters     []Node
 	Throws         []Node
 	Statements     Node
-	NativeFunction Node
+	NativeFunction func([]interface{}) Node
 	Location       *Location
 	Parent         Node
 }

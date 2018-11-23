@@ -228,6 +228,29 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 			newObj.InstanceFields.Set(f.Name, r.(*builtin.Object))
 		}
 	}
+	if len(classType.Constructors) > 0 {
+		constructor := classType.Constructors[0]
+		evaluated := make([]interface{}, len(n.Parameters))
+		for i, p := range n.Parameters {
+			evaluated[i], err = p.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if constructor.NativeFunction != nil {
+			constructor.NativeFunction(evaluated)
+		} else {
+			prev := v.Context.Env
+			v.Context.Env = NewEnv(nil)
+			for i, p := range constructor.Parameters {
+				param := p.(*ast.Parameter)
+				v.Context.Env.Set(param.Name, evaluated[i].(*builtin.Object))
+			}
+			v.Context.Env.Set("this", newObj)
+			constructor.Statements.Accept(v)
+			v.Context.Env = prev
+		}
+	}
 	return newObj, nil
 }
 
@@ -514,7 +537,11 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		panic("type error")
 	case "=":
 		// TODO: implement
-		v.Context.Env.Set(n.Left.(*ast.Name).Value[0], rObj)
+		switch t := n.Left.(type) {
+		case *ast.Name:
+			resolver := &TypeResolver{}
+			resolver.SetVariable(t.Value, v.Context, rObj)
+		}
 	}
 	return nil, nil
 }

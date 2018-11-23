@@ -12,6 +12,7 @@ type ClassType struct {
 	Name             string
 	SuperClass       ast.Node
 	ImplementClasses []ast.Node
+	Constructors     []*ast.ConstructorDeclaration
 	InstanceFields   *FieldMap
 	StaticFields     *FieldMap
 	InstanceMethods  *MethodMap

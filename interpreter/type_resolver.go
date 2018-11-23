@@ -10,16 +10,109 @@ import (
 
 type TypeResolver struct{}
 
+func (r *TypeResolver) SetVariable(names []string, ctx *Context, setValue *builtin.Object) error {
+	if len(names) == 1 {
+		if _, ok := ctx.Env.Get(names[0]); ok {
+			ctx.Env.Set(names[0], setValue)
+			return nil
+		}
+		// this
+		if val, ok := ctx.Env.Get("this"); ok {
+			val.InstanceFields.Set(names[0], setValue)
+			return nil
+		}
+		return errors.Errorf("%s is not found in this scope", names[0])
+	} else {
+		name := names[0]
+		if val, ok := ctx.Env.Get(name); ok {
+			for _, f := range names[1 : len(names)-1] {
+				val, ok = val.InstanceFields.Get(f)
+				if !ok {
+					return errors.Errorf("%s is not found in this scope", f)
+				}
+			}
+			last := names[len(names)-1]
+			_, ok = val.InstanceFields.Get(last)
+			if !ok {
+				return errors.Errorf("%s is not found in this scope", last)
+			}
+			val.InstanceFields.Set(last, setValue)
+			return nil
+		}
+		// this
+		if val, ok := ctx.Env.Get("this"); ok {
+			for _, f := range names[0 : len(names)-1] {
+				val, ok = val.InstanceFields.Get(f)
+				if !ok {
+					return errors.Errorf("%s is not found in this scope", f)
+				}
+			}
+			last := names[len(names)-1]
+			_, ok = val.InstanceFields.Get(last)
+			if !ok {
+				return errors.Errorf("%s is not found in this scope", last)
+			}
+			val.InstanceFields.Set(last, setValue)
+			return nil
+		}
+		if v, ok := ctx.StaticField.Get(name); ok {
+			if val, ok := v.Get(names[1]); ok {
+				for _, f := range names[2:] {
+					val, ok = val.InstanceFields.Get(f)
+					if !ok {
+						return errors.Errorf("%s is not found in this scope", f)
+					}
+				}
+				return nil
+			}
+		}
+		//if v, ok := ctx.NameSpaces.Get(name); ok {
+		//	if classType, ok := v.Get(names[1]); ok {
+		//		if field, ok := classType.StaticFields.Get(names[2]); ok {
+		//			t := field.Type.(*ast.TypeRef)
+		//			fieldType, _ := r.ResolveType(t.Name, ctx)
+		//			for _, f := range names[3:] {
+		//				instanceField, ok := fieldType.InstanceFields.Get(f)
+		//				if !ok {
+		//					return nil, errors.Errorf("%s is not found in this scope", f)
+		//				}
+		//				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
+		//			}
+		//			return fieldType, nil
+		//		}
+		//	}
+		//}
+	}
+	return nil
+}
+
 func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.Object, error) {
 	if len(names) == 1 {
 		if v, ok := ctx.Env.Get(names[0]); ok {
 			return v, nil
+		}
+		// this
+		if val, ok := ctx.Env.Get("this"); ok {
+			val, ok = val.InstanceFields.Get(names[0])
+			if ok {
+				return val, nil
+			}
 		}
 		return nil, errors.Errorf("%s is not found in this scope", names[0])
 	} else {
 		name := names[0]
 		if val, ok := ctx.Env.Get(name); ok {
 			for _, f := range names[1:] {
+				val, ok = val.InstanceFields.Get(f)
+				if !ok {
+					return nil, errors.Errorf("%s is not found in this scope", f)
+				}
+			}
+			return val, nil
+		}
+		// this
+		if val, ok := ctx.Env.Get("this"); ok {
+			for _, f := range names[0:] {
 				val, ok = val.InstanceFields.Get(f)
 				if !ok {
 					return nil, errors.Errorf("%s is not found in this scope", f)

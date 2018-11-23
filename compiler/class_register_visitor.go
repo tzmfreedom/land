@@ -26,8 +26,11 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 	t.StaticFields = builtin.NewFieldMap()
 	t.InstanceMethods = builtin.NewMethodMap()
 	t.StaticMethods = builtin.NewMethodMap()
+	t.Constructors = []*ast.ConstructorDeclaration{}
 	for _, d := range n.Declarations {
 		switch decl := d.(type) {
+		case *ast.ConstructorDeclaration:
+			t.Constructors = append(t.Constructors, decl)
 		case *ast.MethodDeclaration:
 			if decl.IsStatic() {
 				t.StaticMethods.Add(decl.Name, decl)

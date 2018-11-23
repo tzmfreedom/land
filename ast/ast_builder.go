@@ -960,9 +960,15 @@ func (v *Builder) VisitPrimary(ctx *parser.PrimaryContext) interface{} {
 	if e := ctx.Expression(); e != nil {
 		return e.Accept(v)
 	} else if t := ctx.THIS(); t != nil {
-		return t.Accept(v)
+		return &Name{
+			Value:    []string{t.GetText()},
+			Location: v.newLocation(ctx),
+		}
 	} else if s := ctx.SUPER(); s != nil {
-		return s.Accept(v)
+		return &Name{
+			Value:    []string{t.GetText()},
+			Location: v.newLocation(ctx),
+		}
 	} else if l := ctx.Literal(); l != nil {
 		return l.Accept(v)
 	} else if i := ctx.ApexIdentifier(); i != nil {

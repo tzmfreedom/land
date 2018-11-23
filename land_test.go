@@ -4,8 +4,9 @@ import (
 	"os"
 )
 
+// Arithmetic
 func ExampleRun1() {
-	os.Args = []string{"land", "run", "-f", "fixtures/example.cls"}
+	os.Args = []string{"land", "run", "-f", "fixtures/example1.cls"}
 	main()
 	// Output:
 	// 6
@@ -16,6 +17,7 @@ func ExampleRun1() {
 	// 1.560000
 }
 
+// Object Creation, FieldAccess
 func ExampleRun2() {
 	os.Args = []string{"land", "run", "-f", "fixtures/example2.cls"}
 	main()
@@ -35,6 +37,7 @@ func ExampleRun2() {
 	// 1.230000
 }
 
+// For, While, Continue, Break, If, Else
 func ExampleRun3() {
 	os.Args = []string{"land", "run", "-f", "fixtures/example3.cls"}
 	main()

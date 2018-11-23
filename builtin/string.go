@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -33,18 +34,27 @@ func (v *ToStringer) String(o *Object) string {
 	fields := make([]string, len(o.InstanceFields.All()))
 	v.AddIndent(func() {
 		i := 0
-		for name, field := range o.InstanceFields.All() {
+		names := make([]string, len(o.InstanceFields.Data))
+		for name, _ := range o.InstanceFields.Data {
+			names[i] = name
+			i++
+		}
+		sort.Slice(names, func(i, j int) bool {
+			return names[i] < names[j]
+		})
+
+		for i, name := range names {
 			obj := ""
 			v.AddIndent(func() {
-				obj = v.String(field)
+				r, _ := o.InstanceFields.Get(name)
+				obj = v.String(r)
 			})
 			fields[i] = v.withIndent(fmt.Sprintf("%s: %s", name, obj))
-			i++
 		}
 	})
 	fieldStr := ""
 	if len(fields) != 0 {
-		fieldStr = fmt.Sprintf(" \n%s\n", strings.Join(fields, "\n"))
+		fieldStr = fmt.Sprintf("\n%s\n", strings.Join(fields, "\n"))
 	}
 	return fmt.Sprintf(
 		`<%s> {%s%s`,

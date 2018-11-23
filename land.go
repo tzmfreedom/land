@@ -22,12 +22,16 @@ var preprocessors = []ast.PreProcessor{
 }
 
 func main() {
-	f := flag.String("f", "", "file")
-	_ = flag.String("d", "", "directory")
-	cmd := os.Args[1]
-	os.Args = os.Args[1:]
+	flg := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	f := flg.String("f", "", "file")
+	_ = flg.String("d", "", "directory")
 
-	flag.Parse()
+	cmd := os.Args[1]
+
+	err := flg.Parse(os.Args[2:])
+	if err != nil {
+		panic(err.Error())
+	}
 
 	t, err := ast.ParseFile(*f, preprocessors...)
 	if err != nil {

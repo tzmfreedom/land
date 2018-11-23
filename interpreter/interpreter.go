@@ -120,6 +120,11 @@ func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
 				switch r := res.(type) {
 				case *Break:
 					return nil, nil
+				case *Continue:
+					for _, stmt := range control.ForUpdate {
+						stmt.Accept(v)
+					}
+					continue
 				case *Return, *Raise:
 					return r, nil
 				}
@@ -562,6 +567,8 @@ func (v *Interpreter) VisitWhile(n *ast.While) (interface{}, error) {
 			switch r := res.(type) {
 			case *Break:
 				return nil, nil
+			case *Continue:
+				continue
 			case *Return, *Raise:
 				return r, nil
 			}
@@ -597,7 +604,7 @@ func (v *Interpreter) VisitBlock(n *ast.Block) (interface{}, error) {
 		}
 		if res != nil {
 			switch r := res.(type) {
-			case *Break, *Return, *Raise:
+			case *Break, *Continue, *Return, *Raise:
 				return r, nil
 			}
 		}

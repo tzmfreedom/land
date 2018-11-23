@@ -171,7 +171,21 @@ func (v *Interpreter) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 }
 
 func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{}, error) {
+	var receiver interface{}
+	var m *ast.MethodDeclaration
+	var err error
+
 	switch exp := n.NameOrExpression.(type) {
+	case *ast.FieldAccess:
+		receiver, err = exp.Expression.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+		methods, ok := receiver.(*builtin.Object).ClassType.InstanceMethods.Get(exp.FieldName)
+		if !ok {
+			panic("not found")
+		}
+		m = methods[0].(*ast.MethodDeclaration)
 	case *ast.Name:
 		// TODO: implement
 		if exp.Value[0] == "Debugger" {
@@ -179,31 +193,48 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 			return nil, nil
 		}
 		resolver := &TypeResolver{}
-		method, err := resolver.ResolveMethod(exp.Value, v.Context)
+		var method ast.Node
+		receiver, method, err = resolver.ResolveMethod(exp.Value, v.Context)
 		if err != nil {
 			return nil, err
 		}
-		m := method.(*ast.MethodDeclaration)
-		evaluated := make([]interface{}, len(n.Parameters))
-		for i, p := range n.Parameters {
-			evaluated[i], err = p.Accept(v)
-			if err != nil {
-				return nil, err
-			}
-		}
-		if m.NativeFunction != nil {
-			// set parameter
-			_ = m.NativeFunction(evaluated)
-		} else {
-			for _, p := range n.Parameters {
-				_, _ = p.Accept(v)
-				// set env
-			}
-			m.Statements.Accept(v)
-		}
-	case *ast.FieldAccess:
+		m = method.(*ast.MethodDeclaration)
 	}
-	return ast.VisitMethodInvocation(v, n)
+	evaluated := make([]interface{}, len(n.Parameters))
+	for i, p := range n.Parameters {
+		evaluated[i], err = p.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if m.NativeFunction != nil {
+		// set parameter
+		_ = m.NativeFunction(evaluated)
+	} else {
+		prev := v.Context.Env
+		v.Context.Env = NewEnv(nil)
+		for i, p := range m.Parameters {
+			param := p.(*ast.Parameter)
+			v.Context.Env.Set(param.Name, evaluated[i].(*builtin.Object))
+		}
+		switch obj := receiver.(type) {
+		case *builtin.Object:
+			v.Context.Env.Set("this", obj)
+		}
+		r, err := m.Statements.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+		v.Context.Env = prev
+		if r != nil {
+			switch ret := r.(type) {
+			case *Return:
+				return ret.Value, nil
+			}
+			return r, nil
+		}
+	}
+	return nil, nil
 }
 
 func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
@@ -592,6 +623,7 @@ func (v *Interpreter) VisitTrigger(n *ast.Trigger) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitTriggerTiming(n *ast.TriggerTiming) (interface{}, error) {
+	panic("not pass")
 	return ast.VisitTriggerTiming(v, n)
 }
 

@@ -151,14 +151,14 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.O
 	return nil, nil
 }
 
-func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (ast.Node, error) {
+func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (interface{}, ast.Node, error) {
 	if len(names) == 1 {
 		methodName := names[0]
 		if v, ok := ctx.Env.Get("this"); ok {
 			if methods, ok := v.ClassType.InstanceMethods.Get(methodName); ok {
-				return methods[0], nil
+				return v, methods[0], nil
 			}
-			return nil, errors.Errorf("%s is not found in this scope", methodName)
+			return nil, nil, errors.Errorf("%s is not found in this scope", methodName)
 		}
 	} else {
 		first := names[0]
@@ -168,21 +168,21 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (ast.Node, er
 			for _, f := range fields {
 				val, ok = val.InstanceFields.Get(f)
 				if !ok {
-					return nil, errors.Errorf("%s is not found in this scope", f)
+					return nil, nil, errors.Errorf("%s is not found in this scope", f)
 				}
 			}
 			methods, ok := val.ClassType.InstanceMethods.Get(methodName)
 			if ok {
-				return methods[0], nil
+				return val, methods[0], nil
 			}
-			return nil, errors.Errorf("%s is not found in this scope", methodName)
+			return nil, nil, errors.Errorf("%s is not found in this scope", methodName)
 		}
 		if len(names) == 2 {
 			if v, ok := ctx.ClassTypes.Get(first); ok {
 				if methods, ok := v.StaticMethods.Get(methodName); ok {
-					return methods[0], nil
+					return v, methods[0], nil
 				}
-				return nil, errors.Errorf("%s is not found in this scope", methodName)
+				return nil, nil, errors.Errorf("%s is not found in this scope", methodName)
 			}
 		}
 		if v, ok := ctx.StaticField.Get(first); ok {
@@ -190,14 +190,14 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (ast.Node, er
 				for _, f := range names[2 : len(names)-1] {
 					val, ok = val.InstanceFields.Get(f)
 					if !ok {
-						return nil, errors.Errorf("%s is not found in this scope", f)
+						return nil, nil, errors.Errorf("%s is not found in this scope", f)
 					}
 				}
 				methods, ok := val.ClassType.InstanceMethods.Get(methodName)
 				if ok {
-					return methods[0], nil
+					return val, methods[0], nil
 				}
-				return nil, errors.Errorf("%s is not found in this scope", methodName)
+				return nil, nil, errors.Errorf("%s is not found in this scope", methodName)
 			}
 		}
 		//if v, ok := ctx.NameSpaces.Get(first); ok {
@@ -229,7 +229,7 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (ast.Node, er
 		//	}
 		//}
 	}
-	return nil, errors.Errorf("%s is not found in this scope", strings.Join(names, "."))
+	return nil, nil, errors.Errorf("%s is not found in this scope", strings.Join(names, "."))
 }
 
 func (r *TypeResolver) ResolveType(names []string, ctx *Context) (*builtin.ClassType, error) {

@@ -15,7 +15,7 @@ func TestResolveVariable(t *testing.T) {
 	testCases := []struct {
 		Input    []string
 		Context  *Context
-		Expected *Object
+		Expected *builtin.Object
 		Error    error
 	}{
 		{
@@ -27,8 +27,8 @@ func TestResolveVariable(t *testing.T) {
 					},
 				},
 				Env: &Env{
-					Data: &ObjectMap{
-						Data: map[string]*Object{
+					Data: &builtin.ObjectMap{
+						Data: map[string]*builtin.Object{
 							"i": newInteger(1),
 						},
 					},
@@ -46,8 +46,8 @@ func TestResolveVariable(t *testing.T) {
 					},
 				},
 				Env: &Env{
-					Data: &ObjectMap{
-						Data: map[string]*Object{},
+					Data: &builtin.ObjectMap{
+						Data: map[string]*builtin.Object{},
 					},
 				},
 			},
@@ -58,11 +58,11 @@ func TestResolveVariable(t *testing.T) {
 			[]string{"i", "j"},
 			&Context{
 				Env: &Env{
-					Data: &ObjectMap{
-						Data: map[string]*Object{
+					Data: &builtin.ObjectMap{
+						Data: map[string]*builtin.Object{
 							"i": {
-								InstanceFields: &ObjectMap{
-									Data: map[string]*Object{
+								InstanceFields: &builtin.ObjectMap{
+									Data: map[string]*builtin.Object{
 										"j": newInteger(2),
 									},
 								},
@@ -78,11 +78,11 @@ func TestResolveVariable(t *testing.T) {
 			[]string{"i", "j"},
 			&Context{
 				Env: &Env{
-					Data: &ObjectMap{
-						Data: map[string]*Object{
+					Data: &builtin.ObjectMap{
+						Data: map[string]*builtin.Object{
 							"i": {
-								InstanceFields: &ObjectMap{
-									Data: map[string]*Object{},
+								InstanceFields: &builtin.ObjectMap{
+									Data: map[string]*builtin.Object{},
 								},
 							},
 						},
@@ -96,7 +96,7 @@ func TestResolveVariable(t *testing.T) {
 		//	[]string{"i", "j"},
 		//	&Context{
 		//		Env: &Env{
-		//			Data: &ObjectMap{},
+		//			Data: &builtin.ObjectMap{},
 		//		},
 		//		ClassTypes: &builtin.ClassMap{
 		//			Data: map[string]*builtin.ClassType{
@@ -122,7 +122,7 @@ func TestResolveVariable(t *testing.T) {
 		//	[]string{"i", "j", "k"},
 		//	&Context{
 		//		Env: &Env{
-		//			Data: &ObjectMap{},
+		//			Data: &builtin.ObjectMap{},
 		//		},
 		//		ClassTypes: &builtin.ClassMap{
 		//			Data: map[string]*builtin.ClassType{
@@ -159,7 +159,7 @@ func TestResolveVariable(t *testing.T) {
 		//	[]string{"i", "j", "k"},
 		//	&Context{
 		//		Env: &Env{
-		//			Data: &ObjectMap{},
+		//			Data: &builtin.ObjectMap{},
 		//		},
 		//		ClassTypes: &builtin.ClassMap{
 		//			Data: map[string]*builtin.ClassType{
@@ -217,8 +217,8 @@ func TestResolveMethod(t *testing.T) {
 			[]string{"foo"},
 			&Context{
 				Env: &Env{
-					Data: &ObjectMap{
-						Data: map[string]*Object{
+					Data: &builtin.ObjectMap{
+						Data: map[string]*builtin.Object{
 							"this": {
 								ClassType: &builtin.ClassType{
 									InstanceMethods: &builtin.MethodMap{
@@ -243,8 +243,8 @@ func TestResolveMethod(t *testing.T) {
 			[]string{"foo", "bar"},
 			&Context{
 				Env: &Env{
-					Data: &ObjectMap{
-						Data: map[string]*Object{
+					Data: &builtin.ObjectMap{
+						Data: map[string]*builtin.Object{
 							"foo": {
 								ClassType: &builtin.ClassType{
 									InstanceMethods: &builtin.MethodMap{

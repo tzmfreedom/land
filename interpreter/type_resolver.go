@@ -5,11 +5,12 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/goland/builtin"
 )
 
 type TypeResolver struct{}
 
-func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*Object, error) {
+func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.Object, error) {
 	if len(names) == 1 {
 		if v, ok := ctx.Env.Get(names[0]); ok {
 			return v, nil

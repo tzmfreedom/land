@@ -87,7 +87,8 @@ func semanticAnalysis(t *builtin.ClassType) error {
 }
 
 func run(n *builtin.ClassType) error {
-	interpreter := interpreter.NewInterpreter(classMap)
+	interpreter := interpreter.NewInterpreter(builtin.PrimitiveClassMap())
+	interpreter.Context.ClassTypes.Set(n.Name, n)
 	invoke := &ast.MethodInvocation{
 		NameOrExpression: &ast.Name{
 			Value: []string{n.Name, "action"},

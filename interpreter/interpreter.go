@@ -3,7 +3,6 @@ package interpreter
 import (
 	"fmt"
 
-	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 )
@@ -115,7 +114,7 @@ func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		if res.(*Object).BoolValue() {
+		if res.(*builtin.Object).BoolValue() {
 			res, err = n.Statements.Accept(v)
 			for _, stmt := range control.ForUpdate {
 				stmt.Accept(v)
@@ -140,7 +139,7 @@ func (v *Interpreter) VisitIf(n *ast.If) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if res.(*Object).BoolValue() {
+	if res.(*builtin.Object).BoolValue() {
 		n.IfStatement.Accept(v)
 	} else {
 		n.ElseStatement.Accept(v)
@@ -161,27 +160,22 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 			return nil, err
 		}
 		m := method.(*ast.MethodDeclaration)
+		evaluated := make([]interface{}, len(n.Parameters))
+		for i, p := range n.Parameters {
+			evaluated[i], err = p.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+		}
 		if m.NativeFunction != nil {
 			// set parameter
-			_ = m.NativeFunction(n.Parameters)
+			_ = m.NativeFunction(evaluated)
 		} else {
 			for _, p := range n.Parameters {
 				_, _ = p.Accept(v)
 				// set env
 			}
 			m.Statements.Accept(v)
-		}
-		if len(exp.Value) == 2 &&
-			exp.Value[0] == "System" &&
-			exp.Value[1] == "debug" {
-			pp.Print(n)
-			for _, p := range n.Parameters {
-				res, err := p.Accept(v)
-				if err != nil {
-					return nil, err
-				}
-				pp.Println(res)
-			}
 		}
 	case *ast.FieldAccess:
 	}
@@ -204,9 +198,9 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 	left, _ := n.Left.Accept(v)
 	right, _ := n.Right.Accept(v)
 
-	lObj := left.(*Object)
+	lObj := left.(*builtin.Object)
 	lType := lObj.ClassType
-	rObj := right.(*Object)
+	rObj := right.(*builtin.Object)
 	rType := rObj.ClassType
 
 	switch n.Op {
@@ -522,7 +516,7 @@ func (v *Interpreter) VisitWhile(n *ast.While) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		if !c.(*Object).BoolValue() {
+		if !c.(*builtin.Object).BoolValue() {
 			break
 		}
 		_, err = n.Statements.Accept(v)
@@ -584,7 +578,7 @@ func (v *Interpreter) VisitTernalyExpression(n *ast.TernalyExpression) (interfac
 	if err != nil {
 		return nil, err
 	}
-	if res.(*Object).Extra["value"].(bool) {
+	if res.(*builtin.Object).Extra["value"].(bool) {
 		return n.TrueExpression.Accept(v)
 	}
 	return n.FalseExpression.Accept(v)
@@ -608,86 +602,51 @@ func (v *Interpreter) VisitConstructorDeclaration(n *ast.ConstructorDeclaration)
 
 type Null struct{}
 
-type Object struct {
-	ClassType      *builtin.ClassType
-	InstanceFields *ObjectMap
-	GenericType    []*builtin.ClassType
-	Extra          map[string]interface{}
-	ToString       func(*Object) string
-}
-
-func (o *Object) Value() interface{} {
-	return o.Extra["value"]
-}
-
-func (o *Object) IntegerValue() int {
-	return o.Value().(int)
-}
-
-func (o *Object) DoubleValue() float64 {
-	return o.Value().(float64)
-}
-
-func (o *Object) BoolValue() bool {
-	return o.Value().(bool)
-}
-
-func (o *Object) StringValue() string {
-	return o.Value().(string)
-}
-
-func returnStringFromInteger(o *Object) string {
+func returnStringFromInteger(o *builtin.Object) string {
 	return fmt.Sprintf("%d", o.Value().(int))
 }
 
-func returnStringFromDouble(o *Object) string {
+func returnStringFromDouble(o *builtin.Object) string {
 	return fmt.Sprintf("%f", o.Value())
 }
 
-func returnStringFromBool(o *Object) string {
+func returnStringFromBool(o *builtin.Object) string {
 	return fmt.Sprintf("%s", o.Value())
 }
 
-func returnString(o *Object) string {
+func returnString(o *builtin.Object) string {
 	return o.Value().(string)
 }
 
-func newInteger(value int) *Object {
+func newInteger(value int) *builtin.Object {
 	t := createObject(builtin.IntegerType)
 	t.Extra["value"] = value
 	t.ToString = returnStringFromInteger
 	return t
 }
 
-func newDouble(value float64) *Object {
+func newDouble(value float64) *builtin.Object {
 	t := createObject(builtin.DoubleType)
 	t.Extra["value"] = value
 	t.ToString = returnStringFromDouble
 	return t
 }
 
-func newString(value string) *Object {
+func newString(value string) *builtin.Object {
 	t := createObject(builtin.StringType)
 	t.Extra["value"] = value
 	t.ToString = returnString
 	return t
 }
 
-func newBoolean(value bool) *Object {
+func newBoolean(value bool) *builtin.Object {
 	t := createObject(builtin.BooleanType)
 	t.Extra["value"] = value
 	t.ToString = returnStringFromBool
 	return t
 }
 
-func createObject(t *builtin.ClassType) *Object {
-	return &Object{
-		ClassType:      t,
-		InstanceFields: NewObjectMap(),
-		GenericType:    []*builtin.ClassType{},
-		Extra:          map[string]interface{}{},
-	}
-}
+var createObject = builtin.CreateObject
 
 type Return struct {
 	Value interface{}

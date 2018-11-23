@@ -161,7 +161,7 @@ type MethodDeclaration struct {
 	Parameters     []Node
 	Throws         []Node
 	Statements     Node
-	NativeFunction func([]Node) Node
+	NativeFunction func([]interface{}) Node
 	Location       *Location
 	Parent         Node
 }

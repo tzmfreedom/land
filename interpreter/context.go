@@ -27,20 +27,20 @@ func NewContext() *Context {
 }
 
 type Env struct {
-	Data   *ObjectMap
+	Data   *builtin.ObjectMap
 	Parent *Env
 }
 
 func NewEnv(p *Env) *Env {
 	return &Env{
-		Data: &ObjectMap{
-			Data: map[string]*Object{},
+		Data: &builtin.ObjectMap{
+			Data: map[string]*builtin.Object{},
 		},
 		Parent: p,
 	}
 }
 
-func (e *Env) Get(k string) (*Object, bool) {
+func (e *Env) Get(k string) (*builtin.Object, bool) {
 	n, ok := e.Data.Get(k)
 	if ok {
 		return n, true
@@ -51,55 +51,33 @@ func (e *Env) Get(k string) (*Object, bool) {
 	return nil, false
 }
 
-func (e *Env) Set(k string, n *Object) {
+func (e *Env) Set(k string, n *builtin.Object) {
 	e.Data.Set(k, n)
-}
-
-/**
- * ObjectMap
- */
-type ObjectMap struct {
-	Data map[string]*Object
-}
-
-func NewObjectMap() *ObjectMap {
-	return &ObjectMap{
-		Data: map[string]*Object{},
-	}
-}
-
-func (m *ObjectMap) Set(k string, n *Object) {
-	m.Data[strings.ToLower(k)] = n
-}
-
-func (m *ObjectMap) Get(k string) (*Object, bool) {
-	n, ok := m.Data[strings.ToLower(k)]
-	return n, ok
 }
 
 /**
  * StaticFieldMap
  */
 type StaticFieldMap struct {
-	Data map[string]*ObjectMap
+	Data map[string]*builtin.ObjectMap
 }
 
 func NewStaticFieldMap() *StaticFieldMap {
 	return &StaticFieldMap{
-		Data: map[string]*ObjectMap{},
+		Data: map[string]*builtin.ObjectMap{},
 	}
 }
 
-func (m *StaticFieldMap) Add(k string, n *Object) {
+func (m *StaticFieldMap) Add(k string, n *builtin.Object) {
 	objMap, _ := m.Get(k)
 	objMap.Set(k, n)
 }
 
-func (m *StaticFieldMap) Set(k string, n *ObjectMap) {
+func (m *StaticFieldMap) Set(k string, n *builtin.ObjectMap) {
 	m.Data[strings.ToLower(k)] = n
 }
 
-func (m *StaticFieldMap) Get(k string) (*ObjectMap, bool) {
+func (m *StaticFieldMap) Get(k string) (*builtin.ObjectMap, bool) {
 	n, ok := m.Data[strings.ToLower(k)]
 	return n, ok
 }

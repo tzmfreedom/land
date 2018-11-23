@@ -139,7 +139,7 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (ast.Node, er
 	return nil, errors.Errorf("%s is not found in this scope", strings.Join(names, "."))
 }
 
-func (r *TypeResolver) ResolveType(names []string, ctx *Context) (interface{}, error) {
+func (r *TypeResolver) ResolveType(names []string, ctx *Context) (*builtin.ClassType, error) {
 	if len(names) == 1 {
 		className := names[0]
 		if class, ok := ctx.ClassTypes.Get(className); ok {

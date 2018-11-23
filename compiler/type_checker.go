@@ -23,7 +23,7 @@ func NewTypeChecker() *TypeChecker {
 func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) {
 	v.Context.CurrentClass = n
 	if n.StaticFields != nil {
-		for _, f := range n.StaticFields.All() {
+		for _, f := range n.StaticFields.Data {
 			t, _ := f.Type.Accept(v)
 			e, _ := f.Expression.Accept(v)
 			if t != e {
@@ -33,7 +33,7 @@ func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) 
 	}
 
 	if n.InstanceFields != nil {
-		for _, f := range n.InstanceFields.All() {
+		for _, f := range n.InstanceFields.Data {
 			t, _ := f.Type.Accept(v)
 			e, _ := f.Expression.Accept(v)
 			if t != e {

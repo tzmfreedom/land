@@ -1,8 +1,6 @@
 package interpreter
 
 import (
-	"fmt"
-
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 )
@@ -44,6 +42,7 @@ func (v *Interpreter) VisitIntegerLiteral(n *ast.IntegerLiteral) (interface{}, e
 }
 
 func (v *Interpreter) VisitParameter(n *ast.Parameter) (interface{}, error) {
+	panic("not pass")
 	return ast.VisitParameter(v, n)
 }
 
@@ -81,16 +80,22 @@ func (v *Interpreter) VisitTry(n *ast.Try) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	switch res.(type) {
-	case *Raise:
-		_ = res.(*Raise)
-		// TODO: implement
-	default:
-		res, err = n.FinallyBlock.Accept(v)
-		return res, nil
+	if res != nil {
+		switch res.(type) {
+		case *Raise:
+			_ = res.(*Raise)
+			// TODO: implement
+		default:
+			if n.FinallyBlock != nil {
+				res, err = n.FinallyBlock.Accept(v)
+			}
+			return res, nil
+		}
 	}
-	if _, err = n.FinallyBlock.Accept(v); err != nil {
-		return nil, err
+	if n.FinallyBlock != nil {
+		if _, err = n.FinallyBlock.Accept(v); err != nil {
+			return nil, err
+		}
 	}
 	return nil, nil
 }
@@ -161,6 +166,7 @@ func (v *Interpreter) VisitIf(n *ast.If) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitMethodDeclaration(n *ast.MethodDeclaration) (interface{}, error) {
+	panic("not pass")
 	return ast.VisitMethodDeclaration(v, n)
 }
 
@@ -196,7 +202,28 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 }
 
 func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
-	return ast.VisitNew(v, n)
+	resolver := &TypeResolver{}
+	typeRef := n.Type.(*ast.TypeRef)
+	classType, err := resolver.ResolveType(typeRef.Name, v.Context)
+	if err != nil {
+		return nil, err
+	}
+	genericType := []*builtin.ClassType{}
+	newObj := &builtin.Object{
+		ClassType:      classType,
+		InstanceFields: builtin.NewObjectMap(),
+		GenericType:    genericType,
+		Extra:          map[string]interface{}{},
+	}
+	for _, f := range classType.InstanceFields.Data {
+		if f.Expression == nil {
+			newObj.InstanceFields.Set(f.Name, nil)
+		} else {
+			r, _ := f.Expression.Accept(v)
+			newObj.InstanceFields.Set(f.Name, r.(*builtin.Object))
+		}
+	}
+	return newObj, nil
 }
 
 func (v *Interpreter) VisitNullLiteral(n *ast.NullLiteral) (interface{}, error) {
@@ -662,47 +689,27 @@ func (v *Interpreter) VisitConstructorDeclaration(n *ast.ConstructorDeclaration)
 
 type Null struct{}
 
-func returnStringFromInteger(o *builtin.Object) string {
-	return fmt.Sprintf("%d", o.Value().(int))
-}
-
-func returnStringFromDouble(o *builtin.Object) string {
-	return fmt.Sprintf("%f", o.Value())
-}
-
-func returnStringFromBool(o *builtin.Object) string {
-	return fmt.Sprintf("%t", o.Value())
-}
-
-func returnString(o *builtin.Object) string {
-	return o.Value().(string)
-}
-
 func newInteger(value int) *builtin.Object {
 	t := createObject(builtin.IntegerType)
 	t.Extra["value"] = value
-	t.ToString = returnStringFromInteger
 	return t
 }
 
 func newDouble(value float64) *builtin.Object {
 	t := createObject(builtin.DoubleType)
 	t.Extra["value"] = value
-	t.ToString = returnStringFromDouble
 	return t
 }
 
 func newString(value string) *builtin.Object {
 	t := createObject(builtin.StringType)
 	t.Extra["value"] = value
-	t.ToString = returnString
 	return t
 }
 
 func newBoolean(value bool) *builtin.Object {
 	t := createObject(builtin.BooleanType)
 	t.Extra["value"] = value
-	t.ToString = returnStringFromBool
 	return t
 }
 

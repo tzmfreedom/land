@@ -897,7 +897,7 @@ func (v *Builder) VisitOpExpression(ctx *parser.OpExpressionContext) interface{}
 	return n
 }
 
-func (v *Builder) VisitNewExpression(ctx *parser.NewObjectExpressionContext) interface{} {
+func (v *Builder) VisitNewObjectExpression(ctx *parser.NewObjectExpressionContext) interface{} {
 	return ctx.Creator().Accept(v)
 }
 
@@ -984,7 +984,13 @@ func (v *Builder) VisitPrimary(ctx *parser.PrimaryContext) interface{} {
 }
 
 func (v *Builder) VisitCreator(ctx *parser.CreatorContext) interface{} {
-	return v.VisitChildren(ctx)
+	classType := ctx.CreatedName().Accept(v)
+	classCreatorRest := ctx.ClassCreatorRest().Accept(v)
+	return &New{
+		Type:       classType.(Node),
+		Parameters: classCreatorRest.([]Node),
+		Location:   v.newLocation(ctx),
+	}
 }
 
 func (v *Builder) VisitCreatedName(ctx *parser.CreatedNameContext) interface{} {
@@ -993,10 +999,11 @@ func (v *Builder) VisitCreatedName(ctx *parser.CreatedNameContext) interface{} {
 		if types := ctx.AllTypeArgumentsOrDiamond(); len(types) != 0 {
 			// n.Parameters = ctx.TypeArgumentsOrDiamond(0).Accept(v)
 		}
-		names := make([]Node, len(identifiers))
+		names := make([]string, len(identifiers))
 		for i, ident := range identifiers {
-			names[i] = ident.Accept(v).(Node)
+			names[i] = ident.Accept(v).(string)
 		}
+		n.Name = names
 		// TODO: implement
 		return n
 	}

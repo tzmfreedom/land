@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
@@ -198,7 +197,7 @@ func TestResolveVariable(t *testing.T) {
 			t.Errorf(diff)
 		}
 
-		if ok := cmp.Equal(testCase.Expected, actual, cmpopts.IgnoreTypes(returnString)); !ok {
+		if ok := cmp.Equal(testCase.Expected, actual); !ok {
 			diff := cmp.Diff(testCase.Expected, actual)
 			pp.Print(actual)
 			t.Errorf(diff)

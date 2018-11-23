@@ -46,7 +46,7 @@ var System = &ClassType{
 					Name: "debug",
 					NativeFunction: func(parameter []interface{}) ast.Node {
 						o := parameter[0].(*Object)
-						fmt.Println(o.ToString(o))
+						fmt.Println(String(o))
 						return nil
 					},
 				},
@@ -128,4 +128,8 @@ func (m *ObjectMap) Set(k string, n *Object) {
 func (m *ObjectMap) Get(k string) (*Object, bool) {
 	n, ok := m.Data[strings.ToLower(k)]
 	return n, ok
+}
+
+func (m *ObjectMap) All() map[string]*Object {
+	return m.Data
 }

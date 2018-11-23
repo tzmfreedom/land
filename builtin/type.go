@@ -21,6 +21,16 @@ type ClassType struct {
 	Parent           ast.Node
 }
 
+func (t *ClassType) IsPrimitive() bool {
+	if t == IntegerType ||
+		t == StringType ||
+		t == BooleanType ||
+		t == DoubleType {
+		return true
+	}
+	return false
+}
+
 type Field struct {
 	Type       ast.Node
 	Modifiers  []ast.Node
@@ -47,14 +57,6 @@ func (m *FieldMap) Set(k string, n *Field) {
 func (m *FieldMap) Get(k string) (*Field, bool) {
 	n, ok := m.Data[strings.ToLower(k)]
 	return n, ok
-}
-
-func (m *FieldMap) All() []*Field {
-	fields := make([]*Field, len(m.Data))
-	for _, v := range m.Data {
-		fields = append(fields, v)
-	}
-	return fields
 }
 
 type MethodMap struct {

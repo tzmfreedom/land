@@ -7,9 +7,13 @@ import (
 	"flag"
 
 	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/goland/builtin"
 	"github.com/tzmfreedom/goland/compiler"
+	"github.com/tzmfreedom/goland/interpreter"
 	"github.com/tzmfreedom/goland/visitor"
 )
+
+var classMap = builtin.NewClassMap()
 
 func main() {
 	f := flag.String("f", "", "file")
@@ -31,7 +35,12 @@ func main() {
 		if err != nil {
 			handleError(err)
 		}
-		err = run(root)
+		t, err := register(root)
+		err = semanticAnalysis(t)
+		if err != nil {
+			handleError(err)
+		}
+		err = run(t)
 		if err != nil {
 			handleError(err)
 		}
@@ -40,7 +49,11 @@ func main() {
 		if err != nil {
 			handleError(err)
 		}
-		semantic_analysis(root)
+		t, err := register(root)
+		err = semanticAnalysis(t)
+		if err != nil {
+			handleError(err)
+		}
 	}
 }
 
@@ -54,29 +67,33 @@ func check(n ast.Node) error {
 	return err
 }
 
-func semantic_analysis(n ast.Node) error {
+func register(n ast.Node) (*builtin.ClassType, error) {
 	register := &compiler.ClassRegisterVisitor{}
 	t, err := n.Accept(register)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	classTypes := compiler.NewClassMap()
-	if tp, ok := t.(*compiler.ClassType); ok {
-		classTypes.Set(tp.Name, tp)
-	}
-	typeChecker := &compiler.TypeChecker{}
-	typeChecker.Context = &compiler.Context{}
-	typeChecker.Context.ClassTypes = classTypes
-	_, err = typeChecker.VisitClassType(t.(*compiler.ClassType))
-	if err != nil {
-		return err
-	}
-	return nil
+	classType := t.(*builtin.ClassType)
+	classMap.Set(classType.Name, classType)
+	return classType, nil
 }
 
-func run(n ast.Node) error {
-	interpreter := &compiler.Interpreter{}
-	_, err := n.Accept(interpreter)
+func semanticAnalysis(t *builtin.ClassType) error {
+	typeChecker := compiler.NewTypeChecker()
+	typeChecker.Context.ClassTypes = builtin.PrimitiveClassMap()
+	typeChecker.Context.ClassTypes.Set(t.Name, t)
+	_, err := typeChecker.VisitClassType(t)
+	return err
+}
+
+func run(n *builtin.ClassType) error {
+	interpreter := interpreter.NewInterpreter(classMap)
+	invoke := &ast.MethodInvocation{
+		NameOrExpression: &ast.Name{
+			Value: []string{n.Name, "action"},
+		},
+	}
+	_, err := invoke.Accept(interpreter)
 	return err
 }
 

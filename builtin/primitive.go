@@ -1,4 +1,4 @@
-package compiler
+package builtin
 
 import (
 	"github.com/k0kubun/pp"

@@ -5,17 +5,18 @@ import (
 	"testing"
 
 	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/goland/builtin"
 )
 
 func TestTypeChecker(t *testing.T) {
 	testCases := []struct {
-		Input        *ClassType
+		Input        *builtin.ClassType
 		ExpectErrors []*Error
 	}{
 		// Array Access
 		{
-			&ClassType{
-				InstanceMethods: &MethodMap{
+			&builtin.ClassType{
+				InstanceMethods: &builtin.MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{
@@ -48,8 +49,8 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// If, Else
 		{
-			&ClassType{
-				InstanceMethods: &MethodMap{
+			&builtin.ClassType{
+				InstanceMethods: &builtin.MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{
@@ -96,8 +97,8 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// While
 		{
-			&ClassType{
-				InstanceMethods: &MethodMap{
+			&builtin.ClassType{
+				InstanceMethods: &builtin.MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{
@@ -140,8 +141,8 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// Ternaly
 		{
-			&ClassType{
-				InstanceMethods: &MethodMap{
+			&builtin.ClassType{
+				InstanceMethods: &builtin.MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{
@@ -188,8 +189,8 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// Return Type
 		{
-			&ClassType{
-				InstanceMethods: &MethodMap{
+			&builtin.ClassType{
+				InstanceMethods: &builtin.MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{
@@ -256,8 +257,8 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// For
 		{
-			&ClassType{
-				InstanceMethods: &MethodMap{
+			&builtin.ClassType{
+				InstanceMethods: &builtin.MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{
@@ -322,8 +323,8 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// Unary Operator
 		{
-			&ClassType{
-				InstanceMethods: &MethodMap{
+			&builtin.ClassType{
+				InstanceMethods: &builtin.MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{
@@ -362,8 +363,8 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// Variable Declaration, Variable Assignment
 		{
-			&ClassType{
-				InstanceMethods: &MethodMap{
+			&builtin.ClassType{
+				InstanceMethods: &builtin.MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{
@@ -415,8 +416,8 @@ func TestTypeChecker(t *testing.T) {
 		},
 		//
 		{
-			&ClassType{
-				InstanceMethods: &MethodMap{
+			&builtin.ClassType{
+				InstanceMethods: &builtin.MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
 							&ast.MethodDeclaration{
@@ -520,7 +521,7 @@ func TestTypeChecker(t *testing.T) {
 	for _, testCase := range testCases {
 		checker := NewTypeChecker()
 		checker.Context = &Context{}
-		checker.Context.ClassTypes = PrimitiveClassMap()
+		checker.Context.ClassTypes = builtin.PrimitiveClassMap()
 		checker.VisitClassType(testCase.Input)
 
 		messages := make([]string, len(checker.Errors))

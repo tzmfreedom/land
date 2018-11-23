@@ -1,16 +1,15 @@
-package compiler
+package interpreter
 
 import (
 	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
 )
 
 type TypeResolver struct{}
 
-func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.ClassType, error) {
+func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (interface{}, error) {
 	if len(names) == 1 {
 		if v, ok := ctx.Env.Get(names[0]); ok {
 			return v, nil
@@ -20,7 +19,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.C
 		name := names[0]
 		if fieldType, ok := ctx.Env.Get(name); ok {
 			for _, f := range names[1:] {
-				instanceField, ok := fieldType.InstanceFields.Get(f)
+				instanceField, ok := fieldType.(*ClassType).InstanceFields.Get(f)
 				if !ok {
 					return nil, errors.Errorf("%s is not found in this scope", f)
 				}
@@ -33,7 +32,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.C
 				t := n.Type.(*ast.TypeRef)
 				fieldType, _ := r.ResolveType(t.Name, ctx)
 				for _, f := range names[2:] {
-					instanceField, ok := fieldType.InstanceFields.Get(f)
+					instanceField, ok := fieldType.(*ClassType).InstanceFields.Get(f)
 					if !ok {
 						return nil, errors.Errorf("%s is not found in this scope", f)
 					}
@@ -48,7 +47,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.C
 					t := field.Type.(*ast.TypeRef)
 					fieldType, _ := r.ResolveType(t.Name, ctx)
 					for _, f := range names[3:] {
-						instanceField, ok := fieldType.InstanceFields.Get(f)
+						instanceField, ok := fieldType.(*ClassType).InstanceFields.Get(f)
 						if !ok {
 							return nil, errors.Errorf("%s is not found in this scope", f)
 						}
@@ -62,11 +61,11 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.C
 	return nil, nil
 }
 
-func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (ast.Node, error) {
+func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (interface{}, error) {
 	if len(names) == 1 {
 		methodName := names[0]
 		if v, ok := ctx.Env.Get("this"); ok {
-			if methods, ok := v.InstanceMethods.Get(methodName); ok {
+			if methods, ok := v.(*ClassType).InstanceMethods.Get(methodName); ok {
 				return methods[0], nil
 			}
 			return nil, errors.Errorf("%s is not found in this scope", methodName)
@@ -77,13 +76,13 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (ast.Node, er
 		fields := names[1 : len(names)-1]
 		if fieldType, ok := ctx.Env.Get(first); ok {
 			for _, f := range fields {
-				instanceField, ok := fieldType.InstanceFields.Get(f)
+				instanceField, ok := fieldType.(*ClassType).InstanceFields.Get(f)
 				if !ok {
 					return nil, errors.Errorf("%s is not found in this scope", f)
 				}
 				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
 			}
-			methods, ok := fieldType.InstanceMethods.Get(methodName)
+			methods, ok := fieldType.(*ClassType).InstanceMethods.Get(methodName)
 			if ok {
 				return methods[0], nil
 			}
@@ -102,13 +101,13 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (ast.Node, er
 				t := n.Type.(*ast.TypeRef)
 				fieldType, _ := r.ResolveType(t.Name, ctx)
 				for _, f := range names[2 : len(names)-1] {
-					instanceField, ok := fieldType.InstanceFields.Get(f)
+					instanceField, ok := fieldType.(*ClassType).InstanceFields.Get(f)
 					if !ok {
 						return nil, errors.Errorf("%s is not found in this scope", f)
 					}
 					fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
 				}
-				methods, ok := fieldType.InstanceMethods.Get(methodName)
+				methods, ok := fieldType.(*ClassType).InstanceMethods.Get(methodName)
 				if ok {
 					return methods[0], nil
 				}
@@ -122,13 +121,13 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (ast.Node, er
 						t := field.Type.(*ast.TypeRef)
 						fieldType, _ := r.ResolveType(t.Name, ctx)
 						for _, f := range names[3 : len(names)-1] {
-							instanceField, ok := fieldType.InstanceFields.Get(f)
+							instanceField, ok := fieldType.(*ClassType).InstanceFields.Get(f)
 							if !ok {
 								return nil, errors.Errorf("%s is not found in this scope", f)
 							}
 							fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
 						}
-						methods, ok := fieldType.InstanceMethods.Get(methodName)
+						methods, ok := fieldType.(*ClassType).InstanceMethods.Get(methodName)
 						if ok {
 							return methods[0], nil
 						}
@@ -147,7 +146,7 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (ast.Node, er
 	return nil, errors.Errorf("%s is not found in this scope", strings.Join(names, "."))
 }
 
-func (r *TypeResolver) ResolveType(names []string, ctx *Context) (*builtin.ClassType, error) {
+func (r *TypeResolver) ResolveType(names []string, ctx *Context) (interface{}, error) {
 	if len(names) == 1 {
 		className := names[0]
 		if class, ok := ctx.ClassTypes.Get(className); ok {

@@ -1,12 +1,10 @@
-package compiler
+package builtin
 
 import (
 	"strings"
 
 	"github.com/tzmfreedom/goland/ast"
 )
-
-type Type interface{}
 
 type ClassType struct {
 	Annotations      []ast.Node
@@ -113,6 +111,33 @@ func (m *ClassMap) Set(k string, n *ClassType) {
 }
 
 func (m *ClassMap) Get(k string) (*ClassType, bool) {
+	n, ok := m.Data[strings.ToLower(k)]
+	return n, ok
+}
+
+/**
+ * NameSpaces
+ */
+type NameSpaceStore struct {
+	Data map[string]*ClassMap
+}
+
+func NewNameSpaceStore() *NameSpaceStore {
+	return &NameSpaceStore{
+		Data: map[string]*ClassMap{},
+	}
+}
+
+func (m *NameSpaceStore) Add(k string, n *ClassType) {
+	classMap, _ := m.Get(k)
+	classMap.Set(k, n)
+}
+
+func (m *NameSpaceStore) Set(k string, n *ClassMap) {
+	m.Data[strings.ToLower(k)] = n
+}
+
+func (m *NameSpaceStore) Get(k string) (*ClassMap, bool) {
 	n, ok := m.Data[strings.ToLower(k)]
 	return n, ok
 }

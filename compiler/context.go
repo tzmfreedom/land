@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/goland/builtin"
 )
 
 type Env interface{}
@@ -11,57 +12,20 @@ type Env interface{}
 type Context struct {
 	Env         *TypeEnv
 	StaticField *TypeMap
-	ClassTypes  *ClassMap       // loaded User Class
-	NameSpaces  *NameSpaceStore // NameSpaces and Related Classes
+	ClassTypes  *builtin.ClassMap       // loaded User Class
+	NameSpaces  *builtin.NameSpaceStore // NameSpaces and Related Classes
 
 	CurrentMethod *ast.MethodDeclaration
-	CurrentClass  *ClassType
+	CurrentClass  *builtin.ClassType
 }
 
-/**
- * VarEnv
- */
-type VarEnv struct {
-	Data   *NodeMap
-	Parent *VarEnv
-}
-
-func newVarEnv(p *VarEnv) *VarEnv {
-	return &VarEnv{
-		Data:   &NodeMap{},
-		Parent: p,
-	}
-}
-
-func (e *VarEnv) Get(k string) (ast.Node, bool) {
-	n, ok := e.Data.Get(k)
-	if ok {
-		return n, true
-	}
-	if e.Parent != nil {
-		return e.Parent.Get(k)
-	}
-	return nil, false
-}
-
-func (e *VarEnv) Set(k string, n ast.Node) {
-	e.Data.Set(k, n)
-}
-
-/**
- * NodeMap
- */
-type NodeMap struct {
-	Data map[string]ast.Node
-}
-
-func (m *NodeMap) Set(k string, n ast.Node) {
-	m.Data[strings.ToLower(k)] = n
-}
-
-func (m *NodeMap) Get(k string) (ast.Node, bool) {
-	n, ok := m.Data[strings.ToLower(k)]
-	return n, ok
+func NewContext() *Context {
+	ctx := &Context{}
+	ctx.StaticField = newTypeMap()
+	ctx.ClassTypes = builtin.NewClassMap()
+	ctx.NameSpaces = builtin.NewNameSpaceStore()
+	ctx.Env = newTypeEnv(nil)
+	return ctx
 }
 
 /**
@@ -79,7 +43,7 @@ func newTypeEnv(p *TypeEnv) *TypeEnv {
 	}
 }
 
-func (e *TypeEnv) Get(k string) (Type, bool) {
+func (e *TypeEnv) Get(k string) (*builtin.ClassType, bool) {
 	n, ok := e.Data.Get(k)
 	if ok {
 		return n, true
@@ -90,7 +54,7 @@ func (e *TypeEnv) Get(k string) (Type, bool) {
 	return nil, false
 }
 
-func (e *TypeEnv) Set(k string, n Type) {
+func (e *TypeEnv) Set(k string, n *builtin.ClassType) {
 	e.Data.Set(k, n)
 }
 
@@ -98,47 +62,20 @@ func (e *TypeEnv) Set(k string, n Type) {
  * TypeMap
  */
 type TypeMap struct {
-	Data map[string]Type
+	Data map[string]*builtin.ClassType
 }
 
 func newTypeMap() *TypeMap {
 	return &TypeMap{
-		Data: map[string]Type{},
+		Data: map[string]*builtin.ClassType{},
 	}
 }
 
-func (m *TypeMap) Set(k string, n Type) {
+func (m *TypeMap) Set(k string, n *builtin.ClassType) {
 	m.Data[strings.ToLower(k)] = n
 }
 
-func (m *TypeMap) Get(k string) (Type, bool) {
-	n, ok := m.Data[strings.ToLower(k)]
-	return n, ok
-}
-
-/**
- * NameSpaces
- */
-type NameSpaceStore struct {
-	Data map[string]*ClassMap
-}
-
-func NewNameSpaceStore() *NameSpaceStore {
-	return &NameSpaceStore{
-		Data: map[string]*ClassMap{},
-	}
-}
-
-func (m *NameSpaceStore) Add(k string, n *ClassType) {
-	classMap, _ := m.Get(k)
-	classMap.Set(k, n)
-}
-
-func (m *NameSpaceStore) Set(k string, n *ClassMap) {
-	m.Data[strings.ToLower(k)] = n
-}
-
-func (m *NameSpaceStore) Get(k string) (*ClassMap, bool) {
+func (m *TypeMap) Get(k string) (*builtin.ClassType, bool) {
 	n, ok := m.Data[strings.ToLower(k)]
 	return n, ok
 }
@@ -156,7 +93,7 @@ func NewStaticFieldMap() *StaticFieldMap {
 	}
 }
 
-func (m *StaticFieldMap) Add(k string, n *Type) {
+func (m *StaticFieldMap) Add(k string, n *builtin.ClassType) {
 	typeMap, _ := m.Get(k)
 	typeMap.Set(k, n)
 }

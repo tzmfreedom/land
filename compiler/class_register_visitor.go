@@ -2,29 +2,30 @@ package compiler
 
 import (
 	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/goland/builtin"
 )
 
 type ClassRegisterVisitor struct{}
 
 func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (interface{}, error) {
-	t := &ClassType{}
+	t := &builtin.ClassType{}
 	t.Name = n.Name
 	t.Modifiers = n.Modifiers
 	t.ImplementClasses = n.ImplementClasses
-	t.InnerClasses = NewClassMap()
+	t.InnerClasses = builtin.NewClassMap()
 	for _, c := range n.InnerClasses {
 		r, _ := c.Accept(v)
-		class := r.(*ClassType)
+		class := r.(*builtin.ClassType)
 		t.InnerClasses.Set(class.Name, class)
 	}
 	t.SuperClass = n.SuperClass
 	t.Location = n.Location
 	t.Annotations = n.Annotations
 	t.Parent = n.Parent
-	t.InstanceFields = NewFieldMap()
-	t.StaticFields = NewFieldMap()
-	t.InstanceMethods = NewMethodMap()
-	t.StaticMethods = NewMethodMap()
+	t.InstanceFields = builtin.NewFieldMap()
+	t.StaticFields = builtin.NewFieldMap()
+	t.InstanceMethods = builtin.NewMethodMap()
+	t.StaticMethods = builtin.NewMethodMap()
 	for _, d := range n.Declarations {
 		switch decl := d.(type) {
 		case *ast.MethodDeclaration:
@@ -39,7 +40,7 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 					varDecl := d.(*ast.VariableDeclarator)
 					t.StaticFields.Set(
 						varDecl.Name,
-						&Field{
+						&builtin.Field{
 							Type:       decl.Type,
 							Modifiers:  decl.Modifiers,
 							Name:       varDecl.Name,
@@ -52,7 +53,7 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 					varDecl := d.(*ast.VariableDeclarator)
 					t.InstanceFields.Set(
 						varDecl.Name,
-						&Field{
+						&builtin.Field{
 							Type:       decl.Type,
 							Modifiers:  decl.Modifiers,
 							Name:       varDecl.Name,

@@ -6,12 +6,13 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/goland/builtin"
 )
 
 func TestClassRegister(t *testing.T) {
 	testCases := []struct {
 		Input    ast.Node
-		Expected *ClassType
+		Expected *builtin.ClassType
 	}{
 		{
 			&ast.ClassDeclaration{
@@ -156,12 +157,12 @@ func TestClassRegister(t *testing.T) {
 					},
 				},
 			},
-			&ClassType{
+			&builtin.ClassType{
 				Modifiers:    []ast.Node{},
 				Annotations:  []ast.Node{},
 				Name:         "Foo",
-				InnerClasses: NewClassMap(),
-				InstanceMethods: &MethodMap{
+				InnerClasses: builtin.NewClassMap(),
+				InstanceMethods: &builtin.MethodMap{
 					Data: map[string][]ast.Node{
 						"method": {
 							&ast.MethodDeclaration{
@@ -182,7 +183,7 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 				},
-				StaticMethods: &MethodMap{
+				StaticMethods: &builtin.MethodMap{
 					Data: map[string][]ast.Node{
 						"static_method": {
 							&ast.MethodDeclaration{
@@ -222,8 +223,8 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 				},
-				InstanceFields: &FieldMap{
-					Data: map[string]*Field{
+				InstanceFields: &builtin.FieldMap{
+					Data: map[string]*builtin.Field{
 						"field": {
 							Type: &ast.TypeRef{
 								Name: []string{
@@ -258,8 +259,8 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 				},
-				StaticFields: &FieldMap{
-					Data: map[string]*Field{
+				StaticFields: &builtin.FieldMap{
+					Data: map[string]*builtin.Field{
 						"static_field": {
 							Type: &ast.TypeRef{
 								Name: []string{
@@ -310,11 +311,11 @@ func TestClassRegister(t *testing.T) {
 			panic(err)
 		}
 
-		equalNode(t, testCase.Expected, actual.(*ClassType))
+		equalNode(t, testCase.Expected, actual.(*builtin.ClassType))
 	}
 }
 
-func equalNode(t *testing.T, expected *ClassType, actual *ClassType) {
+func equalNode(t *testing.T, expected *builtin.ClassType, actual *builtin.ClassType) {
 	if ok := cmp.Equal(expected, actual); !ok {
 		diff := cmp.Diff(expected, actual)
 		pp.Print(actual)

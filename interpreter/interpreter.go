@@ -1,14 +1,23 @@
-package compiler
+package interpreter
 
 import (
 	"fmt"
 
 	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/goland/builtin"
 )
 
 type Interpreter struct {
 	Context *Context
+}
+
+func NewInterpreter(classTypeMap *builtin.ClassMap) *Interpreter {
+	interpreter := &Interpreter{
+		Context: NewContext(),
+	}
+	interpreter.Context.ClassTypes = classTypeMap
+	return interpreter
 }
 
 func (v *Interpreter) VisitClassDeclaration(n *ast.ClassDeclaration) (interface{}, error) {
@@ -64,6 +73,7 @@ func (v *Interpreter) VisitDoubleLiteral(n *ast.DoubleLiteral) (interface{}, err
 }
 
 func (v *Interpreter) VisitFieldDeclaration(n *ast.FieldDeclaration) (interface{}, error) {
+	panic("not pass")
 	return ast.VisitFieldDeclaration(v, n)
 }
 
@@ -164,6 +174,7 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		if len(exp.Value) == 2 &&
 			exp.Value[0] == "System" &&
 			exp.Value[1] == "debug" {
+			pp.Print(n)
 			for _, p := range n.Parameters {
 				res, err := p.Accept(v)
 				if err != nil {
@@ -200,96 +211,96 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 
 	switch n.Op {
 	case "+":
-		if lType == IntegerType {
+		if lType == builtin.IntegerType {
 			l := lObj.IntegerValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newInteger(l + r), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newDouble(float64(l) + r), nil
 			}
-		} else if lType == DoubleType {
+		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newDouble(l + float64(r)), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newDouble(r + l), nil
 			}
-		} else if lType == StringType {
+		} else if lType == builtin.StringType {
 			l := lObj.StringValue()
 			r := rObj.StringValue()
 			return newString(l + r), nil
 		}
 		panic("type error")
 	case "-":
-		if lType == IntegerType {
+		if lType == builtin.IntegerType {
 			l := lObj.IntegerValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newInteger(l - r), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newDouble(float64(l) - r), nil
 			}
-		} else if lType == DoubleType {
+		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newDouble(l - float64(r)), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newDouble(r - l), nil
 			}
 		}
 		panic("type error")
 	case "*":
-		if lType == IntegerType {
+		if lType == builtin.IntegerType {
 			l := lObj.IntegerValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newInteger(l * r), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newDouble(float64(l) * r), nil
 			}
-		} else if lType == DoubleType {
+		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newDouble(l * float64(r)), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newDouble(r * l), nil
 			}
 		}
 		panic("type error")
 	case "/":
-		if lType == IntegerType {
+		if lType == builtin.IntegerType {
 			l := lObj.IntegerValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newInteger(l / r), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newDouble(float64(l) / r), nil
 			}
-		} else if lType == DoubleType {
+		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newDouble(l / float64(r)), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newDouble(r / l), nil
 			}
@@ -300,146 +311,146 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		r := rObj.IntegerValue()
 		return newInteger(l % r), nil
 	case "<":
-		if lType == IntegerType {
+		if lType == builtin.IntegerType {
 			l := lObj.IntegerValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newBoolean(l < r), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newBoolean(float64(l) < r), nil
 			}
-		} else if lType == DoubleType {
+		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newBoolean(l < float64(r)), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newBoolean(r < l), nil
 			}
 		}
 		panic("type error")
 	case ">":
-		if lType == IntegerType {
+		if lType == builtin.IntegerType {
 			l := lObj.IntegerValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newBoolean(l > r), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newBoolean(float64(l) > r), nil
 			}
-		} else if lType == DoubleType {
+		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newBoolean(l > float64(r)), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newBoolean(r > l), nil
 			}
 		}
 		panic("type error")
 	case "<=":
-		if lType == IntegerType {
+		if lType == builtin.IntegerType {
 			l := lObj.IntegerValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newBoolean(l <= r), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newBoolean(float64(l) <= r), nil
 			}
-		} else if lType == DoubleType {
+		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newBoolean(l <= float64(r)), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newBoolean(r <= l), nil
 			}
 		}
 		panic("type error")
 	case ">=":
-		if lType == IntegerType {
+		if lType == builtin.IntegerType {
 			l := lObj.IntegerValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newBoolean(l >= r), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newBoolean(float64(l) >= r), nil
 			}
-		} else if lType == DoubleType {
+		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newBoolean(l >= float64(r)), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newBoolean(r >= l), nil
 			}
 		}
 		panic("type error")
 	case "==":
-		if lType == IntegerType {
+		if lType == builtin.IntegerType {
 			l := lObj.IntegerValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newBoolean(l == r), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newBoolean(float64(l) == r), nil
 			}
-		} else if lType == DoubleType {
+		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newBoolean(l == float64(r)), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newBoolean(r == l), nil
 			}
-		} else if lType == StringType {
+		} else if lType == builtin.StringType {
 			l := lObj.StringValue()
 			r := rObj.StringValue()
 			return newBoolean(l == r), nil
 		}
 		panic("type error")
 	case "!=":
-		if lType == IntegerType {
+		if lType == builtin.IntegerType {
 			l := lObj.IntegerValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newBoolean(l != r), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newBoolean(float64(l) != r), nil
 			}
-		} else if lType == DoubleType {
+		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
-			if rType == IntegerType {
+			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
 				return newBoolean(l != float64(r)), nil
 			}
-			if rType == DoubleType {
+			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
 				return newBoolean(r != l), nil
 			}
-		} else if lType == StringType {
+		} else if lType == builtin.StringType {
 			l := lObj.StringValue()
 			r := rObj.StringValue()
 			return newBoolean(l != r), nil
@@ -598,9 +609,9 @@ func (v *Interpreter) VisitConstructorDeclaration(n *ast.ConstructorDeclaration)
 type Null struct{}
 
 type Object struct {
-	ClassType      *ClassType
-	InstanceFields *FieldMap
-	GenericType    []*ClassType
+	ClassType      *builtin.ClassType
+	InstanceFields *ObjectMap
+	GenericType    []*builtin.ClassType
 	Extra          map[string]interface{}
 	ToString       func(*Object) string
 }
@@ -642,38 +653,38 @@ func returnString(o *Object) string {
 }
 
 func newInteger(value int) *Object {
-	t := createObject(IntegerType)
+	t := createObject(builtin.IntegerType)
 	t.Extra["value"] = value
 	t.ToString = returnStringFromInteger
 	return t
 }
 
 func newDouble(value float64) *Object {
-	t := createObject(DoubleType)
+	t := createObject(builtin.DoubleType)
 	t.Extra["value"] = value
 	t.ToString = returnStringFromDouble
 	return t
 }
 
 func newString(value string) *Object {
-	t := createObject(StringType)
+	t := createObject(builtin.StringType)
 	t.Extra["value"] = value
 	t.ToString = returnString
 	return t
 }
 
 func newBoolean(value bool) *Object {
-	t := createObject(BooleanType)
+	t := createObject(builtin.BooleanType)
 	t.Extra["value"] = value
 	t.ToString = returnStringFromBool
 	return t
 }
 
-func createObject(t *ClassType) *Object {
+func createObject(t *builtin.ClassType) *Object {
 	return &Object{
 		ClassType:      t,
-		InstanceFields: NewFieldMap(),
-		GenericType:    []*ClassType{},
+		InstanceFields: NewObjectMap(),
+		GenericType:    []*builtin.ClassType{},
 		Extra:          map[string]interface{}{},
 	}
 }

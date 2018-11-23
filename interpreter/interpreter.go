@@ -191,7 +191,24 @@ func (v *Interpreter) VisitNullLiteral(n *ast.NullLiteral) (interface{}, error) 
 }
 
 func (v *Interpreter) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, error) {
-	return ast.VisitUnaryOperator(v, n)
+	if n.Op == "++" {
+		name := n.Expression.(*ast.Name)
+		l, _ := name.Accept(v)
+		exp := newInteger(l.(*builtin.Object).IntegerValue() + 1)
+		// TODO: implement
+		v.Context.Env.Set(name.Value[0], exp)
+		return exp, nil
+	}
+	if n.Op == "--" {
+		name := n.Expression.(*ast.Name)
+		l, _ := name.Accept(v)
+		exp := newInteger(l.(*builtin.Object).IntegerValue() - 1)
+		// TODO: implement
+		v.Context.Env.Set(name.Value[0], exp)
+		return exp, nil
+	}
+	panic("not pass")
+	return nil, nil
 }
 
 func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, error) {
@@ -450,6 +467,9 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			return newBoolean(l != r), nil
 		}
 		panic("type error")
+	case "=":
+		// TODO: implement
+		v.Context.Env.Set(n.Left.(*ast.Name).Value[0], rObj)
 	}
 	return nil, nil
 }
@@ -495,11 +515,18 @@ func (v *Interpreter) VisitTriggerTiming(n *ast.TriggerTiming) (interface{}, err
 }
 
 func (v *Interpreter) VisitVariableDeclaration(n *ast.VariableDeclaration) (interface{}, error) {
+	for _, declarator := range n.Declarators {
+		d := declarator.(*ast.VariableDeclarator)
+		val, _ := d.Expression.Accept(v)
+		v.Context.Env.Set(d.Name, val.(*builtin.Object))
+	}
 	return ast.VisitVariableDeclaration(v, n)
 }
 
 func (v *Interpreter) VisitVariableDeclarator(n *ast.VariableDeclarator) (interface{}, error) {
-	return ast.VisitVariableDeclarator(v, n)
+	// TODO: comment out
+	// panic("not pass")
+	return nil, nil
 }
 
 func (v *Interpreter) VisitWhen(n *ast.When) (interface{}, error) {
@@ -593,7 +620,8 @@ func (v *Interpreter) VisitSetCreator(n *ast.SetCreator) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitName(n *ast.Name) (interface{}, error) {
-	return ast.VisitName(v, n)
+	resolver := &TypeResolver{}
+	return resolver.ResolveVariable(n.Value, v.Context)
 }
 
 func (v *Interpreter) VisitConstructorDeclaration(n *ast.ConstructorDeclaration) (interface{}, error) {
@@ -611,7 +639,7 @@ func returnStringFromDouble(o *builtin.Object) string {
 }
 
 func returnStringFromBool(o *builtin.Object) string {
-	return fmt.Sprintf("%s", o.Value())
+	return fmt.Sprintf("%t", o.Value())
 }
 
 func returnString(o *builtin.Object) string {

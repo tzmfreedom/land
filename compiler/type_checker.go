@@ -254,6 +254,13 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		if (l == builtin.StringType || r == builtin.StringType) && l != r {
 			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", builtin.TypeName(l), builtin.TypeName(r)), n.Left)
 		}
+		if l == builtin.DoubleType || r == builtin.DoubleType {
+			return builtin.DoubleType, nil
+		} else if l == builtin.StringType {
+			return builtin.StringType, nil
+		} else {
+			return builtin.IntegerType, nil
+		}
 	}
 	if n.Op == "-" || n.Op == "*" || n.Op == "/" || n.Op == "%" {
 		if l != builtin.IntegerType && l != builtin.DoubleType {
@@ -261,11 +268,20 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		} else if r != builtin.IntegerType && r != builtin.DoubleType {
 			v.AddError(fmt.Sprintf("expression <%s> must be Integer or Double", builtin.TypeName(r)), n.Right)
 		}
+		if l == builtin.DoubleType || r == builtin.DoubleType {
+			return builtin.DoubleType, nil
+		} else {
+			return builtin.IntegerType, nil
+		}
 	}
 	if n.Op == "=" || n.Op == "+=" || n.Op == "-=" || n.Op == "*=" || n.Op == "/=" || n.Op == "%=" {
 		if l != r {
 			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", builtin.TypeName(l), builtin.TypeName(r)), n.Left)
 		}
+		return l, nil
+	}
+	if n.Op == "==" || n.Op == "!=" || n.Op == "<" || n.Op == "<=" || n.Op == ">" || n.Op == ">=" {
+		return builtin.BooleanType, nil
 	}
 	return nil, nil
 }

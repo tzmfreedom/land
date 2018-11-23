@@ -162,6 +162,7 @@ func TestClassRegister(t *testing.T) {
 				Annotations:  []ast.Node{},
 				Name:         "Foo",
 				InnerClasses: builtin.NewClassMap(),
+				Constructors: []*ast.ConstructorDeclaration{},
 				InstanceMethods: &builtin.MethodMap{
 					Data: map[string][]ast.Node{
 						"method": {

@@ -601,12 +601,11 @@ func (v *Interpreter) VisitVariableDeclaration(n *ast.VariableDeclaration) (inte
 		val, _ := d.Expression.Accept(v)
 		v.Context.Env.Set(d.Name, val.(*builtin.Object))
 	}
-	return ast.VisitVariableDeclaration(v, n)
+	return nil, nil
 }
 
 func (v *Interpreter) VisitVariableDeclarator(n *ast.VariableDeclarator) (interface{}, error) {
-	// TODO: comment out
-	// panic("not pass")
+	panic("not pass")
 	return nil, nil
 }
 

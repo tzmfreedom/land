@@ -4,11 +4,12 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/tzmfreedom/goland/ast"
 )
 
 type TypeResolver struct{}
 
-func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (interface{}, error) {
+func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*Object, error) {
 	if len(names) == 1 {
 		if v, ok := ctx.Env.Get(names[0]); ok {
 			return v, nil
@@ -56,7 +57,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (interface{
 	return nil, nil
 }
 
-func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (interface{}, error) {
+func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (ast.Node, error) {
 	if len(names) == 1 {
 		methodName := names[0]
 		if v, ok := ctx.Env.Get("this"); ok {

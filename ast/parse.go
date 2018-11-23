@@ -1,20 +1,37 @@
 package ast
 
 import (
+	"io/ioutil"
+
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/tzmfreedom/goland/parser"
 )
 
-func ParseFile(f string) (Node, error) {
-	input, err := antlr.NewFileStream(f)
+type PreProcessor func(string) string
+
+func ParseFile(f string, processors ...PreProcessor) (Node, error) {
+	bytes, err := ioutil.ReadFile(f)
 	if err != nil {
 		return nil, err
 	}
+	src := string(bytes)
+	for _, processor := range processors {
+		src = processor(src)
+	}
+	input := antlr.NewInputStream(src)
 	return parse(input, f), nil
+	//input, err := antlr.NewFileStream(f)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//return parse(input, f), nil
 }
 
-func ParseString(c string) (Node, error) {
-	input := antlr.NewInputStream(c)
+func ParseString(src string, processors ...PreProcessor) (Node, error) {
+	for _, processor := range processors {
+		src = processor(src)
+	}
+	input := antlr.NewInputStream(src)
 	return parse(input, "<string>"), nil
 }
 

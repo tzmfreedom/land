@@ -10,6 +10,8 @@ f.each do |line|
 #
 # EOS
 
+"visit#{klass}(v ast.Visitor, n *ast.#{klass}) interface{} "
+
 # puts <<~EOS
 # func visit#{klass}(v ast.Visitor, n *ast.#{klass}) interface{} {
 # return nil
@@ -19,8 +21,8 @@ f.each do |line|
 
 # ** Node Method
 #   puts <<~EOS
-# func (n *#{klass}) SetParent(parent ast.Node) Node {
-#   n.Parent = parent
+# func (n *#{klass}) GetLocation() *Location {
+#   return n.Location
 # }
 #
 # EOS
@@ -31,10 +33,10 @@ f.each do |line|
 # EOS
 
 
-  puts <<~EOS
-func (v *SoqlChecker) Visit#{klass}(n *ast.#{klass}) interface{} {
-return visit#{klass}(v, n)
-}
-
-EOS
+#   puts <<~EOS
+# func (v *SoqlChecker) Visit#{klass}(n *ast.#{klass}) interface{} {
+# return visit#{klass}(v, n)
+# }
+#
+# EOS
 end

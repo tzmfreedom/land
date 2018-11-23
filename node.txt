@@ -1,7 +1,7 @@
 ClassDeclaration
 Modifier
 Annotation
-Interface
+InterfaceDeclaration
 IntegerLiteral
 Parameter
 ArrayAccess
@@ -40,7 +40,7 @@ While
 NothingStatement
 CastExpression
 FieldAccess
-Type
+TypeRef
 Block
 GetterSetter
 PropertyDeclaration

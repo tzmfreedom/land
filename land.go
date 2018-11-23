@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"flag"
+	"strings"
 
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
@@ -14,6 +15,11 @@ import (
 )
 
 var classMap = builtin.NewClassMap()
+var preprocessors = []ast.PreProcessor{
+	func(src string) string {
+		return strings.Replace(src, "// #debugger", "Debugger.debug();", -1)
+	},
+}
 
 func main() {
 	f := flag.String("f", "", "file")
@@ -23,7 +29,7 @@ func main() {
 
 	flag.Parse()
 
-	t, err := ast.ParseFile(*f)
+	t, err := ast.ParseFile(*f, preprocessors...)
 	if err != nil {
 		handleError(err)
 	}

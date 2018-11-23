@@ -173,6 +173,11 @@ func (v *Interpreter) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{}, error) {
 	switch exp := n.NameOrExpression.(type) {
 	case *ast.Name:
+		// TODO: implement
+		if exp.Value[0] == "Debugger" {
+			Debugger.Debug(v.Context, n)
+			return nil, nil
+		}
 		resolver := &TypeResolver{}
 		method, err := resolver.ResolveMethod(exp.Value, v.Context)
 		if err != nil {
@@ -625,6 +630,7 @@ func (v *Interpreter) VisitType(n *ast.TypeRef) (interface{}, error) {
 
 func (v *Interpreter) VisitBlock(n *ast.Block) (interface{}, error) {
 	for _, stmt := range n.Statements {
+		Publish("line", v.Context, stmt)
 		res, err := stmt.Accept(v)
 		if err != nil {
 			return nil, err

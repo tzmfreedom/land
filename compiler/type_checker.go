@@ -215,6 +215,10 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 
 	nameOrExp := n.NameOrExpression
 	if name, ok := nameOrExp.(*ast.Name); ok {
+		// TODO: implement
+		if name.Value[0] == "Debugger" {
+			return nil, nil
+		}
 		resolver.ResolveMethod(name.Value, v.Context)
 	} else if fieldAccess, ok := nameOrExp.(*ast.FieldAccess); ok {
 		classType, _ := fieldAccess.Expression.Accept(v)

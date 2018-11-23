@@ -501,6 +501,7 @@ type Node interface {
 	GetType() string
 	GetParent() Node
 	SetParent(Node)
+	GetLocation() *Location
 }
 
 func (n *ClassDeclaration) Accept(v Visitor) (interface{}, error) {
@@ -1655,4 +1656,224 @@ func (n *Name) SetParent(parent Node) {
 
 func (n *ConstructorDeclaration) SetParent(parent Node) {
 	n.Parent = parent
+}
+
+func (n *ClassDeclaration) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Modifier) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Annotation) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *InterfaceDeclaration) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *IntegerLiteral) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Parameter) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *ArrayAccess) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *BooleanLiteral) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Break) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Continue) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Dml) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *DoubleLiteral) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *FieldDeclaration) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Try) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Catch) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Finally) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *For) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *ForControl) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *EnhancedForControl) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *If) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *MethodDeclaration) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *MethodInvocation) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *New) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *NullLiteral) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *UnaryOperator) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *BinaryOperator) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Return) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Throw) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Soql) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Sosl) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *StringLiteral) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Switch) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Trigger) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *TriggerTiming) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *VariableDeclaration) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *VariableDeclarator) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *When) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *WhenType) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *While) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *NothingStatement) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *CastExpression) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *FieldAccess) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *TypeRef) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Block) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *GetterSetter) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *PropertyDeclaration) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *ArrayInitializer) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *ArrayCreator) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Blob) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *SoqlBindVariable) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *TernalyExpression) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *MapCreator) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *SetCreator) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Name) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *ConstructorDeclaration) GetLocation() *Location {
+	return n.Location
 }

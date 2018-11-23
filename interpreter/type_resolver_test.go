@@ -396,7 +396,8 @@ func TestResolveMethod(t *testing.T) {
 	}
 	typeResolver := &TypeResolver{}
 	for _, testCase := range testCases {
-		actual, err := typeResolver.ResolveMethod(testCase.Input, testCase.Context)
+		// TODO: test receiver
+		_, actual, err := typeResolver.ResolveMethod(testCase.Input, testCase.Context)
 		if testCase.Error != nil && testCase.Error.Error() != err.Error() {
 			diff := cmp.Diff(testCase.Error.Error(), err.Error())
 			t.Errorf(diff)

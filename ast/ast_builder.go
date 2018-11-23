@@ -941,12 +941,20 @@ func (v *Builder) VisitShiftExpression(ctx *parser.ShiftExpressionContext) inter
 func (v *Builder) VisitFieldAccess(ctx *parser.FieldAccessContext) interface{} {
 	expression := ctx.Expression().Accept(v).(Node)
 	fieldName := ctx.ApexIdentifier().Accept(v).(string)
-	if name := expression.(*Name); name != nil {
-		value := append(name.Value, fieldName)
+	switch n := expression.(type) {
+	case *Name:
+		value := append(n.Value, fieldName)
 		return &Name{
 			Value:    value,
-			Location: name.Location,
-			Parent:   name.Parent,
+			Location: n.Location,
+			Parent:   n.Parent,
+		}
+	default:
+		return &FieldAccess{
+			Expression: expression,
+			FieldName:  fieldName,
+			Location:   n.GetLocation(),
+			Parent:     n.GetParent(),
 		}
 	}
 	return &FieldAccess{

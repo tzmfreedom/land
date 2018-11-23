@@ -541,6 +541,12 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		case *ast.Name:
 			resolver := &TypeResolver{}
 			resolver.SetVariable(t.Value, v.Context, rObj)
+		case *ast.FieldAccess:
+			exp, err := t.Expression.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+			exp.(*builtin.Object).InstanceFields.Set(t.FieldName, rObj)
 		}
 	}
 	return nil, nil
@@ -648,7 +654,12 @@ func (v *Interpreter) VisitCastExpression(n *ast.CastExpression) (interface{}, e
 }
 
 func (v *Interpreter) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) {
-	return ast.VisitFieldAccess(v, n)
+	r, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	obj, _ := r.(*builtin.Object).InstanceFields.Get(n.FieldName)
+	return obj, nil
 }
 
 func (v *Interpreter) VisitType(n *ast.TypeRef) (interface{}, error) {

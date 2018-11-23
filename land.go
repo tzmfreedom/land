@@ -83,6 +83,11 @@ func semanticAnalysis(t *builtin.ClassType) error {
 	typeChecker.Context.ClassTypes = builtin.PrimitiveClassMap()
 	typeChecker.Context.ClassTypes.Set(t.Name, t)
 	_, err := typeChecker.VisitClassType(t)
+	if len(typeChecker.Errors) != 0 {
+		for _, e := range typeChecker.Errors {
+			fmt.Fprintf(os.Stderr, "%s\n", e.Message)
+		}
+	}
 	return err
 }
 

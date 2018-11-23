@@ -116,6 +116,14 @@ func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
 		}
 		if res.(*builtin.Object).BoolValue() {
 			res, err = n.Statements.Accept(v)
+			if res != nil {
+				switch r := res.(type) {
+				case *Break:
+					return nil, nil
+				case *Return, *Raise:
+					return r, nil
+				}
+			}
 			for _, stmt := range control.ForUpdate {
 				stmt.Accept(v)
 			}
@@ -140,9 +148,9 @@ func (v *Interpreter) VisitIf(n *ast.If) (interface{}, error) {
 		return nil, err
 	}
 	if res.(*builtin.Object).BoolValue() {
-		n.IfStatement.Accept(v)
-	} else {
-		n.ElseStatement.Accept(v)
+		return n.IfStatement.Accept(v)
+	} else if n.ElseStatement != nil {
+		return n.ElseStatement.Accept(v)
 	}
 	return nil, nil
 }
@@ -475,11 +483,14 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 }
 
 func (v *Interpreter) VisitReturn(n *ast.Return) (interface{}, error) {
-	res, err := n.Expression.Accept(v)
-	if err != nil {
-		return nil, err
+	if n.Expression != nil {
+		res, err := n.Expression.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+		return &Return{res}, nil
 	}
-	return &Return{res}, nil
+	return &Return{}, nil
 }
 
 func (v *Interpreter) VisitThrow(n *ast.Throw) (interface{}, error) {
@@ -546,7 +557,15 @@ func (v *Interpreter) VisitWhile(n *ast.While) (interface{}, error) {
 		if !c.(*builtin.Object).BoolValue() {
 			break
 		}
-		_, err = n.Statements.Accept(v)
+		res, err := n.Statements.Accept(v)
+		if res != nil {
+			switch r := res.(type) {
+			case *Break:
+				return nil, nil
+			case *Return, *Raise:
+				return r, nil
+			}
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -572,9 +591,15 @@ func (v *Interpreter) VisitType(n *ast.TypeRef) (interface{}, error) {
 
 func (v *Interpreter) VisitBlock(n *ast.Block) (interface{}, error) {
 	for _, stmt := range n.Statements {
-		_, err := stmt.Accept(v)
+		res, err := stmt.Accept(v)
 		if err != nil {
 			return nil, err
+		}
+		if res != nil {
+			switch r := res.(type) {
+			case *Break, *Return, *Raise:
+				return r, nil
+			}
 		}
 	}
 	return nil, nil

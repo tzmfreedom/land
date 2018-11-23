@@ -190,7 +190,9 @@ func (v *TypeChecker) VisitIf(n *ast.If) (interface{}, error) {
 		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", builtin.TypeName(t)), n.Condition)
 	}
 	n.IfStatement.Accept(v)
-	n.ElseStatement.Accept(v)
+	if n.ElseStatement != nil {
+		n.ElseStatement.Accept(v)
+	}
 	return nil, nil
 }
 
@@ -287,10 +289,21 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 }
 
 func (v *TypeChecker) VisitReturn(n *ast.Return) (interface{}, error) {
-	exp, _ := n.Expression.Accept(v)
-	retType, _ := v.Context.CurrentMethod.ReturnType.Accept(v)
-	if retType != exp {
-		v.AddError(fmt.Sprintf("return type <%s> does not match %v", builtin.TypeName(exp), builtin.TypeName(retType)), n.Expression)
+	if v.Context.CurrentMethod.ReturnType == nil {
+		if n.Expression != nil {
+			exp, _ := n.Expression.Accept(v)
+			v.AddError(fmt.Sprintf("return type <%s> does not match void", builtin.TypeName(exp)), n.Expression)
+		}
+	} else {
+		retType, _ := v.Context.CurrentMethod.ReturnType.Accept(v)
+		if n.Expression == nil {
+			v.AddError(fmt.Sprintf("return type <void> does not match %v", builtin.TypeName(retType)), n.Expression)
+			return nil, nil
+		}
+		exp, _ := n.Expression.Accept(v)
+		if retType != exp {
+			v.AddError(fmt.Sprintf("return type <%s> does not match %v", builtin.TypeName(exp), builtin.TypeName(retType)), n.Expression)
+		}
 	}
 	return nil, nil
 }

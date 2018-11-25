@@ -1,6 +1,8 @@
 package compiler
 
 import (
+	"fmt"
+
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 )
@@ -16,6 +18,9 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 	for _, c := range n.InnerClasses {
 		r, _ := c.Accept(v)
 		class := r.(*builtin.ClassType)
+		if _, ok := t.InnerClasses.Get(class.Name); ok {
+			return nil, fmt.Errorf("Class %s is already defined", class.Name)
+		}
 		t.InnerClasses.Set(class.Name, class)
 	}
 	t.SuperClass = n.SuperClass
@@ -41,6 +46,9 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 			if decl.IsStatic() {
 				for _, d := range decl.Declarators {
 					varDecl := d.(*ast.VariableDeclarator)
+					if _, ok := t.StaticFields.Get(varDecl.Name); ok {
+						return nil, fmt.Errorf("Field %s is already defined", varDecl.Name)
+					}
 					t.StaticFields.Set(
 						varDecl.Name,
 						&builtin.Field{
@@ -54,6 +62,9 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 			} else {
 				for _, d := range decl.Declarators {
 					varDecl := d.(*ast.VariableDeclarator)
+					if _, ok := t.StaticFields.Get(varDecl.Name); ok {
+						return nil, fmt.Errorf("Field %s is already defined", varDecl.Name)
+					}
 					t.InstanceFields.Set(
 						varDecl.Name,
 						&builtin.Field{

@@ -41,6 +41,46 @@ type Field struct {
 	Parent     ast.Node
 }
 
+func (f *Field) IsPublic() bool {
+	for _, m := range f.Modifiers {
+		if m.(*ast.Modifier).Name == "public" {
+			return true
+		}
+	}
+	return false
+}
+
+func (f *Field) IsPrivate() bool {
+	for _, m := range f.Modifiers {
+		if m.(*ast.Modifier).Name == "private" {
+			return true
+		}
+	}
+	return false
+}
+
+func (f *Field) IsProtected() bool {
+	for _, m := range f.Modifiers {
+		if m.(*ast.Modifier).Name == "protected" {
+			return true
+		}
+	}
+	return false
+}
+
+func (f *Field) AccessModifier() string {
+	if f.IsPublic() {
+		return "public"
+	}
+	if f.IsPrivate() {
+		return "private"
+	}
+	if f.IsProtected() {
+		return "protected"
+	}
+	return ""
+}
+
 type FieldMap struct {
 	Data map[string]*Field
 }

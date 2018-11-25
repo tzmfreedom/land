@@ -211,21 +211,44 @@ func (v *TypeChecker) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 }
 
 func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{}, error) {
-	resolver := TypeResolver{}
+	resolver := TypeResolver{Context: v.Context}
 
 	nameOrExp := n.NameOrExpression
+	types := make([]*builtin.ClassType, len(n.Parameters))
+	for i, p := range n.Parameters {
+		t, _ := p.Accept(v)
+		types[i] = t.(*builtin.ClassType)
+	}
 	if name, ok := nameOrExp.(*ast.Name); ok {
 		// TODO: implement
 		if name.Value[0] == "Debugger" {
 			return nil, nil
 		}
-		resolver.ResolveMethod(name.Value, v.Context)
+		method, err := resolver.ResolveMethod(name.Value, types)
+		if err != nil {
+			// TODO: implement
+			return nil, nil
+		}
+		if method.ReturnType != nil {
+			return method.ReturnType.Accept(v)
+		}
+		return nil, nil
 	} else if fieldAccess, ok := nameOrExp.(*ast.FieldAccess); ok {
 		classType, _ := fieldAccess.Expression.Accept(v)
-		if methods, ok := classType.(*builtin.ClassType).InstanceMethods.Get(fieldAccess.FieldName); ok {
-			t, _ := methods[0].(*ast.MethodDeclaration).ReturnType.Accept(v)
-			return t, nil
+		method, err := resolver.FindInstanceMethod(
+			classType.(*builtin.ClassType),
+			fieldAccess.FieldName,
+			types,
+			MODIFIER_PUBLIC_ONLY,
+		)
+		if err != nil {
+			// TODO: implmenet
+			return nil, nil
 		}
+		if method.ReturnType != nil {
+			return method.ReturnType.Accept(v)
+		}
+		return nil, nil
 	}
 	return nil, nil
 }
@@ -405,12 +428,17 @@ func (v *TypeChecker) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) 
 	if !ok {
 		v.AddError(fmt.Sprintf("field <%s> does not exist", n.FieldName), n)
 	}
-	return f, nil
+	resolver := &TypeResolver{Context: v.Context}
+	t, err := resolver.ResolveType(f.Type.(*ast.TypeRef).Name)
+	if err != nil {
+		// TODO: ErrorHandling
+	}
+	return t, nil
 }
 
 func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
-	resolver := &TypeResolver{}
-	t, err := resolver.ResolveType(n.Name, v.Context)
+	resolver := &TypeResolver{Context: v.Context}
+	t, err := resolver.ResolveType(n.Name)
 	if err != nil {
 		v.AddError(err.Error(), n)
 	}
@@ -466,8 +494,8 @@ func (v *TypeChecker) VisitSetCreator(n *ast.SetCreator) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitName(n *ast.Name) (interface{}, error) {
-	resolver := TypeResolver{}
-	t, err := resolver.ResolveVariable(n.Value, v.Context)
+	resolver := TypeResolver{Context: v.Context}
+	t, err := resolver.ResolveVariable(n.Value)
 	if err != nil {
 		v.AddError(err.Error(), n)
 	}

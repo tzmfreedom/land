@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -8,51 +9,66 @@ import (
 	"github.com/tzmfreedom/goland/builtin"
 )
 
-type TypeResolver struct{}
+type TypeResolver struct {
+	Context *Context
+}
 
-func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.ClassType, error) {
+const (
+	MODIFIER_PUBLIC_ONLY = iota
+	MODIFIER_ALLOW_PROTECTED
+	MODIFIER_ALL_OK
+)
+
+func (r *TypeResolver) ResolveVariable(names []string) (*builtin.ClassType, error) {
 	if len(names) == 1 {
-		if v, ok := ctx.Env.Get(names[0]); ok {
+		if v, ok := r.Context.Env.Get(names[0]); ok {
 			return v, nil
 		}
 		return nil, errors.Errorf("%s is not found in this scope", names[0])
 	} else {
 		name := names[0]
-		if fieldType, ok := ctx.Env.Get(name); ok {
-			for _, f := range names[1:] {
-				instanceField, ok := fieldType.InstanceFields.Get(f)
-				if !ok {
-					return nil, errors.Errorf("%s is not found in this scope", f)
+		if fieldType, ok := r.Context.Env.Get(name); ok {
+			for i, f := range names[1:] {
+				var allowedModifier int
+				if i == 0 && f == "this" {
+					allowedModifier = MODIFIER_ALL_OK
+				} else {
+					allowedModifier = MODIFIER_PUBLIC_ONLY
 				}
-				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
+				instanceField, err := r.findInstanceField(fieldType, f, allowedModifier)
+				if err != nil {
+					return nil, err
+				}
+				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
 			}
 			return fieldType, nil
 		}
-		if v, ok := ctx.ClassTypes.Get(name); ok {
-			if n, ok := v.StaticFields.Get(names[1]); ok {
+		if v, ok := r.Context.ClassTypes.Get(name); ok {
+			n, err := r.findStaticField(v, names[1], MODIFIER_PUBLIC_ONLY)
+			if err == nil {
 				t := n.Type.(*ast.TypeRef)
-				fieldType, _ := r.ResolveType(t.Name, ctx)
+				fieldType, _ := r.ResolveType(t.Name)
 				for _, f := range names[2:] {
-					instanceField, ok := fieldType.InstanceFields.Get(f)
-					if !ok {
+					instanceField, err := r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY)
+					if err != nil {
 						return nil, errors.Errorf("%s is not found in this scope", f)
 					}
-					fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
+					fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
 				}
 				return fieldType, nil
 			}
 		}
-		if v, ok := ctx.NameSpaces.Get(name); ok {
+		if v, ok := r.Context.NameSpaces.Get(name); ok {
 			if classType, ok := v.Get(names[1]); ok {
-				if field, ok := classType.StaticFields.Get(names[2]); ok {
+				if field, err := r.findStaticField(classType, names[2], MODIFIER_PUBLIC_ONLY); err == nil {
 					t := field.Type.(*ast.TypeRef)
-					fieldType, _ := r.ResolveType(t.Name, ctx)
+					fieldType, _ := r.ResolveType(t.Name)
 					for _, f := range names[3:] {
-						instanceField, ok := fieldType.InstanceFields.Get(f)
-						if !ok {
-							return nil, errors.Errorf("%s is not found in this scope", f)
+						instanceField, err := r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY)
+						if err != nil {
+							return nil, err
 						}
-						fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
+						fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
 					}
 					return fieldType, nil
 				}
@@ -62,12 +78,12 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.C
 	return nil, nil
 }
 
-func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (ast.Node, error) {
+func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.ClassType) (*ast.MethodDeclaration, error) {
 	if len(names) == 1 {
 		methodName := names[0]
-		if v, ok := ctx.Env.Get("this"); ok {
-			if methods, ok := v.InstanceMethods.Get(methodName); ok {
-				return methods[0], nil
+		if v, ok := r.Context.Env.Get("this"); ok {
+			if method, err := r.FindInstanceMethod(v, methodName, parameters, MODIFIER_ALL_OK); err == nil {
+				return method, nil
 			}
 			return nil, errors.Errorf("%s is not found in this scope", methodName)
 		}
@@ -75,71 +91,65 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (ast.Node, er
 		first := names[0]
 		methodName := names[len(names)-1]
 		fields := names[1 : len(names)-1]
-		if fieldType, ok := ctx.Env.Get(first); ok {
-			for _, f := range fields {
-				instanceField, ok := fieldType.InstanceFields.Get(f)
-				if !ok {
-					return nil, errors.Errorf("%s is not found in this scope", f)
+		if fieldType, ok := r.Context.Env.Get(first); ok {
+			for i, f := range fields {
+				var allowedModifier int
+				if first == "this" && i == 0 {
+					allowedModifier = MODIFIER_ALL_OK
+				} else {
+					allowedModifier = MODIFIER_PUBLIC_ONLY
 				}
-				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
+				instanceField, err := r.findInstanceField(fieldType, f, allowedModifier)
+				if err != nil {
+					return nil, err
+				}
+				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
 			}
-			methods, ok := fieldType.InstanceMethods.Get(methodName)
-			if ok {
-				return methods[0], nil
+			var allowedModifier int
+			if first == "this" && len(fields) == 0 {
+				allowedModifier = MODIFIER_ALL_OK
+			} else {
+				allowedModifier = MODIFIER_PUBLIC_ONLY
 			}
-			return nil, errors.Errorf("%s is not found in this scope", methodName)
+			return r.FindInstanceMethod(fieldType, methodName, parameters, allowedModifier)
 		}
 		if len(names) == 2 {
-			if v, ok := ctx.ClassTypes.Get(first); ok {
-				if methods, ok := v.StaticMethods.Get(methodName); ok {
-					return methods[0], nil
-				}
-				return nil, errors.Errorf("%s is not found in this scope", methodName)
+			if v, ok := r.Context.ClassTypes.Get(first); ok {
+				return r.findStaticMethod(v, methodName, parameters, MODIFIER_PUBLIC_ONLY)
 			}
 		}
-		if v, ok := ctx.ClassTypes.Get(first); ok {
-			if n, ok := v.StaticFields.Get(names[1]); ok {
+		if v, ok := r.Context.ClassTypes.Get(first); ok {
+			n, err := r.findStaticField(v, names[1], MODIFIER_PUBLIC_ONLY)
+			if err == nil {
 				t := n.Type.(*ast.TypeRef)
-				fieldType, _ := r.ResolveType(t.Name, ctx)
+				fieldType, _ := r.ResolveType(t.Name)
 				for _, f := range names[2 : len(names)-1] {
-					instanceField, ok := fieldType.InstanceFields.Get(f)
-					if !ok {
-						return nil, errors.Errorf("%s is not found in this scope", f)
+					instanceField, err := r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY)
+					if err != nil {
+						return nil, err
 					}
-					fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
+					fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
 				}
-				methods, ok := fieldType.InstanceMethods.Get(methodName)
-				if ok {
-					return methods[0], nil
-				}
-				return nil, errors.Errorf("%s is not found in this scope", methodName)
+				return r.FindInstanceMethod(fieldType, methodName, parameters, MODIFIER_PUBLIC_ONLY)
 			}
 		}
-		if v, ok := ctx.NameSpaces.Get(first); ok {
+		if v, ok := r.Context.NameSpaces.Get(first); ok {
 			if classType, ok := v.Get(names[1]); ok {
 				if len(names) > 3 {
-					if field, ok := classType.StaticFields.Get(names[2]); ok {
+					if field, err := r.findStaticField(classType, names[2], MODIFIER_PUBLIC_ONLY); err == nil {
 						t := field.Type.(*ast.TypeRef)
-						fieldType, _ := r.ResolveType(t.Name, ctx)
+						fieldType, _ := r.ResolveType(t.Name)
 						for _, f := range names[3 : len(names)-1] {
-							instanceField, ok := fieldType.InstanceFields.Get(f)
-							if !ok {
-								return nil, errors.Errorf("%s is not found in this scope", f)
+							instanceField, err := r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY)
+							if err != nil {
+								return nil, err
 							}
-							fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name, ctx)
+							fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
 						}
-						methods, ok := fieldType.InstanceMethods.Get(methodName)
-						if ok {
-							return methods[0], nil
-						}
-						return nil, errors.Errorf("%s is not found in this scope", methodName)
+						return r.FindInstanceMethod(fieldType, methodName, parameters, MODIFIER_PUBLIC_ONLY)
 					}
 				} else {
-					methods, ok := classType.StaticMethods.Get(methodName)
-					if ok {
-						return methods[0], nil
-					}
-					return nil, errors.Errorf("%s is not found in this scope", methodName)
+					return r.findStaticMethod(classType, methodName, parameters, MODIFIER_PUBLIC_ONLY)
 				}
 			}
 		}
@@ -147,33 +157,33 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (ast.Node, er
 	return nil, errors.Errorf("%s is not found in this scope", strings.Join(names, "."))
 }
 
-func (r *TypeResolver) ResolveType(names []string, ctx *Context) (*builtin.ClassType, error) {
+func (r *TypeResolver) ResolveType(names []string) (*builtin.ClassType, error) {
 	if len(names) == 1 {
 		className := names[0]
-		if class, ok := ctx.ClassTypes.Get(className); ok {
+		if class, ok := r.Context.ClassTypes.Get(className); ok {
 			return class, nil
 		}
-		if classTypes, ok := ctx.NameSpaces.Get("System"); ok {
+		if classTypes, ok := r.Context.NameSpaces.Get("System"); ok {
 			if class, ok := classTypes.Get(className); ok {
 				return class, nil
 			}
 		}
 	} else if len(names) == 2 {
 		// search for UserClass.InnerClass
-		if class, ok := ctx.ClassTypes.Get(names[0]); ok {
+		if class, ok := r.Context.ClassTypes.Get(names[0]); ok {
 			if inner, ok := class.InnerClasses.Get(names[1]); ok {
 				return inner, nil
 			}
 		}
 		// search for NameSpace.UserClass
-		if classTypes, ok := ctx.NameSpaces.Get(names[0]); ok {
+		if classTypes, ok := r.Context.NameSpaces.Get(names[0]); ok {
 			if class, ok := classTypes.Get(names[1]); ok {
 				return class, nil
 			}
 		}
 	} else if len(names) == 3 {
 		// search for NameSpace.UserClass.InnerClass
-		if classTypes, ok := ctx.NameSpaces.Get(names[0]); ok {
+		if classTypes, ok := r.Context.NameSpaces.Get(names[0]); ok {
 			if class, ok := classTypes.Get(names[1]); ok {
 				if inner, ok := class.InnerClasses.Get(names[2]); ok {
 					return inner, nil
@@ -182,4 +192,129 @@ func (r *TypeResolver) ResolveType(names []string, ctx *Context) (*builtin.Class
 		}
 	}
 	return nil, nil
+}
+
+func (r *TypeResolver) FindInstanceMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType, allowedModifier int) (*ast.MethodDeclaration, error) {
+	methods, ok := classType.InstanceMethods.Get(methodName)
+	if ok {
+		method := r.searchMethod(methods, parameters)
+		if method != nil {
+			if allowedModifier == MODIFIER_PUBLIC_ONLY && !method.IsPublic() {
+				return nil, fmt.Errorf("Method access modifier must be public but %s", method.AccessModifier())
+			}
+			if allowedModifier == MODIFIER_ALLOW_PROTECTED && method.IsPrivate() {
+				return nil, fmt.Errorf("Method access modifier must be public/protected but private")
+			}
+			return method, nil
+		}
+	}
+	if classType.SuperClass != nil {
+		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
+		if err != nil {
+			return nil, errors.New("Method not found")
+		}
+		if allowedModifier == MODIFIER_ALL_OK {
+			allowedModifier = MODIFIER_ALLOW_PROTECTED
+		}
+		return r.FindInstanceMethod(super, methodName, parameters, allowedModifier)
+	}
+	return nil, errors.New("Method not found")
+}
+
+func (r *TypeResolver) findStaticMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType, allowedModifier int) (*ast.MethodDeclaration, error) {
+	methods, ok := classType.StaticMethods.Get(methodName)
+	if ok {
+		method := r.searchMethod(methods, parameters)
+		if method != nil {
+			if allowedModifier == MODIFIER_PUBLIC_ONLY && !method.IsPublic() {
+				return nil, fmt.Errorf("Method access modifier must be public but %s", method.AccessModifier())
+			}
+			if allowedModifier == MODIFIER_ALLOW_PROTECTED && method.IsPrivate() {
+				return nil, fmt.Errorf("Method access modifier must be public/protected but private")
+			}
+			return method, nil
+		}
+	}
+	if classType.SuperClass != nil {
+		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
+		if err != nil {
+			return nil, errors.New("Method not found")
+		}
+		if allowedModifier == MODIFIER_ALL_OK {
+			allowedModifier = MODIFIER_ALLOW_PROTECTED
+		}
+		return r.findStaticMethod(super, methodName, parameters, allowedModifier)
+	}
+	return nil, errors.New("Method not found")
+}
+
+func (r *TypeResolver) findInstanceField(classType *builtin.ClassType, fieldName string, allowedModifier int) (*builtin.Field, error) {
+	fieldType, ok := classType.InstanceFields.Get(fieldName)
+	if ok {
+		if allowedModifier == MODIFIER_PUBLIC_ONLY && !fieldType.IsPublic() {
+			return nil, fmt.Errorf("Field access modifier must be public but %s", fieldType.AccessModifier())
+		}
+		if allowedModifier == MODIFIER_ALLOW_PROTECTED && fieldType.IsPrivate() {
+			return nil, fmt.Errorf("Field access modifier must be public/protected but private")
+		}
+		return fieldType, nil
+	}
+	if classType.SuperClass != nil {
+		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
+		if err != nil {
+			return nil, fmt.Errorf("Field %s is not found", fieldName)
+		}
+		if allowedModifier == MODIFIER_ALL_OK {
+			allowedModifier = MODIFIER_ALLOW_PROTECTED
+		}
+		return r.findInstanceField(super, fieldName, allowedModifier)
+	}
+	return nil, fmt.Errorf("Field %s is not found", fieldName)
+}
+
+func (r *TypeResolver) findStaticField(classType *builtin.ClassType, fieldName string, allowedModifier int) (*builtin.Field, error) {
+	fieldType, ok := classType.StaticFields.Get(fieldName)
+	if ok {
+		if allowedModifier == MODIFIER_PUBLIC_ONLY && !fieldType.IsPublic() {
+			return nil, fmt.Errorf("Field access modifier must be public but %s", fieldType.AccessModifier())
+		}
+		if allowedModifier == MODIFIER_ALLOW_PROTECTED && fieldType.IsPrivate() {
+			return nil, fmt.Errorf("Field access modifier must be public/protected but private")
+		}
+		return fieldType, nil
+	}
+	if classType.SuperClass != nil {
+		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
+		if err != nil {
+			return nil, fmt.Errorf("Field %s is not found", fieldName)
+		}
+		if allowedModifier == MODIFIER_ALL_OK {
+			allowedModifier = MODIFIER_ALLOW_PROTECTED
+		}
+		return r.findStaticField(super, fieldName, allowedModifier)
+	}
+	return nil, fmt.Errorf("Field %s is not found", fieldName)
+}
+
+func (r *TypeResolver) searchMethod(methods []ast.Node, parameters []*builtin.ClassType) *ast.MethodDeclaration {
+	l := len(parameters)
+	for _, method := range methods {
+		m := method.(*ast.MethodDeclaration)
+		if len(m.Parameters) != l {
+			continue
+		}
+		match := true
+		for i, p := range m.Parameters {
+			inputParam := parameters[i]
+			methodParam, _ := r.ResolveType(p.(*ast.TypeRef).Name)
+			if inputParam != methodParam {
+				match = false
+				break
+			}
+		}
+		if match {
+			return m
+		}
+	}
+	return nil
 }

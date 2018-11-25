@@ -166,6 +166,46 @@ type MethodDeclaration struct {
 	Parent         Node
 }
 
+func (m *MethodDeclaration) IsPublic() bool {
+	for _, modifier := range m.Modifiers {
+		if modifier.(*Modifier).Name == "public" {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *MethodDeclaration) IsPrivate() bool {
+	for _, modifier := range m.Modifiers {
+		if modifier.(*Modifier).Name == "private" {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *MethodDeclaration) IsProtected() bool {
+	for _, modifier := range m.Modifiers {
+		if modifier.(*Modifier).Name == "protected" {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *MethodDeclaration) AccessModifier() string {
+	if m.IsPublic() {
+		return "public"
+	}
+	if m.IsPrivate() {
+		return "private"
+	}
+	if m.IsProtected() {
+		return "protected"
+	}
+	return ""
+}
+
 type MethodInvocation struct {
 	NameOrExpression Node
 	Parameters       []Node

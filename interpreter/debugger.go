@@ -18,12 +18,17 @@ var Debugger = &debugger{}
 
 type debugger struct {
 	Enabled bool
+	StepOut bool
 	Step    int
 	Frame   int
 }
 
 func (d *debugger) Debug(ctx *Context, n ast.Node) {
 	d.Enabled = true
+	d.StepOut = false
+	d.Step = 0
+	d.Frame = 0
+
 	showCurrent(n)
 	l, _ := readline.NewEx(&readline.Config{
 		Prompt:          "\033[31m>>\033[0m ",
@@ -41,22 +46,30 @@ func (d *debugger) Debug(ctx *Context, n ast.Node) {
 		args := inputs[1:]
 		switch cmd {
 		case "show":
-			varName := args[0]
-			resolver := TypeResolver{}
-			obj, err := resolver.ResolveVariable(strings.Split(varName, "."), ctx)
-			if err != nil {
-				fmt.Println(err.Error())
-				continue
-			}
-			fmt.Println(builtin.String(obj))
-		case "env":
-			for k, v := range ctx.Env.Data.All() {
-				fmt.Printf("%s => %s\n", k, builtin.String(v))
+			if len(args) == 0 {
+				for k, v := range ctx.Env.Data.All() {
+					fmt.Printf("%s => %s\n", k, builtin.String(v))
+				}
+			} else {
+				varName := args[0]
+				resolver := TypeResolver{}
+				obj, err := resolver.ResolveVariable(strings.Split(varName, "."), ctx)
+				if err != nil {
+					fmt.Println(err.Error())
+					continue
+				}
+				fmt.Println(builtin.String(obj))
 			}
 		case "step":
 			d.Step = 1
 			return
 		case "next":
+			d.StepOut = true
+			d.Step = 1
+			return
+		case "finish":
+			d.StepOut = true
+			d.Frame = 1
 			d.Step = 1
 			return
 		case "current":
@@ -64,6 +77,7 @@ func (d *debugger) Debug(ctx *Context, n ast.Node) {
 		case "exit":
 			d.Step = 0
 			d.Frame = 0
+			d.StepOut = false
 			d.Enabled = false
 			return
 		}
@@ -95,9 +109,24 @@ func showCurrent(n ast.Node) {
 }
 
 func init() {
+	Subscribe("method_start", func(ctx *Context, n ast.Node) {
+		if Debugger.Enabled {
+			Debugger.Frame++
+		}
+	})
+	Subscribe("method_end", func(ctx *Context, n ast.Node) {
+		if Debugger.Enabled {
+			if Debugger.Frame > 0 {
+				Debugger.Frame--
+			}
+		}
+	})
 	Subscribe("line", func(ctx *Context, n ast.Node) {
 		if Debugger.Enabled {
 			if Debugger.Step > 0 {
+				if Debugger.StepOut && Debugger.Frame != 0 {
+					return
+				}
 				Debugger.Step--
 			}
 			if Debugger.Step == 0 {

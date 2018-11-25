@@ -171,6 +171,7 @@ func (v *Interpreter) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 }
 
 func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{}, error) {
+	Publish("method_start", v.Context, n)
 	var receiver interface{}
 	var m *ast.MethodDeclaration
 	var err error
@@ -210,6 +211,7 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 	if m.NativeFunction != nil {
 		// set parameter
 		_ = m.NativeFunction(evaluated)
+		Publish("method_end", v.Context, n)
 	} else {
 		prev := v.Context.Env
 		v.Context.Env = NewEnv(nil)
@@ -222,10 +224,12 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 			v.Context.Env.Set("this", obj)
 		}
 		r, err := m.Statements.Accept(v)
+		Publish("method_end", v.Context, n)
 		if err != nil {
 			return nil, err
 		}
 		v.Context.Env = prev
+
 		if r != nil {
 			switch ret := r.(type) {
 			case *Return:

@@ -13,10 +13,7 @@ func IsDecendants(n Node, typeName string) bool {
 
 func IsParent(n Node, typeName string) bool {
 	parent := n.GetParent()
-	if parent == nil {
-		return false
-	}
-	if parent.GetType() == typeName {
+	if parent != nil && parent.GetType() == typeName {
 		return true
 	}
 	return false

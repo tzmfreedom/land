@@ -6,7 +6,7 @@ import (
 
 // Arithmetic
 func ExampleRun1() {
-	os.Args = []string{"land", "run", "-f", "fixtures/example1.cls"}
+	os.Args = []string{"land", "run", "-a", "Foo#action", "-f", "fixtures/example1.cls"}
 	main()
 	// Output:
 	// 6
@@ -19,7 +19,7 @@ func ExampleRun1() {
 
 // Object Creation, FieldAccess
 func ExampleRun2() {
-	os.Args = []string{"land", "run", "-f", "fixtures/example2.cls"}
+	os.Args = []string{"land", "run", "-a", "Foo#action", "-f", "fixtures/example2.cls"}
 	main()
 	// Output:
 	// <Foo> {
@@ -39,7 +39,7 @@ func ExampleRun2() {
 
 // For, While, Continue, Break, If, Else
 func ExampleRun3() {
-	os.Args = []string{"land", "run", "-f", "fixtures/example3.cls"}
+	os.Args = []string{"land", "run", "-a", "Foo#action", "-f", "fixtures/example3.cls"}
 	main()
 	// Output:
 	// 0

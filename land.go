@@ -1,11 +1,14 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	"flag"
 	"strings"
+
+	"io/ioutil"
 
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
@@ -23,46 +26,88 @@ var preprocessors = []ast.PreProcessor{
 
 func main() {
 	flg := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	f := flg.String("f", "", "file")
-	_ = flg.String("d", "", "directory")
+	fileName := flg.String("f", "", "file")
+	directory := flg.String("d", "", "directory")
+	action := flg.String("a", "", "action")
 
 	cmd := os.Args[1]
 
 	err := flg.Parse(os.Args[2:])
 	if err != nil {
-		panic(err.Error())
+		handleError(err)
+		return
 	}
 
-	t, err := ast.ParseFile(*f, preprocessors...)
-	if err != nil {
-		handleError(err)
+	if fileName == nil && directory == nil {
+		handleError(errors.New("-f FILE or -d DIRECTORY is required"))
+		return
+	}
+
+	if *action == "" {
+		handleError(errors.New("-a CLASS#METHOD is required"))
+		return
+	}
+	var files []string
+	if fileName != nil {
+		files = []string{*fileName}
+	} else {
+		filesInDirectory, err := ioutil.ReadDir(*directory)
+		if err != nil {
+			handleError(err)
+		}
+		files = []string{}
+		for _, f := range filesInDirectory {
+			if f.IsDir() {
+				continue
+			}
+			files = append(files, f.Name())
+		}
+	}
+
+	trees := make([]ast.Node, len(files))
+	for i, file := range files {
+		trees[i], err = ast.ParseFile(file, preprocessors...)
+		if err != nil {
+			handleError(err)
+		}
 	}
 	switch cmd {
 	case "format":
-		tos(t)
+		for _, t := range trees {
+			tos(t)
+		}
 	case "run":
-		root, err := convert(t)
-		if err != nil {
-			handleError(err)
+		classTypes := make([]*builtin.ClassType, len(trees))
+		for i, t := range trees {
+			root, err := convert(t)
+			if err != nil {
+				handleError(err)
+			}
+			classTypes[i], err = register(root)
 		}
-		t, err := register(root)
-		err = semanticAnalysis(t)
-		if err != nil {
-			handleError(err)
+		for _, t := range classTypes {
+			if err = semanticAnalysis(t); err != nil {
+				handleError(err)
+			}
 		}
-		err = run(t)
+		err = run(*action, classTypes)
 		if err != nil {
 			handleError(err)
 		}
 	case "check":
-		root, err := convert(t)
-		if err != nil {
-			handleError(err)
+		newTrees := make([]*builtin.ClassType, len(trees))
+		for i, t := range trees {
+			root, err := convert(t)
+			if err != nil {
+				handleError(err)
+			}
+			newTrees[i], err = register(root)
 		}
-		t, err := register(root)
-		err = semanticAnalysis(t)
-		if err != nil {
-			handleError(err)
+		for _, t := range newTrees {
+			err = semanticAnalysis(t)
+			if err != nil {
+				handleError(err)
+			}
 		}
 	}
 }
@@ -101,12 +146,19 @@ func semanticAnalysis(t *builtin.ClassType) error {
 	return err
 }
 
-func run(n *builtin.ClassType) error {
+func run(action string, classTypes []*builtin.ClassType) error {
+	method := "action"
+	args := strings.Split(action, "#")
+	if len(args) > 1 {
+		method = args[1]
+	}
 	interpreter := interpreter.NewInterpreter(builtin.PrimitiveClassMap())
-	interpreter.Context.ClassTypes.Set(n.Name, n)
+	for _, classType := range classTypes {
+		interpreter.Context.ClassTypes.Set(classType.Name, classType)
+	}
 	invoke := &ast.MethodInvocation{
 		NameOrExpression: &ast.Name{
-			Value: []string{n.Name, "action"},
+			Value: []string{args[0], method},
 		},
 	}
 	_, err := invoke.Accept(interpreter)
@@ -122,4 +174,8 @@ func tos(n ast.Node) {
 func handleError(err error) {
 	fmt.Fprintf(os.Stderr, err.Error())
 	os.Exit(1)
+}
+
+func validate() {
+	return
 }

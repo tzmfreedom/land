@@ -42,30 +42,15 @@ type Field struct {
 }
 
 func (f *Field) IsPublic() bool {
-	for _, m := range f.Modifiers {
-		if m.(*ast.Modifier).Name == "public" {
-			return true
-		}
-	}
-	return false
+	return f.Is("public")
 }
 
 func (f *Field) IsPrivate() bool {
-	for _, m := range f.Modifiers {
-		if m.(*ast.Modifier).Name == "private" {
-			return true
-		}
-	}
-	return false
+	return f.Is("private")
 }
 
 func (f *Field) IsProtected() bool {
-	for _, m := range f.Modifiers {
-		if m.(*ast.Modifier).Name == "protected" {
-			return true
-		}
-	}
-	return false
+	return f.Is("protected")
 }
 
 func (f *Field) AccessModifier() string {
@@ -79,6 +64,29 @@ func (f *Field) AccessModifier() string {
 		return "protected"
 	}
 	return ""
+}
+
+func (f *Field) IsOverride() bool {
+	return f.Is("override")
+}
+
+func (f *Field) IsAbstract() bool {
+	return f.Is("abstract")
+}
+
+func (f *Field) IsVirtual() bool {
+	return f.Is("virtual")
+}
+
+func (f *Field) Is(name string) bool {
+	name = strings.ToLower(name)
+	for _, modifier := range f.Modifiers {
+		modifierName := strings.ToLower(modifier.(*ast.Modifier).Name)
+		if modifierName == name {
+			return true
+		}
+	}
+	return false
 }
 
 type FieldMap struct {

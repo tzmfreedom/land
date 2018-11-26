@@ -1,5 +1,7 @@
 package ast
 
+import "strings"
+
 type Location struct {
 	FileName string
 	Column   int
@@ -167,30 +169,15 @@ type MethodDeclaration struct {
 }
 
 func (m *MethodDeclaration) IsPublic() bool {
-	for _, modifier := range m.Modifiers {
-		if modifier.(*Modifier).Name == "public" {
-			return true
-		}
-	}
-	return false
+	return m.Is("public")
 }
 
 func (m *MethodDeclaration) IsPrivate() bool {
-	for _, modifier := range m.Modifiers {
-		if modifier.(*Modifier).Name == "private" {
-			return true
-		}
-	}
-	return false
+	return m.Is("private")
 }
 
 func (m *MethodDeclaration) IsProtected() bool {
-	for _, modifier := range m.Modifiers {
-		if modifier.(*Modifier).Name == "protected" {
-			return true
-		}
-	}
-	return false
+	return m.Is("protected")
 }
 
 func (m *MethodDeclaration) AccessModifier() string {
@@ -204,6 +191,29 @@ func (m *MethodDeclaration) AccessModifier() string {
 		return "protected"
 	}
 	return ""
+}
+
+func (m *MethodDeclaration) IsOverride() bool {
+	return m.Is("override")
+}
+
+func (m *MethodDeclaration) IsAbstract() bool {
+	return m.Is("abstract")
+}
+
+func (m *MethodDeclaration) IsVirtual() bool {
+	return m.Is("virtual")
+}
+
+func (m *MethodDeclaration) Is(name string) bool {
+	name = strings.ToLower(name)
+	for _, modifier := range m.Modifiers {
+		modifierName := strings.ToLower(modifier.(*Modifier).Name)
+		if modifierName == name {
+			return true
+		}
+	}
+	return false
 }
 
 type MethodInvocation struct {

@@ -17,6 +17,7 @@ const (
 	MODIFIER_PUBLIC_ONLY = iota
 	MODIFIER_ALLOW_PROTECTED
 	MODIFIER_ALL_OK
+	MODIFIER_NO_CHECK
 )
 
 func (r *TypeResolver) ResolveVariable(names []string) (*builtin.ClassType, error) {
@@ -115,7 +116,7 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Class
 		}
 		if len(names) == 2 {
 			if v, ok := r.Context.ClassTypes.Get(first); ok {
-				return r.findStaticMethod(v, methodName, parameters, MODIFIER_PUBLIC_ONLY)
+				return r.FindStaticMethod(v, methodName, parameters, MODIFIER_PUBLIC_ONLY)
 			}
 		}
 		if v, ok := r.Context.ClassTypes.Get(first); ok {
@@ -149,7 +150,7 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Class
 						return r.FindInstanceMethod(fieldType, methodName, parameters, MODIFIER_PUBLIC_ONLY)
 					}
 				} else {
-					return r.findStaticMethod(classType, methodName, parameters, MODIFIER_PUBLIC_ONLY)
+					return r.FindStaticMethod(classType, methodName, parameters, MODIFIER_PUBLIC_ONLY)
 				}
 			}
 		}
@@ -221,7 +222,7 @@ func (r *TypeResolver) FindInstanceMethod(classType *builtin.ClassType, methodNa
 	return nil, errors.New("Method not found")
 }
 
-func (r *TypeResolver) findStaticMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType, allowedModifier int) (*ast.MethodDeclaration, error) {
+func (r *TypeResolver) FindStaticMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType, allowedModifier int) (*ast.MethodDeclaration, error) {
 	methods, ok := classType.StaticMethods.Get(methodName)
 	if ok {
 		method := r.searchMethod(methods, parameters)
@@ -243,7 +244,7 @@ func (r *TypeResolver) findStaticMethod(classType *builtin.ClassType, methodName
 		if allowedModifier == MODIFIER_ALL_OK {
 			allowedModifier = MODIFIER_ALLOW_PROTECTED
 		}
-		return r.findStaticMethod(super, methodName, parameters, allowedModifier)
+		return r.FindStaticMethod(super, methodName, parameters, allowedModifier)
 	}
 	return nil, errors.New("Method not found")
 }

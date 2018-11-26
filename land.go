@@ -4,12 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"flag"
 	"strings"
 
 	"io/ioutil"
 
+	"github.com/chzyer/readline"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 	"github.com/tzmfreedom/goland/compiler"
@@ -25,9 +27,10 @@ var preprocessors = []ast.PreProcessor{
 }
 
 type option struct {
-	SubCommand string
-	Action     string
-	Files      []string
+	SubCommand  string
+	Action      string
+	Files       []string
+	Interactive bool
 }
 
 func main() {
@@ -63,9 +66,13 @@ func main() {
 				handleError(err)
 			}
 		}
-		err = run(option.Action, classTypes)
-		if err != nil {
-			handleError(err)
+		if option.Interactive {
+			interactiveRun(classTypes, option)
+		} else {
+			err = run(option.Action, classTypes)
+			if err != nil {
+				handleError(err)
+			}
 		}
 	case "check":
 		newTrees := make([]*builtin.ClassType, len(trees))
@@ -90,6 +97,7 @@ func parseOption(args []string) (*option, error) {
 	fileName := flg.String("f", "", "file")
 	directory := flg.String("d", "", "directory")
 	action := flg.String("a", "", "action")
+	interactive := flg.Bool("i", false, "interactive")
 
 	err := flg.Parse(args[2:])
 	if err != nil {
@@ -100,7 +108,8 @@ func parseOption(args []string) (*option, error) {
 		return nil, errors.New("-f FILE or -d DIRECTORY is required")
 	}
 
-	if *action == "" {
+	cmd := os.Args[1]
+	if cmd != "format" && *action == "" {
 		return nil, errors.New("-a CLASS#METHOD is required")
 	}
 	var files []string
@@ -120,9 +129,10 @@ func parseOption(args []string) (*option, error) {
 		}
 	}
 	return &option{
-		SubCommand: os.Args[1],
-		Action:     *action,
-		Files:      files,
+		SubCommand:  cmd,
+		Action:      *action,
+		Files:       files,
+		Interactive: *interactive,
 	}, nil
 }
 
@@ -177,6 +187,107 @@ func run(action string, classTypes []*builtin.ClassType) error {
 	}
 	_, err := invoke.Accept(interpreter)
 	return err
+}
+
+func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
+	lastReloadedAt := time.Now()
+	interpreter := interpreter.NewInterpreter(builtin.PrimitiveClassMap())
+	for _, classType := range classTypes {
+		interpreter.Context.ClassTypes.Set(classType.Name, classType)
+	}
+
+	l, _ := readline.NewEx(&readline.Config{
+		Prompt:          "\033[31m>>\033[0m ",
+		HistoryFile:     "/tmp/land.tmp",
+		InterruptPrompt: "^C",
+		EOFPrompt:       "exit",
+	})
+	for {
+		line, err := l.Readline()
+		if err != nil {
+			panic(err)
+		}
+		inputs := strings.Split(line, " ")
+		cmd := inputs[0]
+		args := inputs[1:]
+		switch cmd {
+		case "execute":
+			if len(args) == 0 {
+				fmt.Println("Error: execute command required argument")
+				continue
+			}
+			run(args[0], classTypes)
+		case "reload":
+			if len(args) == 0 {
+				reloadAll(interpreter, option.Files)
+			} else {
+				t, err := ast.ParseFile(args[0], preprocessors...)
+				root, err := convert(t)
+				if err != nil {
+					fmt.Printf("Build Error: %s\n", err.Error())
+					continue
+				}
+				classType, err := register(root)
+				if err = semanticAnalysis(classType); err != nil {
+					fmt.Printf("Build Error: %s\n", err.Error())
+					continue
+				}
+				interpreter.Context.ClassTypes.Set(classType.Name, classType)
+			}
+		case "run":
+			if len(args) == 0 {
+				fmt.Println("Error: run command required argument")
+				continue
+			}
+			isReload := false
+			for _, f := range option.Files {
+				info, err := os.Stat(f)
+				if err != nil {
+					return err
+				}
+				if info.ModTime().After(lastReloadedAt) {
+					isReload = true
+					break
+				}
+			}
+			if isReload {
+				lastReloadedAt = time.Now()
+				reloadAll(interpreter, option.Files)
+			}
+			run(args[0], classTypes)
+		case "exit":
+			return nil
+		}
+	}
+	return nil
+}
+
+func reloadAll(interpreter *interpreter.Interpreter, files []string) {
+	var err error
+	trees := make([]ast.Node, len(files))
+	for i, file := range files {
+		trees[i], err = ast.ParseFile(file, preprocessors...)
+		if err != nil {
+			handleError(err)
+		}
+	}
+	classTypes := make([]*builtin.ClassType, len(trees))
+	for i, t := range trees {
+		root, err := convert(t)
+		if err != nil {
+			handleError(err)
+		}
+		classTypes[i], err = register(root)
+	}
+	for _, t := range classTypes {
+		if err = semanticAnalysis(t); err != nil {
+			handleError(err)
+		}
+	}
+	interpreter.Context.ClassTypes.Clear()
+	for _, classType := range classTypes {
+		interpreter.Context.ClassTypes.Set(classType.Name, classType)
+	}
 }
 
 func tos(n ast.Node) {

@@ -32,7 +32,7 @@ func (d *debugger) Debug(ctx *Context, n ast.Node) {
 	showCurrent(n)
 	l, _ := readline.NewEx(&readline.Config{
 		Prompt:          "\033[31m>>\033[0m ",
-		HistoryFile:     "/tmp/readline.tmp",
+		HistoryFile:     "/tmp/land_debugger.tmp",
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
 	})

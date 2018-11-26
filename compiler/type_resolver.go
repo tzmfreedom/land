@@ -99,10 +99,14 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Class
 	if len(names) == 1 {
 		methodName := names[0]
 		if v, ok := r.Context.Env.Get("this"); ok {
-			if method, err := r.FindInstanceMethod(v, methodName, parameters, MODIFIER_ALL_OK); err == nil {
-				return method, nil
+			method, err := r.FindInstanceMethod(v, methodName, parameters, MODIFIER_ALL_OK)
+			if err != nil {
+				return nil, err
 			}
-			return nil, errors.Errorf("%s is not found in this scope", methodName)
+			if method == nil {
+				return nil, errors.Errorf("%s is not found in this scope", methodName)
+			}
+			return method, nil
 		}
 	} else {
 		first := names[0]

@@ -1046,6 +1046,399 @@ func TestResolveMethod(t *testing.T) {
 			},
 			nil,
 		},
+		// private/protected
+		{
+			[]string{"local", "instance"},
+			&Context{
+				Env: &TypeEnv{
+					Data: &TypeMap{
+						Data: map[string]*builtin.ClassType{
+							"local": {
+								Name: "class",
+								InstanceMethods: &builtin.MethodMap{
+									Data: map[string][]ast.Node{
+										"instance": {
+											&ast.MethodDeclaration{
+												Name: "instance",
+												Modifiers: []ast.Node{
+													&ast.Modifier{
+														Name: "protected",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			nil,
+			errors.New("Method access modifier must be public but protected"),
+		},
+		{
+			[]string{"local", "instance"},
+			&Context{
+				Env: &TypeEnv{
+					Data: &TypeMap{
+						Data: map[string]*builtin.ClassType{
+							"local": {
+								Name: "class",
+								InstanceMethods: &builtin.MethodMap{
+									Data: map[string][]ast.Node{
+										"instance": {
+											&ast.MethodDeclaration{
+												Name: "instance",
+												Modifiers: []ast.Node{
+													&ast.Modifier{
+														Name: "private",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			nil,
+			errors.New("Method access modifier must be public but private"),
+		},
+		{
+			[]string{"class", "static"},
+			&Context{
+				ClassTypes: &builtin.ClassMap{
+					Data: map[string]*builtin.ClassType{
+						"class": {
+							StaticMethods: &builtin.MethodMap{
+								Data: map[string][]ast.Node{
+									"static": {
+										&ast.MethodDeclaration{
+											Name: "static",
+											Modifiers: []ast.Node{
+												&ast.Modifier{
+													Name: "protected",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				Env: newTypeEnv(nil),
+			},
+			nil,
+			errors.New("Method access modifier must be public but protected"),
+		},
+		{
+			[]string{"class", "static"},
+			&Context{
+				ClassTypes: &builtin.ClassMap{
+					Data: map[string]*builtin.ClassType{
+						"class": {
+							StaticMethods: &builtin.MethodMap{
+								Data: map[string][]ast.Node{
+									"static": {
+										&ast.MethodDeclaration{
+											Name: "static",
+											Modifiers: []ast.Node{
+												&ast.Modifier{
+													Name: "private",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				Env: newTypeEnv(nil),
+			},
+			nil,
+			errors.New("Method access modifier must be public but private"),
+		},
+		//{
+		//	[]string{"class", "static", "instance"},
+		//	&Context{
+		//		ClassTypes: &builtin.ClassMap{
+		//			Data: map[string]*builtin.ClassType{
+		//				"class": {
+		//					StaticFields: &builtin.FieldMap{
+		//						Data: map[string]*builtin.Field{
+		//							"static": {
+		//								Name: "static",
+		//								Modifiers: []ast.Node{
+		//									&ast.Modifier{
+		//										Name: "public",
+		//									},
+		//								},
+		//								Type: &ast.TypeRef{
+		//									Name: []string{"class2"},
+		//								},
+		//							},
+		//						},
+		//					},
+		//				},
+		//				"class2": {
+		//					InstanceMethods: &builtin.MethodMap{
+		//						Data: map[string][]ast.Node{
+		//							"instance": {
+		//								&ast.MethodDeclaration{
+		//									Name: "instance",
+		//									Modifiers: []ast.Node{
+		//										&ast.Modifier{
+		//											Name: "public",
+		//										},
+		//									},
+		//								},
+		//							},
+		//						},
+		//					},
+		//				},
+		//			},
+		//		},
+		//		Env: newTypeEnv(nil),
+		//	},
+		//	&ast.MethodDeclaration{
+		//		Name: "instance",
+		//		Modifiers: []ast.Node{
+		//			&ast.Modifier{
+		//				Name: "public",
+		//			},
+		//		},
+		//	},
+		//	nil,
+		//},
+		//{
+		//	[]string{"class", "static", "instance"},
+		//	&Context{
+		//		ClassTypes: &builtin.ClassMap{
+		//			Data: map[string]*builtin.ClassType{
+		//				"class": {
+		//					StaticFields: &builtin.FieldMap{
+		//						Data: map[string]*builtin.Field{
+		//							"static": {
+		//								Name: "static",
+		//								Modifiers: []ast.Node{
+		//									&ast.Modifier{
+		//										Name: "public",
+		//									},
+		//								},
+		//								Type: &ast.TypeRef{
+		//									Name: []string{"class2"},
+		//								},
+		//							},
+		//						},
+		//					},
+		//				},
+		//				"class2": {
+		//					InstanceMethods: &builtin.MethodMap{
+		//						Data: map[string][]ast.Node{
+		//							"instance": {
+		//								&ast.MethodDeclaration{
+		//									Name: "instance",
+		//									Modifiers: []ast.Node{
+		//										&ast.Modifier{
+		//											Name: "public",
+		//										},
+		//									},
+		//								},
+		//							},
+		//						},
+		//					},
+		//				},
+		//			},
+		//		},
+		//		Env: newTypeEnv(nil),
+		//	},
+		//	&ast.MethodDeclaration{
+		//		Name: "instance",
+		//		Modifiers: []ast.Node{
+		//			&ast.Modifier{
+		//				Name: "public",
+		//			},
+		//		},
+		//	},
+		//	nil,
+		//},
+		{
+			[]string{"namespace", "class", "static"},
+			&Context{
+				Env:        newTypeEnv(nil),
+				ClassTypes: builtin.NewClassMap(),
+				NameSpaces: &builtin.NameSpaceStore{
+					Data: map[string]*builtin.ClassMap{
+						"namespace": {
+							Data: map[string]*builtin.ClassType{
+								"class": {
+									StaticMethods: &builtin.MethodMap{
+										Data: map[string][]ast.Node{
+											"static": {
+												&ast.MethodDeclaration{
+													Name: "static",
+													Modifiers: []ast.Node{
+														&ast.Modifier{
+															Name: "protected",
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			nil,
+			errors.New("Method access modifier must be public but protected"),
+		},
+		{
+			[]string{"namespace", "class", "static"},
+			&Context{
+				Env:        newTypeEnv(nil),
+				ClassTypes: builtin.NewClassMap(),
+				NameSpaces: &builtin.NameSpaceStore{
+					Data: map[string]*builtin.ClassMap{
+						"namespace": {
+							Data: map[string]*builtin.ClassType{
+								"class": {
+									StaticMethods: &builtin.MethodMap{
+										Data: map[string][]ast.Node{
+											"static": {
+												&ast.MethodDeclaration{
+													Name: "static",
+													Modifiers: []ast.Node{
+														&ast.Modifier{
+															Name: "private",
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			nil,
+			errors.New("Method access modifier must be public but private"),
+		},
+		{
+			[]string{"namespace", "class", "static", "instance"},
+			&Context{
+				Env: newTypeEnv(nil),
+				ClassTypes: &builtin.ClassMap{
+					Data: map[string]*builtin.ClassType{
+						"class2": {
+							InstanceMethods: &builtin.MethodMap{
+								Data: map[string][]ast.Node{
+									"instance": {
+										&ast.MethodDeclaration{
+											Name: "instance",
+											Modifiers: []ast.Node{
+												&ast.Modifier{
+													Name: "protected",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				NameSpaces: &builtin.NameSpaceStore{
+					Data: map[string]*builtin.ClassMap{
+						"namespace": {
+							Data: map[string]*builtin.ClassType{
+								"class": {
+									StaticFields: &builtin.FieldMap{
+										Data: map[string]*builtin.Field{
+											"static": {
+												Type: &ast.TypeRef{
+													Name: []string{"class2"},
+												},
+												Modifiers: []ast.Node{
+													&ast.Modifier{
+														Name: "public",
+													},
+												},
+												Name: "static",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			nil,
+			errors.New("Method access modifier must be public but protected"),
+		},
+		{
+			[]string{"namespace", "class", "static", "instance"},
+			&Context{
+				Env: newTypeEnv(nil),
+				ClassTypes: &builtin.ClassMap{
+					Data: map[string]*builtin.ClassType{
+						"class2": {
+							InstanceMethods: &builtin.MethodMap{
+								Data: map[string][]ast.Node{
+									"instance": {
+										&ast.MethodDeclaration{
+											Name: "instance",
+											Modifiers: []ast.Node{
+												&ast.Modifier{
+													Name: "private",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				NameSpaces: &builtin.NameSpaceStore{
+					Data: map[string]*builtin.ClassMap{
+						"namespace": {
+							Data: map[string]*builtin.ClassType{
+								"class": {
+									StaticFields: &builtin.FieldMap{
+										Data: map[string]*builtin.Field{
+											"static": {
+												Type: &ast.TypeRef{
+													Name: []string{"class2"},
+												},
+												Modifiers: []ast.Node{
+													&ast.Modifier{
+														Name: "public",
+													},
+												},
+												Name: "static",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			nil,
+			errors.New("Method access modifier must be public but private"),
+		},
 	}
 	for i, testCase := range testCases {
 		pp.Println(i)

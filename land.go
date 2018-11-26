@@ -24,54 +24,27 @@ var preprocessors = []ast.PreProcessor{
 	},
 }
 
+type option struct {
+	SubCommand string
+	Action     string
+	Files      []string
+}
+
 func main() {
-	flg := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	fileName := flg.String("f", "", "file")
-	directory := flg.String("d", "", "directory")
-	action := flg.String("a", "", "action")
-
-	cmd := os.Args[1]
-
-	err := flg.Parse(os.Args[2:])
+	option, err := parseOption(os.Args)
 	if err != nil {
 		handleError(err)
 		return
 	}
 
-	if fileName == nil && directory == nil {
-		handleError(errors.New("-f FILE or -d DIRECTORY is required"))
-		return
-	}
-
-	if *action == "" {
-		handleError(errors.New("-a CLASS#METHOD is required"))
-		return
-	}
-	var files []string
-	if fileName != nil {
-		files = []string{*fileName}
-	} else {
-		filesInDirectory, err := ioutil.ReadDir(*directory)
-		if err != nil {
-			handleError(err)
-		}
-		files = []string{}
-		for _, f := range filesInDirectory {
-			if f.IsDir() {
-				continue
-			}
-			files = append(files, f.Name())
-		}
-	}
-
-	trees := make([]ast.Node, len(files))
-	for i, file := range files {
+	trees := make([]ast.Node, len(option.Files))
+	for i, file := range option.Files {
 		trees[i], err = ast.ParseFile(file, preprocessors...)
 		if err != nil {
 			handleError(err)
 		}
 	}
-	switch cmd {
+	switch option.SubCommand {
 	case "format":
 		for _, t := range trees {
 			tos(t)
@@ -90,7 +63,7 @@ func main() {
 				handleError(err)
 			}
 		}
-		err = run(*action, classTypes)
+		err = run(option.Action, classTypes)
 		if err != nil {
 			handleError(err)
 		}
@@ -110,6 +83,47 @@ func main() {
 			}
 		}
 	}
+}
+
+func parseOption(args []string) (*option, error) {
+	flg := flag.NewFlagSet(args[0], flag.ExitOnError)
+	fileName := flg.String("f", "", "file")
+	directory := flg.String("d", "", "directory")
+	action := flg.String("a", "", "action")
+
+	err := flg.Parse(args[2:])
+	if err != nil {
+		return nil, err
+	}
+
+	if fileName == nil && directory == nil {
+		return nil, errors.New("-f FILE or -d DIRECTORY is required")
+	}
+
+	if *action == "" {
+		return nil, errors.New("-a CLASS#METHOD is required")
+	}
+	var files []string
+	if fileName != nil {
+		files = []string{*fileName}
+	} else {
+		filesInDirectory, err := ioutil.ReadDir(*directory)
+		if err != nil {
+			handleError(err)
+		}
+		files = []string{}
+		for _, f := range filesInDirectory {
+			if f.IsDir() {
+				continue
+			}
+			files = append(files, f.Name())
+		}
+	}
+	return &option{
+		SubCommand: os.Args[1],
+		Action:     *action,
+		Files:      files,
+	}, nil
 }
 
 func convert(n ast.Node) (ast.Node, error) {

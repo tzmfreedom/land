@@ -40,19 +40,28 @@ func (r *TypeResolver) ResolveVariable(names []string) (*builtin.ClassType, erro
 				if err != nil {
 					return nil, err
 				}
+				if instanceField == nil {
+					return nil, fmt.Errorf("Field %s is not found", f)
+				}
 				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
 			}
 			return fieldType, nil
 		}
 		if v, ok := r.Context.ClassTypes.Get(name); ok {
 			n, err := r.findStaticField(v, names[1], MODIFIER_PUBLIC_ONLY)
-			if err == nil {
+			if err != nil {
+				return nil, err
+			}
+			if n != nil {
 				t := n.Type.(*ast.TypeRef)
 				fieldType, _ := r.ResolveType(t.Name)
 				for _, f := range names[2:] {
 					instanceField, err := r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY)
 					if err != nil {
-						return nil, errors.Errorf("%s is not found in this scope", f)
+						return nil, err
+					}
+					if instanceField == nil {
+						return nil, fmt.Errorf("Field %s is not found", f)
 					}
 					fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
 				}
@@ -61,13 +70,20 @@ func (r *TypeResolver) ResolveVariable(names []string) (*builtin.ClassType, erro
 		}
 		if v, ok := r.Context.NameSpaces.Get(name); ok {
 			if classType, ok := v.Get(names[1]); ok {
-				if field, err := r.findStaticField(classType, names[2], MODIFIER_PUBLIC_ONLY); err == nil {
+				field, err := r.findStaticField(classType, names[2], MODIFIER_PUBLIC_ONLY)
+				if err != nil {
+					return nil, err
+				}
+				if field != nil {
 					t := field.Type.(*ast.TypeRef)
 					fieldType, _ := r.ResolveType(t.Name)
 					for _, f := range names[3:] {
 						instanceField, err := r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY)
 						if err != nil {
 							return nil, err
+						}
+						if instanceField == nil {
+							return nil, fmt.Errorf("Field %s is not found", f)
 						}
 						fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
 					}
@@ -76,7 +92,7 @@ func (r *TypeResolver) ResolveVariable(names []string) (*builtin.ClassType, erro
 			}
 		}
 	}
-	return nil, nil
+	return nil, fmt.Errorf("local variable %s is not found", names[0])
 }
 
 func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.ClassType) (*ast.MethodDeclaration, error) {
@@ -263,14 +279,14 @@ func (r *TypeResolver) findInstanceField(classType *builtin.ClassType, fieldName
 	if classType.SuperClass != nil {
 		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
 		if err != nil {
-			return nil, fmt.Errorf("Field %s is not found", fieldName)
+			return nil, err
 		}
 		if allowedModifier == MODIFIER_ALL_OK {
 			allowedModifier = MODIFIER_ALLOW_PROTECTED
 		}
 		return r.findInstanceField(super, fieldName, allowedModifier)
 	}
-	return nil, fmt.Errorf("Field %s is not found", fieldName)
+	return nil, nil
 }
 
 func (r *TypeResolver) findStaticField(classType *builtin.ClassType, fieldName string, allowedModifier int) (*builtin.Field, error) {
@@ -287,14 +303,14 @@ func (r *TypeResolver) findStaticField(classType *builtin.ClassType, fieldName s
 	if classType.SuperClass != nil {
 		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
 		if err != nil {
-			return nil, fmt.Errorf("Field %s is not found", fieldName)
+			return nil, err
 		}
 		if allowedModifier == MODIFIER_ALL_OK {
 			allowedModifier = MODIFIER_ALLOW_PROTECTED
 		}
 		return r.findStaticField(super, fieldName, allowedModifier)
 	}
-	return nil, fmt.Errorf("Field %s is not found", fieldName)
+	return nil, nil
 }
 
 func (r *TypeResolver) searchMethod(methods []ast.Node, parameters []*builtin.ClassType) *ast.MethodDeclaration {

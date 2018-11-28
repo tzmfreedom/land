@@ -43,23 +43,7 @@ func (d *debugger) Debug(ctx *Context, n ast.Node) {
 		}
 		inputs := strings.Split(line, " ")
 		cmd := inputs[0]
-		args := inputs[1:]
 		switch cmd {
-		case "show":
-			if len(args) == 0 {
-				for k, v := range ctx.Env.Data.All() {
-					fmt.Printf("%s => %s\n", k, builtin.String(v))
-				}
-			} else {
-				varName := args[0]
-				resolver := TypeResolver{}
-				obj, err := resolver.ResolveVariable(strings.Split(varName, "."), ctx)
-				if err != nil {
-					fmt.Println(err.Error())
-					continue
-				}
-				fmt.Println(builtin.String(obj))
-			}
 		case "step":
 			d.Step = 1
 			return
@@ -80,6 +64,21 @@ func (d *debugger) Debug(ctx *Context, n ast.Node) {
 			d.StepOut = false
 			d.Enabled = false
 			return
+		default:
+			if cmd == "_" {
+				for k, v := range ctx.Env.Data.All() {
+					fmt.Printf("%s => %s\n", k, builtin.String(v))
+				}
+			} else if cmd != "" {
+				varName := cmd
+				resolver := TypeResolver{}
+				obj, err := resolver.ResolveVariable(strings.Split(varName, "."), ctx)
+				if err != nil {
+					fmt.Println(err.Error())
+					continue
+				}
+				fmt.Println(builtin.String(obj))
+			}
 		}
 	}
 }

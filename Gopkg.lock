@@ -18,6 +18,14 @@
   version = "v1.4"
 
 [[projects]]
+  digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
+  name = "github.com/fsnotify/fsnotify"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
+  version = "v1.4.7"
+
+[[projects]]
   digest = "1:2e3c336fc7fde5c984d2841455a658a6d626450b1754a854b3b32e7a8f49a07a"
   name = "github.com/google/go-cmp"
   packages = [
@@ -76,6 +84,7 @@
   input-imports = [
     "github.com/antlr/antlr4/runtime/Go/antlr",
     "github.com/chzyer/readline",
+    "github.com/fsnotify/fsnotify",
     "github.com/google/go-cmp/cmp",
     "github.com/k0kubun/pp",
     "github.com/pkg/errors",

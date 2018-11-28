@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 
 	"github.com/chzyer/readline"
+	"github.com/fsnotify/fsnotify"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 	"github.com/tzmfreedom/goland/compiler"
@@ -67,7 +68,10 @@ func main() {
 			}
 		}
 		if option.Interactive {
-			interactiveRun(classTypes, option)
+			err = interactiveRun(classTypes, option)
+			if err != nil {
+				handleError(err)
+			}
 		} else {
 			err = run(option.Action, classTypes)
 			if err != nil {
@@ -202,6 +206,40 @@ func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
 	})
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return err
+	}
+	defer watcher.Close()
+
+	ch := make(chan bool, 1)
+	go func() {
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				ch <- true
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					buildFile(interpreter, event.Name)
+				} else if event.Op&fsnotify.Create == fsnotify.Create {
+					buildFile(interpreter, event.Name)
+				}
+				<-ch
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				fmt.Println("error:", err)
+			}
+		}
+	}()
+	err = watcher.Add("./fixtures")
+	if err != nil {
+		return err
+	}
+
 	for {
 		line, err := l.Readline()
 		if err != nil {
@@ -216,24 +254,20 @@ func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
 				fmt.Println("Error: execute command required argument")
 				continue
 			}
+			ch <- true
 			run(args[0], classTypes)
+			<-ch
 		case "reload":
+			ch <- true
 			if len(args) == 0 {
 				reloadAll(interpreter, option.Files)
 			} else {
-				t, err := ast.ParseFile(args[0], preprocessors...)
-				root, err := convert(t)
+				err := buildFile(interpreter, args[0])
 				if err != nil {
-					fmt.Printf("Build Error: %s\n", err.Error())
-					continue
+					fmt.Println(err.Error())
 				}
-				classType, err := register(root)
-				if err = semanticAnalysis(classType); err != nil {
-					fmt.Printf("Build Error: %s\n", err.Error())
-					continue
-				}
-				interpreter.Context.ClassTypes.Set(classType.Name, classType)
 			}
+			<-ch
 		case "run":
 			if len(args) == 0 {
 				fmt.Println("Error: run command required argument")
@@ -250,15 +284,31 @@ func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
 					break
 				}
 			}
+			ch <- true
 			if isReload {
 				lastReloadedAt = time.Now()
 				reloadAll(interpreter, option.Files)
 			}
 			run(args[0], classTypes)
+			<-ch
 		case "exit":
 			return nil
 		}
 	}
+	return nil
+}
+
+func buildFile(interpreter *interpreter.Interpreter, file string) error {
+	t, err := ast.ParseFile(file, preprocessors...)
+	root, err := convert(t)
+	if err != nil {
+		return fmt.Errorf("Build Error: %s\n", err.Error())
+	}
+	classType, err := register(root)
+	if err = semanticAnalysis(classType); err != nil {
+		return fmt.Errorf("Build Error: %s\n", err.Error())
+	}
+	interpreter.Context.ClassTypes.Set(classType.Name, classType)
 	return nil
 }
 

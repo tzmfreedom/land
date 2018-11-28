@@ -210,7 +210,7 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 	}
 	if m.NativeFunction != nil {
 		// set parameter
-		_ = m.NativeFunction(evaluated)
+		_ = m.NativeFunction(receiver, evaluated)
 		Publish("method_end", v.Context, n)
 	} else {
 		prev := v.Context.Env
@@ -248,7 +248,7 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	genericType := []*builtin.ClassType{}
+	genericType := make([]*builtin.ClassType, len(n.Parameters))
 	newObj := &builtin.Object{
 		ClassType:      classType,
 		InstanceFields: builtin.NewObjectMap(),

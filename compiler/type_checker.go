@@ -26,8 +26,8 @@ func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) 
 		for _, f := range n.StaticFields.Data {
 			t, _ := f.Type.Accept(v)
 			e, _ := f.Expression.Accept(v)
-			if t != e {
-				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", builtin.TypeName(e), builtin.TypeName(t)), f.Expression)
+			if !t.(*builtin.ClassType).Equals(e.(*builtin.ClassType)) {
+				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", e.(*builtin.ClassType).String(), t.(*builtin.ClassType).String()), f.Expression)
 			}
 		}
 	}
@@ -36,8 +36,8 @@ func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) 
 		for _, f := range n.InstanceFields.Data {
 			t, _ := f.Type.Accept(v)
 			e, _ := f.Expression.Accept(v)
-			if t != e {
-				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", builtin.TypeName(e), builtin.TypeName(t)), f.Expression)
+			if !t.(*builtin.ClassType).Equals(e.(*builtin.ClassType)) {
+				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", e.(*builtin.ClassType).String(), t.(*builtin.ClassType).String()), f.Expression)
 			}
 		}
 	}
@@ -94,7 +94,7 @@ func (v *TypeChecker) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) 
 	n.Receiver.Accept(v)
 	t, _ := n.Key.Accept(v)
 	if t != builtin.IntegerType && t != builtin.StringType {
-		v.AddError(fmt.Sprintf("array key <%v> must be Integer or string", builtin.TypeName(t)), n.Key)
+		v.AddError(fmt.Sprintf("array key <%v> must be Integer or string", t.(*builtin.ClassType).String()), n.Key)
 	}
 	return nil, nil
 }
@@ -174,7 +174,7 @@ func (v *TypeChecker) VisitForControl(n *ast.ForControl) (interface{}, error) {
 	if n.Expression != nil {
 		t, _ := n.Expression.Accept(v)
 		if t != builtin.BooleanType {
-			v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", builtin.TypeName(t)), n.Expression)
+			v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", t.(*builtin.ClassType).String()), n.Expression)
 		}
 	}
 	return nil, nil
@@ -187,7 +187,7 @@ func (v *TypeChecker) VisitEnhancedForControl(n *ast.EnhancedForControl) (interf
 func (v *TypeChecker) VisitIf(n *ast.If) (interface{}, error) {
 	t, _ := n.Condition.Accept(v)
 	if t != builtin.BooleanType {
-		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", builtin.TypeName(t)), n.Condition)
+		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", t.(*builtin.ClassType).String()), n.Condition)
 	}
 	n.IfStatement.Accept(v)
 	if n.ElseStatement != nil {
@@ -268,7 +268,7 @@ func (v *TypeChecker) VisitNullLiteral(n *ast.NullLiteral) (interface{}, error) 
 func (v *TypeChecker) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, error) {
 	t, _ := n.Expression.Accept(v)
 	if t != builtin.IntegerType {
-		v.AddError(fmt.Sprintf("expression <%s> must be Integer", builtin.TypeName(t)), n.Expression)
+		v.AddError(fmt.Sprintf("expression <%s> must be Integer", t.(*builtin.ClassType).String()), n.Expression)
 	}
 	return nil, nil
 }
@@ -278,10 +278,10 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 	r, _ := n.Right.Accept(v)
 	if n.Op == "+" {
 		if l != builtin.IntegerType && l != builtin.StringType && l != builtin.DoubleType {
-			v.AddError(fmt.Sprintf("expression <%s> must be Integer, String or Double", builtin.TypeName(l)), n.Left)
+			v.AddError(fmt.Sprintf("expression <%s> must be Integer, String or Double", l.(*builtin.ClassType).String()), n.Left)
 		}
 		if (l == builtin.StringType || r == builtin.StringType) && l != r {
-			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", builtin.TypeName(l), builtin.TypeName(r)), n.Left)
+			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", l.(*builtin.ClassType).String(), r.(*builtin.ClassType).String()), n.Left)
 		}
 		if l == builtin.DoubleType || r == builtin.DoubleType {
 			return builtin.DoubleType, nil
@@ -293,9 +293,9 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 	}
 	if n.Op == "-" || n.Op == "*" || n.Op == "/" || n.Op == "%" {
 		if l != builtin.IntegerType && l != builtin.DoubleType {
-			v.AddError(fmt.Sprintf("expression <%s> must be Integer or Double", builtin.TypeName(l)), n.Left)
+			v.AddError(fmt.Sprintf("expression <%s> must be Integer or Double", l.(*builtin.ClassType).String()), n.Left)
 		} else if r != builtin.IntegerType && r != builtin.DoubleType {
-			v.AddError(fmt.Sprintf("expression <%s> must be Integer or Double", builtin.TypeName(r)), n.Right)
+			v.AddError(fmt.Sprintf("expression <%s> must be Integer or Double", r.(*builtin.ClassType).String()), n.Right)
 		}
 		if l == builtin.DoubleType || r == builtin.DoubleType {
 			return builtin.DoubleType, nil
@@ -304,8 +304,8 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		}
 	}
 	if n.Op == "=" || n.Op == "+=" || n.Op == "-=" || n.Op == "*=" || n.Op == "/=" || n.Op == "%=" {
-		if l != r {
-			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", builtin.TypeName(l), builtin.TypeName(r)), n.Left)
+		if !l.(*builtin.ClassType).Equals(r.(*builtin.ClassType)) {
+			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", l.(*builtin.ClassType).String(), r.(*builtin.ClassType).String()), n.Left)
 		}
 		return l, nil
 	}
@@ -319,17 +319,17 @@ func (v *TypeChecker) VisitReturn(n *ast.Return) (interface{}, error) {
 	if v.Context.CurrentMethod.ReturnType == nil {
 		if n.Expression != nil {
 			exp, _ := n.Expression.Accept(v)
-			v.AddError(fmt.Sprintf("return type <%s> does not match void", builtin.TypeName(exp)), n.Expression)
+			v.AddError(fmt.Sprintf("return type <%s> does not match void", exp.(*builtin.ClassType).String()), n.Expression)
 		}
 	} else {
 		retType, _ := v.Context.CurrentMethod.ReturnType.Accept(v)
 		if n.Expression == nil {
-			v.AddError(fmt.Sprintf("return type <void> does not match %v", builtin.TypeName(retType)), n.Expression)
+			v.AddError(fmt.Sprintf("return type <void> does not match %v", retType.(*builtin.ClassType).String()), n.Expression)
 			return nil, nil
 		}
 		exp, _ := n.Expression.Accept(v)
-		if retType != exp {
-			v.AddError(fmt.Sprintf("return type <%s> does not match %v", builtin.TypeName(exp), builtin.TypeName(retType)), n.Expression)
+		if !retType.(*builtin.ClassType).Equals(exp.(*builtin.ClassType)) {
+			v.AddError(fmt.Sprintf("return type <%s> does not match %v", exp.(*builtin.ClassType).String(), retType.(*builtin.ClassType).String()), n.Expression)
 		}
 	}
 	return nil, nil
@@ -380,8 +380,8 @@ func (v *TypeChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (inte
 		t, _ := d.Accept(v)
 		decl := d.(*ast.VariableDeclarator)
 		v.Context.Env.Set(decl.Name, declType.(*builtin.ClassType))
-		if declType != t {
-			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", builtin.TypeName(declType), builtin.TypeName(t)), n.Type)
+		if !declType.(*builtin.ClassType).Equals(t.(*builtin.ClassType)) {
+			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", declType.(*builtin.ClassType).String(), t.(*builtin.ClassType).String()), n.Type)
 		}
 	}
 	return nil, nil
@@ -402,7 +402,7 @@ func (v *TypeChecker) VisitWhenType(n *ast.WhenType) (interface{}, error) {
 func (v *TypeChecker) VisitWhile(n *ast.While) (interface{}, error) {
 	t, _ := n.Condition.Accept(v)
 	if t != builtin.BooleanType {
-		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", builtin.TypeName(t)), n.Condition)
+		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", t.(*builtin.ClassType).String()), n.Condition)
 	}
 	n.Statements.Accept(v)
 	return nil, nil
@@ -428,12 +428,7 @@ func (v *TypeChecker) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) 
 	if !ok {
 		v.AddError(fmt.Sprintf("field <%s> does not exist", n.FieldName), n)
 	}
-	resolver := &TypeResolver{Context: v.Context}
-	t, err := resolver.ResolveType(f.Type.(*ast.TypeRef).Name)
-	if err != nil {
-		// TODO: ErrorHandling
-	}
-	return t, nil
+	return f.Type.(*ast.TypeRef).Accept(v)
 }
 
 func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
@@ -441,6 +436,23 @@ func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
 	t, err := resolver.ResolveType(n.Name)
 	if err != nil {
 		v.AddError(err.Error(), n)
+	}
+	if t.IsGeneric() {
+		types := make([]interface{}, len(n.Parameters))
+		for i, p := range n.Parameters {
+			types[i], err = p.(*ast.TypeRef).Accept(v)
+			if err != nil {
+				v.AddError(err.Error(), n)
+			}
+		}
+		return &builtin.ClassType{
+			Name:            t.Name,
+			InstanceMethods: t.InstanceMethods,
+			StaticMethods:   t.StaticMethods,
+			Extra: map[string]interface{}{
+				"generics": types,
+			},
+		}, nil
 	}
 	return t, nil
 }
@@ -475,12 +487,12 @@ func (v *TypeChecker) VisitSoqlBindVariable(n *ast.SoqlBindVariable) (interface{
 func (v *TypeChecker) VisitTernalyExpression(n *ast.TernalyExpression) (interface{}, error) {
 	c, _ := n.Condition.Accept(v)
 	if c != builtin.BooleanType {
-		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", builtin.TypeName(c)), n.Condition)
+		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", c.(*builtin.ClassType).String()), n.Condition)
 	}
 	t, _ := n.TrueExpression.Accept(v)
 	f, _ := n.FalseExpression.Accept(v)
-	if t != f {
-		v.AddError(fmt.Sprintf("condition does not match %s != %s", builtin.TypeName(t), builtin.TypeName(f)), n.TrueExpression)
+	if !t.(*builtin.ClassType).Equals(f.(*builtin.ClassType)) {
+		v.AddError(fmt.Sprintf("expression does not match %s != %s", t.(*builtin.ClassType).String(), f.(*builtin.ClassType).String()), n.TrueExpression)
 	}
 	return t, nil
 }

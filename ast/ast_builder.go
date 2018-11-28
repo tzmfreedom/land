@@ -426,10 +426,12 @@ func (v *Builder) VisitTypedArray(ctx *parser.TypedArrayContext) interface{} {
 
 func (v *Builder) VisitClassOrInterfaceType(ctx *parser.ClassOrInterfaceTypeContext) interface{} {
 	t := &TypeRef{Location: v.newLocation(ctx)}
-	arguments := ctx.AllTypeArguments()
-	t.Parameters = make([]Node, len(arguments))
-	for i, argument := range arguments {
-		t.Parameters[i] = argument.Accept(v).(Node)
+	if len(ctx.AllTypeArguments()) != 0 {
+		arguments := ctx.TypeArguments(0).Accept(v).([]Node)
+		t.Parameters = make([]Node, len(arguments))
+		for i, argument := range arguments {
+			t.Parameters[i] = argument
+		}
 	}
 	if idents := ctx.AllTypeIdentifier(); len(idents) != 0 {
 		t.Name = make([]string, len(idents))
@@ -1011,8 +1013,8 @@ func (v *Builder) VisitCreator(ctx *parser.CreatorContext) interface{} {
 func (v *Builder) VisitCreatedName(ctx *parser.CreatedNameContext) interface{} {
 	if identifiers := ctx.AllApexIdentifier(); len(identifiers) != 0 {
 		n := &TypeRef{Location: v.newLocation(ctx)}
-		if types := ctx.AllTypeArgumentsOrDiamond(); len(types) != 0 {
-			// n.Parameters = ctx.TypeArgumentsOrDiamond(0).Accept(v)
+		if len(ctx.AllTypeArgumentsOrDiamond()) != 0 {
+			n.Parameters = ctx.TypeArgumentsOrDiamond(0).Accept(v).([]Node)
 		}
 		names := make([]string, len(identifiers))
 		for i, ident := range identifiers {

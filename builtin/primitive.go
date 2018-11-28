@@ -27,6 +27,90 @@ var BooleanType = &ClassType{
 
 var ListType = &ClassType{
 	Name: "List",
+	Modifiers: []ast.Node{
+		&ast.Modifier{
+			Name: "public",
+		},
+	},
+	Constructors: []*ast.ConstructorDeclaration{
+		{
+			Modifiers: []ast.Node{
+				&ast.Modifier{
+					Name: "public",
+				},
+			},
+			Parameters:     []ast.Node{},
+			NativeFunction: func(params []interface{}) {},
+		},
+		{
+			Modifiers: []ast.Node{
+				&ast.Modifier{
+					Name: "public",
+				},
+			},
+			Parameters: []ast.Node{
+				&ast.Parameter{
+					Type: &ast.TypeRef{
+						Name: []string{"List"},
+						Parameters: []ast.Node{
+							&ast.TypeRef{
+								Name: []string{"T:1"},
+							},
+						},
+					},
+					Name: "list",
+				},
+			},
+			NativeFunction: func(params []interface{}) {
+				listObj := params[1].(*Object)
+				listParams := listObj.Extra["records"].([]*Object)
+				newListParams := make([]*Object, len(listParams))
+				for i, listParam := range listParams {
+					newListParams[i] = &Object{
+						ClassType: listParam.ClassType,
+					}
+				}
+				this := params[0].(*Object)
+				this.Extra = map[string]interface{}{
+					"records": newListParams,
+				}
+			},
+		},
+	},
+	InstanceFields: NewFieldMap(),
+	InstanceMethods: &MethodMap{
+		Data: map[string][]ast.Node{
+			"size": {
+				&ast.MethodDeclaration{
+					Name: "size",
+					NativeFunction: func(this interface{}, params []interface{}) interface{} {
+						thisObj := this.(*Object)
+						return len(thisObj.Extra["records"].([]*Object))
+					},
+				},
+			},
+			"isNext": {
+				&ast.MethodDeclaration{
+					Name: "next",
+					NativeFunction: func(this interface{}, params []interface{}) interface{} {
+						thisObj := this.(*Object)
+						counter := thisObj.Extra["counter"].(int)
+						return thisObj.Extra["records"].([]*Object)[counter]
+					},
+				},
+			},
+			"next": {
+				&ast.MethodDeclaration{
+					Name: "next",
+					NativeFunction: func(this interface{}, params []interface{}) interface{} {
+						thisObj := this.(*Object)
+						counter := thisObj.Extra["counter"].(int)
+						return thisObj.Extra["records"].([]*Object)[counter]
+					},
+				},
+			},
+		},
+	},
 }
 
 var MapType = &ClassType{
@@ -44,7 +128,7 @@ var System = &ClassType{
 			"debug": {
 				&ast.MethodDeclaration{
 					Name: "debug",
-					NativeFunction: func(parameter []interface{}) ast.Node {
+					NativeFunction: func(this interface{}, parameter []interface{}) interface{} {
 						o := parameter[0].(*Object)
 						fmt.Println(String(o))
 						return nil

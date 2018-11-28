@@ -163,7 +163,7 @@ type MethodDeclaration struct {
 	Parameters     []Node
 	Throws         []Node
 	Statements     Node
-	NativeFunction func([]interface{}) Node
+	NativeFunction func(interface{}, []interface{}) interface{}
 	Location       *Location
 	Parent         Node
 }
@@ -483,7 +483,7 @@ type ConstructorDeclaration struct {
 	Parameters     []Node
 	Throws         []Node
 	Statements     Node
-	NativeFunction func([]interface{}) Node
+	NativeFunction func([]interface{})
 	Location       *Location
 	Parent         Node
 }

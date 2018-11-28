@@ -1,6 +1,7 @@
 package builtin
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/tzmfreedom/goland/ast"
@@ -18,6 +19,7 @@ type ClassType struct {
 	InstanceMethods  *MethodMap
 	StaticMethods    *MethodMap
 	InnerClasses     *ClassMap
+	Extra            map[string]interface{}
 	Location         *ast.Location
 	Parent           ast.Node
 }
@@ -30,6 +32,47 @@ func (t *ClassType) IsPrimitive() bool {
 		return true
 	}
 	return false
+}
+
+func (t *ClassType) Equals(other *ClassType) bool {
+	if t.IsGeneric() && other.IsGeneric() {
+		if t.Name != other.Name {
+			return false
+		}
+		types := t.Extra["generics"].([]interface{})
+		otherTypes := other.Extra["generics"].([]interface{})
+		if len(types) != len(otherTypes) {
+			return false
+		}
+		for i, classType := range types {
+			if !classType.(*ClassType).Equals(otherTypes[i].(*ClassType)) {
+				return false
+			}
+		}
+		return true
+	}
+	if !t.IsGeneric() && !other.IsGeneric() {
+		return t == other
+	}
+	return false
+}
+
+func (t *ClassType) IsGeneric() bool {
+	return t.Name == "List" ||
+		t.Name == "Map" ||
+		t.Name == "Set"
+}
+
+func (t *ClassType) String() string {
+	if t.IsGeneric() {
+		classTypes := t.Extra["generics"].([]interface{})
+		generics := make([]string, len(classTypes))
+		for i, classType := range classTypes {
+			generics[i] = classType.(*ClassType).String()
+		}
+		return fmt.Sprintf("%s<%s>", t.Name, strings.Join(generics, ", "))
+	}
+	return t.Name
 }
 
 type Field struct {

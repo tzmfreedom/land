@@ -135,6 +135,19 @@ var System = &ClassType{
 					},
 				},
 			},
+			"assertequals": {
+				&ast.MethodDeclaration{
+					Name: "assertequals",
+					NativeFunction: func(this interface{}, parameter []interface{}) interface{} {
+						expected := parameter[0].(*Object)
+						actual := parameter[1].(*Object)
+						if expected.Value() != actual.Value() {
+							fmt.Printf("expected: %s, actual: %s\n", String(expected), String(actual))
+						}
+						return nil
+					},
+				},
+			},
 		},
 	},
 }

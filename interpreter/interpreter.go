@@ -17,6 +17,20 @@ func NewInterpreter(classTypeMap *builtin.ClassMap) *Interpreter {
 	return interpreter
 }
 
+func (v *Interpreter) LoadStaticField() {
+	v.Context.StaticField = NewStaticFieldMap()
+	for className, classType := range v.Context.ClassTypes.Data {
+		objectMap := builtin.NewObjectMap()
+		if classType.StaticFields != nil {
+			for _, f := range classType.StaticFields.Data {
+				val, _ := f.Expression.Accept(v)
+				objectMap.Set(f.Name, val.(*builtin.Object))
+			}
+		}
+		v.Context.StaticField.Set("_", className, objectMap)
+	}
+}
+
 func (v *Interpreter) VisitClassDeclaration(n *ast.ClassDeclaration) (interface{}, error) {
 	panic("not pass")
 	return ast.VisitClassDeclaration(v, n)

@@ -59,25 +59,36 @@ func (e *Env) Set(k string, n *builtin.Object) {
  * StaticFieldMap
  */
 type StaticFieldMap struct {
-	Data map[string]*builtin.ObjectMap
+	Data map[string]map[string]*builtin.ObjectMap
 }
 
 func NewStaticFieldMap() *StaticFieldMap {
 	return &StaticFieldMap{
-		Data: map[string]*builtin.ObjectMap{},
+		Data: map[string]map[string]*builtin.ObjectMap{},
 	}
 }
 
-func (m *StaticFieldMap) Add(k string, n *builtin.Object) {
-	objMap, _ := m.Get(k)
-	objMap.Set(k, n)
+func (m *StaticFieldMap) Add(ns, k, f string, n *builtin.Object) {
+	objMap, _ := m.Get(ns, k)
+	objMap.Set(f, n)
 }
 
-func (m *StaticFieldMap) Set(k string, n *builtin.ObjectMap) {
-	m.Data[strings.ToLower(k)] = n
+func (m *StaticFieldMap) Set(ns, k string, n *builtin.ObjectMap) {
+	ns = strings.ToLower(ns)
+	k = strings.ToLower(k)
+	if _, ok := m.Data[ns]; !ok {
+		m.Data[ns] = map[string]*builtin.ObjectMap{}
+	}
+	m.Data[ns][k] = n
 }
 
-func (m *StaticFieldMap) Get(k string) (*builtin.ObjectMap, bool) {
-	n, ok := m.Data[strings.ToLower(k)]
-	return n, ok
+func (m *StaticFieldMap) Get(ns, k string) (*builtin.ObjectMap, bool) {
+	ns = strings.ToLower(ns)
+	k = strings.ToLower(k)
+	if objMap, ok := m.Data[ns]; ok {
+		if n, ok := objMap[k]; ok {
+			return n, ok
+		}
+	}
+	return nil, false
 }

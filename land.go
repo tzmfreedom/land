@@ -50,6 +50,12 @@ func main() {
 		}
 	}
 	switch option.SubCommand {
+	case "watch":
+		classTypes, err := buildAllFile(trees)
+		if err != nil {
+			handleError(err)
+		}
+		watchAndRunTest(classTypes, option)
 	case "server":
 		classTypes, err := buildAllFile(trees)
 		if err != nil {
@@ -261,7 +267,7 @@ func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
 			if len(args) == 0 {
 				reloadAll(interpreter, option.Files)
 			} else {
-				err := buildFile(interpreter, args[0])
+				_, err := buildFile(interpreter, args[0])
 				if err != nil {
 					fmt.Println(err.Error())
 				}
@@ -297,18 +303,76 @@ func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
 	return nil
 }
 
-func buildFile(interpreter *interpreter.Interpreter, file string) error {
+func watchAndRunTest(classTypes []*builtin.ClassType, option *option) error {
+	interpreter := interpreter.NewInterpreter(builtin.PrimitiveClassMap())
+	for _, classType := range classTypes {
+		interpreter.Context.ClassTypes.Set(classType.Name, classType)
+	}
+
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return err
+	}
+	defer watcher.Close()
+
+	err = watcher.Add("./classes")
+	for {
+		select {
+		case event, ok := <-watcher.Events:
+			if !ok {
+				return err
+			}
+			if event.Op&fsnotify.Write == fsnotify.Write ||
+				event.Op&fsnotify.Create == fsnotify.Create {
+				classType, err := buildFile(interpreter, event.Name)
+				if err != nil {
+					fmt.Printf("Error: %s\n", err.Error())
+				} else {
+					for _, methods := range classType.StaticMethods.Data {
+						for _, m := range methods {
+							decl := m.(*ast.MethodDeclaration)
+							fmt.Println(decl.IsTestMethod())
+							if decl.IsTestMethod() {
+								runAction(interpreter, []string{classType.Name, decl.Name})
+							}
+						}
+					}
+				}
+			}
+		case err, ok := <-watcher.Errors:
+			if !ok {
+				return err
+			}
+			fmt.Println("error:", err)
+		}
+	}
+
+	return err
+}
+
+func runAction(interpreter *interpreter.Interpreter, expression []string) error {
+	invoke := &ast.MethodInvocation{
+		NameOrExpression: &ast.Name{
+			Value: expression,
+		},
+	}
+	interpreter.LoadStaticField()
+	_, err := invoke.Accept(interpreter)
+	return err
+}
+
+func buildFile(interpreter *interpreter.Interpreter, file string) (*builtin.ClassType, error) {
 	t, err := ast.ParseFile(file, preprocessors...)
 	root, err := convert(t)
 	if err != nil {
-		return fmt.Errorf("Build Error: %s\n", err.Error())
+		return nil, fmt.Errorf("Build Error: %s\n", err.Error())
 	}
 	classType, err := register(root)
 	if err = semanticAnalysis(classType); err != nil {
-		return fmt.Errorf("Build Error: %s\n", err.Error())
+		return nil, fmt.Errorf("Build Error: %s\n", err.Error())
 	}
 	interpreter.Context.ClassTypes.Set(classType.Name, classType)
-	return nil
+	return classType, nil
 }
 
 func buildAllFile(trees []ast.Node) ([]*builtin.ClassType, error) {

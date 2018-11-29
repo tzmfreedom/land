@@ -176,31 +176,44 @@ func (v *Builder) VisitClassBodyDeclaration(ctx *parser.ClassBodyDeclarationCont
 		declaration := memberDeclaration.Accept(v)
 
 		modifiers := ctx.AllModifier()
-		declarationModifiers := make([]Node, len(modifiers))
-		for i, m := range modifiers {
-			declarationModifiers[i] = m.Accept(v).(Node)
+		declarationModifiers := []Node{}
+		declarationAnnotations := []Node{}
+		for _, m := range modifiers {
+			n := m.Accept(v)
+			switch n.(type) {
+			case *Modifier:
+				declarationModifiers = append(declarationModifiers, n.(Node))
+			case *Annotation:
+				declarationAnnotations = append(declarationAnnotations, n.(Node))
+			}
 		}
 		switch decl := declaration.(type) {
 		case *MethodDeclaration:
 			decl.Modifiers = declarationModifiers
+			decl.Annotations = declarationAnnotations
 			return decl
 		case *FieldDeclaration:
 			decl.Modifiers = declarationModifiers
+			decl.Annotations = declarationAnnotations
 			return decl
 		case *ConstructorDeclaration:
 			decl.Modifiers = declarationModifiers
+			decl.Annotations = declarationAnnotations
 			return decl
 		case *InterfaceDeclaration:
 			decl.Modifiers = declarationModifiers
+			decl.Annotations = declarationAnnotations
 			return decl
 		case *ClassDeclaration:
 			decl.Modifiers = declarationModifiers
+			decl.Annotations = declarationAnnotations
 			return decl
 		//case *EnumDeclaration:
 		//	decl.Modifiers = declarationModifiers
 		//	return decl
 		case *PropertyDeclaration:
 			decl.Modifiers = declarationModifiers
+			decl.Annotations = declarationAnnotations
 			return decl
 		}
 	}
@@ -302,23 +315,29 @@ func (v *Builder) VisitInterfaceBodyDeclaration(ctx *parser.InterfaceBodyDeclara
 		declaration := memberDeclaration.Accept(v)
 
 		modifiers := ctx.AllModifier()
-		declarationModifiers := make([]Node, len(modifiers)+1)
-		for i, m := range modifiers {
-			declarationModifiers[i] = m.Accept(v).(Node)
-		}
-		declarationModifiers[len(modifiers)] = &Modifier{
-			Name:     "public",
-			Location: v.newLocation(ctx),
+		declarationModifiers := []Node{}
+		declarationAnnotations := []Node{}
+		for _, m := range modifiers {
+			n := m.Accept(v)
+			switch n.(type) {
+			case *Modifier:
+				declarationModifiers = append(declarationModifiers, n.(Node))
+			case *Annotation:
+				declarationAnnotations = append(declarationAnnotations, n.(Node))
+			}
 		}
 		switch decl := declaration.(type) {
 		case *MethodDeclaration:
 			decl.Modifiers = declarationModifiers
+			decl.Annotations = declarationAnnotations
 			return decl
 		case *InterfaceDeclaration:
 			decl.Modifiers = declarationModifiers
+			decl.Annotations = declarationAnnotations
 			return decl
 		case *ClassDeclaration:
 			decl.Modifiers = declarationModifiers
+			decl.Annotations = declarationAnnotations
 			return decl
 		}
 	}

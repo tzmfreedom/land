@@ -96,6 +96,7 @@ type DoubleLiteral struct {
 type FieldDeclaration struct {
 	Type        Node
 	Modifiers   []Node
+	Annotations []Node
 	Declarators []Node
 	Location    *Location
 	Parent      Node
@@ -158,6 +159,7 @@ type If struct {
 
 type MethodDeclaration struct {
 	Name           string
+	Annotations    []Node
 	Modifiers      []Node
 	ReturnType     Node
 	Parameters     []Node
@@ -178,6 +180,19 @@ func (m *MethodDeclaration) IsPrivate() bool {
 
 func (m *MethodDeclaration) IsProtected() bool {
 	return m.Is("protected")
+}
+
+func (m *MethodDeclaration) IsTestMethod() bool {
+	return m.Is("testMethod") || m.IsAnnotated("@isTest")
+}
+
+func (m *MethodDeclaration) IsAnnotated(name string) bool {
+	for _, annotation := range m.Annotations {
+		if annotation.(*Annotation).Name == "isTest" {
+			return true
+		}
+	}
+	return false
 }
 
 func (m *MethodDeclaration) AccessModifier() string {
@@ -420,6 +435,7 @@ type GetterSetter struct {
 
 type PropertyDeclaration struct {
 	Modifiers     []Node
+	Annotations   []Node
 	Type          Node
 	Identifier    string
 	GetterSetters Node
@@ -479,6 +495,7 @@ type Name struct {
 
 type ConstructorDeclaration struct {
 	Modifiers      []Node
+	Annotations    []Node
 	ReturnType     Node
 	Parameters     []Node
 	Throws         []Node

@@ -121,7 +121,7 @@ func parseOption(args []string) (*option, error) {
 		return nil, errors.New("-a CLASS#METHOD is required")
 	}
 	var files []string
-	if fileName != nil {
+	if *fileName != "" {
 		files = []string{*fileName}
 	} else {
 		filesInDirectory, err := ioutil.ReadDir(*directory)
@@ -133,7 +133,7 @@ func parseOption(args []string) (*option, error) {
 			if f.IsDir() {
 				continue
 			}
-			files = append(files, f.Name())
+			files = append(files, fmt.Sprintf("%s/%s", *directory, f.Name()))
 		}
 	}
 	return &option{
@@ -168,7 +168,9 @@ func register(n ast.Node) (*builtin.ClassType, error) {
 func semanticAnalysis(t *builtin.ClassType) error {
 	typeChecker := compiler.NewTypeChecker()
 	typeChecker.Context.ClassTypes = builtin.PrimitiveClassMap()
-	typeChecker.Context.ClassTypes.Set(t.Name, t)
+	for _, class := range classMap.Data {
+		typeChecker.Context.ClassTypes.Set(class.Name, class)
+	}
 	_, err := typeChecker.VisitClassType(t)
 	if len(typeChecker.Errors) != 0 {
 		for _, e := range typeChecker.Errors {

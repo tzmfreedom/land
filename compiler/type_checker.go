@@ -200,6 +200,11 @@ func (v *TypeChecker) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 	v.Context.CurrentMethod = n
 	env := newTypeEnv(nil)
 	v.Context.Env = env
+	classType, ok := v.Context.ClassTypes.Get(n.Parent.(*ast.ClassDeclaration).Name)
+	if !ok {
+		panic("not found")
+	}
+	v.Context.Env.Set("this", classType)
 	for _, param := range n.Parameters {
 		p := param.(*ast.Parameter)
 		t, _ := p.Type.Accept(v)

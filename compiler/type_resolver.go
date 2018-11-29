@@ -327,7 +327,8 @@ func (r *TypeResolver) searchMethod(methods []ast.Node, parameters []*builtin.Cl
 		match := true
 		for i, p := range m.Parameters {
 			inputParam := parameters[i]
-			methodParam, _ := r.ResolveType(p.(*ast.TypeRef).Name)
+			typeRef := p.(*ast.Parameter).Type.(*ast.TypeRef)
+			methodParam, _ := r.ResolveType(typeRef.Name)
 			if inputParam != methodParam {
 				match = false
 				break

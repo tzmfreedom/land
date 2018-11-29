@@ -1441,7 +1441,6 @@ func TestResolveMethod(t *testing.T) {
 		},
 	}
 	for i, testCase := range testCases {
-		pp.Println(i)
 		typeResolver := &TypeResolver{Context: testCase.Context}
 		actual, err := typeResolver.ResolveMethod(testCase.Input, []*builtin.ClassType{})
 		if testCase.Error == nil && err != nil {

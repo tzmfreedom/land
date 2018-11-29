@@ -17,6 +17,7 @@ import (
 	"github.com/tzmfreedom/goland/builtin"
 	"github.com/tzmfreedom/goland/compiler"
 	"github.com/tzmfreedom/goland/interpreter"
+	"github.com/tzmfreedom/goland/server"
 	"github.com/tzmfreedom/goland/visitor"
 )
 
@@ -49,23 +50,20 @@ func main() {
 		}
 	}
 	switch option.SubCommand {
+	case "server":
+		classTypes, err := buildAllFile(trees)
+		if err != nil {
+			handleError(err)
+		}
+		server.Run(classTypes)
 	case "format":
 		for _, t := range trees {
 			tos(t)
 		}
 	case "run":
-		classTypes := make([]*builtin.ClassType, len(trees))
-		for i, t := range trees {
-			root, err := convert(t)
-			if err != nil {
-				handleError(err)
-			}
-			classTypes[i], err = register(root)
-		}
-		for _, t := range classTypes {
-			if err = semanticAnalysis(t); err != nil {
-				handleError(err)
-			}
+		classTypes, err := buildAllFile(trees)
+		if err != nil {
+			handleError(err)
 		}
 		if option.Interactive {
 			err = interactiveRun(classTypes, option)
@@ -189,6 +187,7 @@ func run(action string, classTypes []*builtin.ClassType) error {
 			Value: []string{args[0], method},
 		},
 	}
+	interpreter.LoadStaticField()
 	_, err := invoke.Accept(interpreter)
 	return err
 }
@@ -310,6 +309,23 @@ func buildFile(interpreter *interpreter.Interpreter, file string) error {
 	}
 	interpreter.Context.ClassTypes.Set(classType.Name, classType)
 	return nil
+}
+
+func buildAllFile(trees []ast.Node) ([]*builtin.ClassType, error) {
+	classTypes := make([]*builtin.ClassType, len(trees))
+	for i, t := range trees {
+		root, err := convert(t)
+		if err != nil {
+			return nil, err
+		}
+		classTypes[i], err = register(root)
+	}
+	for _, t := range classTypes {
+		if err := semanticAnalysis(t); err != nil {
+			return nil, err
+		}
+	}
+	return classTypes, nil
 }
 
 func reloadAll(interpreter *interpreter.Interpreter, files []string) {

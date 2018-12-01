@@ -12,7 +12,6 @@ import (
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 	"github.com/tzmfreedom/goland/interpreter"
-	"github.com/tzmfreedom/goland/compiler"
 )
 
 type Server struct {

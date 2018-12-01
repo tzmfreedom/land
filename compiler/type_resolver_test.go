@@ -1440,7 +1440,7 @@ func TestResolveMethod(t *testing.T) {
 			errors.New("Method access modifier must be public but private"),
 		},
 	}
-	for i, testCase := range testCases {
+	for _, testCase := range testCases {
 		typeResolver := &TypeResolver{Context: testCase.Context}
 		actual, err := typeResolver.ResolveMethod(testCase.Input, []*builtin.ClassType{})
 		if testCase.Error == nil && err != nil {

@@ -15,32 +15,20 @@ func TestTypeChecker(t *testing.T) {
 	}{
 		// Array Access
 		{
-			&builtin.ClassType{
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]ast.Node{
-						"foo": {
-							&ast.MethodDeclaration{
-								Statements: &ast.Block{
-									Statements: []ast.Node{
-										&ast.ArrayAccess{
-											Receiver: &ast.IntegerLiteral{},
-											Key:      &ast.IntegerLiteral{},
-										},
-										&ast.ArrayAccess{
-											Receiver: &ast.IntegerLiteral{},
-											Key:      &ast.StringLiteral{},
-										},
-										&ast.ArrayAccess{
-											Receiver: &ast.IntegerLiteral{},
-											Key:      &ast.BooleanLiteral{},
-										},
-									},
-								},
-							},
-						},
-					},
+			newTestClassType([]ast.Node{
+				&ast.ArrayAccess{
+					Receiver: &ast.IntegerLiteral{},
+					Key:      &ast.IntegerLiteral{},
 				},
-			},
+				&ast.ArrayAccess{
+					Receiver: &ast.IntegerLiteral{},
+					Key:      &ast.StringLiteral{},
+				},
+				&ast.ArrayAccess{
+					Receiver: &ast.IntegerLiteral{},
+					Key:      &ast.BooleanLiteral{},
+				},
+			}),
 			[]*Error{
 				{
 					Message: "array key <Boolean> must be Integer or string",
@@ -49,40 +37,28 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// If, Else
 		{
-			&builtin.ClassType{
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]ast.Node{
-						"foo": {
-							&ast.MethodDeclaration{
-								Statements: &ast.Block{
-									Statements: []ast.Node{
-										&ast.If{
-											Condition:     &ast.BooleanLiteral{},
-											IfStatement:   &ast.Block{},
-											ElseStatement: &ast.Block{},
-										},
-										&ast.If{
-											Condition:     &ast.StringLiteral{},
-											IfStatement:   &ast.Block{},
-											ElseStatement: &ast.Block{},
-										},
-										&ast.If{
-											Condition:     &ast.IntegerLiteral{},
-											IfStatement:   &ast.Block{},
-											ElseStatement: &ast.Block{},
-										},
-										&ast.If{
-											Condition:     &ast.DoubleLiteral{},
-											IfStatement:   &ast.Block{},
-											ElseStatement: &ast.Block{},
-										},
-									},
-								},
-							},
-						},
-					},
+			newTestClassType([]ast.Node{
+				&ast.If{
+					Condition:     &ast.BooleanLiteral{},
+					IfStatement:   &ast.Block{},
+					ElseStatement: &ast.Block{},
 				},
-			},
+				&ast.If{
+					Condition:     &ast.StringLiteral{},
+					IfStatement:   &ast.Block{},
+					ElseStatement: &ast.Block{},
+				},
+				&ast.If{
+					Condition:     &ast.IntegerLiteral{},
+					IfStatement:   &ast.Block{},
+					ElseStatement: &ast.Block{},
+				},
+				&ast.If{
+					Condition:     &ast.DoubleLiteral{},
+					IfStatement:   &ast.Block{},
+					ElseStatement: &ast.Block{},
+				},
+			}),
 			[]*Error{
 				{
 					Message: "condition <Double> must be Boolean expression",
@@ -97,36 +73,24 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// While
 		{
-			&builtin.ClassType{
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]ast.Node{
-						"foo": {
-							&ast.MethodDeclaration{
-								Statements: &ast.Block{
-									Statements: []ast.Node{
-										&ast.While{
-											Condition:  &ast.BooleanLiteral{},
-											Statements: &ast.Block{},
-										},
-										&ast.While{
-											Condition:  &ast.StringLiteral{},
-											Statements: &ast.Block{},
-										},
-										&ast.While{
-											Condition:  &ast.IntegerLiteral{},
-											Statements: &ast.Block{},
-										},
-										&ast.While{
-											Condition:  &ast.DoubleLiteral{},
-											Statements: &ast.Block{},
-										},
-									},
-								},
-							},
-						},
-					},
+			newTestClassType([]ast.Node{
+				&ast.While{
+					Condition:  &ast.BooleanLiteral{},
+					Statements: &ast.Block{},
 				},
-			},
+				&ast.While{
+					Condition:  &ast.StringLiteral{},
+					Statements: &ast.Block{},
+				},
+				&ast.While{
+					Condition:  &ast.IntegerLiteral{},
+					Statements: &ast.Block{},
+				},
+				&ast.While{
+					Condition:  &ast.DoubleLiteral{},
+					Statements: &ast.Block{},
+				},
+			}),
 			[]*Error{
 				{
 					Message: "condition <Double> must be Boolean expression",
@@ -141,40 +105,28 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// Ternaly
 		{
-			&builtin.ClassType{
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]ast.Node{
-						"foo": {
-							&ast.MethodDeclaration{
-								Statements: &ast.Block{
-									Statements: []ast.Node{
-										&ast.TernalyExpression{
-											Condition:       &ast.BooleanLiteral{},
-											TrueExpression:  &ast.IntegerLiteral{},
-											FalseExpression: &ast.IntegerLiteral{},
-										},
-										&ast.TernalyExpression{
-											Condition:       &ast.StringLiteral{},
-											TrueExpression:  &ast.IntegerLiteral{},
-											FalseExpression: &ast.IntegerLiteral{},
-										},
-										&ast.TernalyExpression{
-											Condition:       &ast.IntegerLiteral{},
-											TrueExpression:  &ast.IntegerLiteral{},
-											FalseExpression: &ast.IntegerLiteral{},
-										},
-										&ast.TernalyExpression{
-											Condition:       &ast.DoubleLiteral{},
-											TrueExpression:  &ast.IntegerLiteral{},
-											FalseExpression: &ast.IntegerLiteral{},
-										},
-									},
-								},
-							},
-						},
-					},
+			newTestClassType([]ast.Node{
+				&ast.TernalyExpression{
+					Condition:       &ast.BooleanLiteral{},
+					TrueExpression:  &ast.IntegerLiteral{},
+					FalseExpression: &ast.IntegerLiteral{},
 				},
-			},
+				&ast.TernalyExpression{
+					Condition:       &ast.StringLiteral{},
+					TrueExpression:  &ast.IntegerLiteral{},
+					FalseExpression: &ast.IntegerLiteral{},
+				},
+				&ast.TernalyExpression{
+					Condition:       &ast.IntegerLiteral{},
+					TrueExpression:  &ast.IntegerLiteral{},
+					FalseExpression: &ast.IntegerLiteral{},
+				},
+				&ast.TernalyExpression{
+					Condition:       &ast.DoubleLiteral{},
+					TrueExpression:  &ast.IntegerLiteral{},
+					FalseExpression: &ast.IntegerLiteral{},
+				},
+			}),
 			[]*Error{
 				{
 					Message: "condition <Double> must be Boolean expression",
@@ -190,6 +142,7 @@ func TestTypeChecker(t *testing.T) {
 		// Return Type
 		{
 			&builtin.ClassType{
+				Name: "klass",
 				InstanceMethods: &builtin.MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
@@ -201,6 +154,9 @@ func TestTypeChecker(t *testing.T) {
 											Expression: &ast.StringLiteral{},
 										},
 									},
+								},
+								Parent: &ast.ClassDeclaration{
+									Name: "klass",
 								},
 							},
 						},
@@ -214,6 +170,9 @@ func TestTypeChecker(t *testing.T) {
 										},
 									},
 								},
+								Parent: &ast.ClassDeclaration{
+									Name: "klass",
+								},
 							},
 						},
 						"baz": {
@@ -226,6 +185,9 @@ func TestTypeChecker(t *testing.T) {
 										},
 									},
 								},
+								Parent: &ast.ClassDeclaration{
+									Name: "klass",
+								},
 							},
 						},
 						"qux": {
@@ -237,6 +199,9 @@ func TestTypeChecker(t *testing.T) {
 											Expression: &ast.BooleanLiteral{},
 										},
 									},
+								},
+								Parent: &ast.ClassDeclaration{
+									Name: "klass",
 								},
 							},
 						},
@@ -257,52 +222,40 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// For
 		{
-			&builtin.ClassType{
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]ast.Node{
-						"foo": {
-							&ast.MethodDeclaration{
-								Statements: &ast.Block{
-									Statements: []ast.Node{
-										func() *ast.For {
-											t := &ast.For{
-												Control: &ast.ForControl{
-													Expression: &ast.IntegerLiteral{},
-												},
-											}
-											b := &ast.Block{
-												Statements: []ast.Node{},
-												Parent:     t,
-											}
-											b.Statements = append(b.Statements, &ast.Break{Parent: b})
-											b.Statements = append(b.Statements, &ast.Continue{Parent: b})
-											t.Statements = b
-											return t
-										}(),
-										&ast.For{
-											Control: &ast.ForControl{
-												Expression: &ast.StringLiteral{},
-											},
-										},
-										&ast.For{
-											Control: &ast.ForControl{
-												Expression: &ast.DoubleLiteral{},
-											},
-										},
-										&ast.For{
-											Control: &ast.ForControl{
-												Expression: &ast.BooleanLiteral{},
-											},
-										},
-										&ast.Break{},
-										&ast.Continue{},
-									},
-								},
-							},
+			newTestClassType([]ast.Node{
+				func() *ast.For {
+					t := &ast.For{
+						Control: &ast.ForControl{
+							Expression: &ast.IntegerLiteral{},
 						},
+					}
+					b := &ast.Block{
+						Statements: []ast.Node{},
+						Parent:     t,
+					}
+					b.Statements = append(b.Statements, &ast.Break{Parent: b})
+					b.Statements = append(b.Statements, &ast.Continue{Parent: b})
+					t.Statements = b
+					return t
+				}(),
+				&ast.For{
+					Control: &ast.ForControl{
+						Expression: &ast.StringLiteral{},
 					},
 				},
-			},
+				&ast.For{
+					Control: &ast.ForControl{
+						Expression: &ast.DoubleLiteral{},
+					},
+				},
+				&ast.For{
+					Control: &ast.ForControl{
+						Expression: &ast.BooleanLiteral{},
+					},
+				},
+				&ast.Break{},
+				&ast.Continue{},
+			}),
 			[]*Error{
 				{
 					Message: "break must be in for/while loop",
@@ -323,32 +276,20 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// Unary Operator
 		{
-			&builtin.ClassType{
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]ast.Node{
-						"foo": {
-							&ast.MethodDeclaration{
-								Statements: &ast.Block{
-									Statements: []ast.Node{
-										&ast.UnaryOperator{
-											Expression: &ast.IntegerLiteral{},
-										},
-										&ast.UnaryOperator{
-											Expression: &ast.StringLiteral{},
-										},
-										&ast.UnaryOperator{
-											Expression: &ast.DoubleLiteral{},
-										},
-										&ast.UnaryOperator{
-											Expression: &ast.BooleanLiteral{},
-										},
-									},
-								},
-							},
-						},
-					},
+			newTestClassType([]ast.Node{
+				&ast.UnaryOperator{
+					Expression: &ast.IntegerLiteral{},
 				},
-			},
+				&ast.UnaryOperator{
+					Expression: &ast.StringLiteral{},
+				},
+				&ast.UnaryOperator{
+					Expression: &ast.DoubleLiteral{},
+				},
+				&ast.UnaryOperator{
+					Expression: &ast.BooleanLiteral{},
+				},
+			}),
 			[]*Error{
 				{
 					Message: "expression <Boolean> must be Integer",
@@ -364,6 +305,7 @@ func TestTypeChecker(t *testing.T) {
 		// Variable Declaration, Variable Assignment
 		{
 			&builtin.ClassType{
+				Name: "klass",
 				InstanceMethods: &builtin.MethodMap{
 					Data: map[string][]ast.Node{
 						"foo": {
@@ -400,6 +342,9 @@ func TestTypeChecker(t *testing.T) {
 										},
 									},
 								},
+								Parent: &ast.ClassDeclaration{
+									Name: "klass",
+								},
 							},
 						},
 					},
@@ -416,86 +361,74 @@ func TestTypeChecker(t *testing.T) {
 		},
 		//
 		{
-			&builtin.ClassType{
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]ast.Node{
-						"foo": {
-							&ast.MethodDeclaration{
-								Statements: &ast.Block{
-									Statements: []ast.Node{
-										&ast.BinaryOperator{
-											Op:    "+",
-											Left:  &ast.IntegerLiteral{},
-											Right: &ast.IntegerLiteral{},
-										},
-										&ast.BinaryOperator{
-											Op:    "-",
-											Left:  &ast.IntegerLiteral{},
-											Right: &ast.IntegerLiteral{},
-										},
-										&ast.BinaryOperator{
-											Op:    "*",
-											Left:  &ast.IntegerLiteral{},
-											Right: &ast.IntegerLiteral{},
-										},
-										&ast.BinaryOperator{
-											Op:    "/",
-											Left:  &ast.IntegerLiteral{},
-											Right: &ast.IntegerLiteral{},
-										},
-										&ast.BinaryOperator{
-											Op:    "%",
-											Left:  &ast.IntegerLiteral{},
-											Right: &ast.IntegerLiteral{},
-										},
-										// failure
-										&ast.BinaryOperator{
-											Op:    "+",
-											Left:  &ast.StringLiteral{},
-											Right: &ast.IntegerLiteral{},
-										},
-										// failure
-										&ast.BinaryOperator{
-											Op:    "-",
-											Left:  &ast.StringLiteral{},
-											Right: &ast.IntegerLiteral{},
-										},
-										// failure
-										&ast.BinaryOperator{
-											Op:    "*",
-											Left:  &ast.StringLiteral{},
-											Right: &ast.IntegerLiteral{},
-										},
-										// failure
-										&ast.BinaryOperator{
-											Op:    "/",
-											Left:  &ast.StringLiteral{},
-											Right: &ast.IntegerLiteral{},
-										},
-										// failure
-										&ast.BinaryOperator{
-											Op:    "%",
-											Left:  &ast.StringLiteral{},
-											Right: &ast.IntegerLiteral{},
-										},
-										&ast.BinaryOperator{
-											Op:    "+",
-											Left:  &ast.StringLiteral{},
-											Right: &ast.StringLiteral{},
-										},
-										// failure
-										&ast.BinaryOperator{
-											Op:    "+",
-											Left:  &ast.BooleanLiteral{},
-											Right: &ast.BooleanLiteral{},
-										},
-									},
-								},
-							},
-						},
-					},
+			newTestClassType([]ast.Node{
+				&ast.BinaryOperator{
+					Op:    "+",
+					Left:  &ast.IntegerLiteral{},
+					Right: &ast.IntegerLiteral{},
 				},
-			},
+				&ast.BinaryOperator{
+					Op:    "-",
+					Left:  &ast.IntegerLiteral{},
+					Right: &ast.IntegerLiteral{},
+				},
+				&ast.BinaryOperator{
+					Op:    "*",
+					Left:  &ast.IntegerLiteral{},
+					Right: &ast.IntegerLiteral{},
+				},
+				&ast.BinaryOperator{
+					Op:    "/",
+					Left:  &ast.IntegerLiteral{},
+					Right: &ast.IntegerLiteral{},
+				},
+				&ast.BinaryOperator{
+					Op:    "%",
+					Left:  &ast.IntegerLiteral{},
+					Right: &ast.IntegerLiteral{},
+				},
+				// failure
+				&ast.BinaryOperator{
+					Op:    "+",
+					Left:  &ast.StringLiteral{},
+					Right: &ast.IntegerLiteral{},
+				},
+				// failure
+				&ast.BinaryOperator{
+					Op:    "-",
+					Left:  &ast.StringLiteral{},
+					Right: &ast.IntegerLiteral{},
+				},
+				// failure
+				&ast.BinaryOperator{
+					Op:    "*",
+					Left:  &ast.StringLiteral{},
+					Right: &ast.IntegerLiteral{},
+				},
+				// failure
+				&ast.BinaryOperator{
+					Op:    "/",
+					Left:  &ast.StringLiteral{},
+					Right: &ast.IntegerLiteral{},
+				},
+				// failure
+				&ast.BinaryOperator{
+					Op:    "%",
+					Left:  &ast.StringLiteral{},
+					Right: &ast.IntegerLiteral{},
+				},
+				&ast.BinaryOperator{
+					Op:    "+",
+					Left:  &ast.StringLiteral{},
+					Right: &ast.StringLiteral{},
+				},
+				// failure
+				&ast.BinaryOperator{
+					Op:    "+",
+					Left:  &ast.BooleanLiteral{},
+					Right: &ast.BooleanLiteral{},
+				},
+			}),
 			[]*Error{
 				{
 					Message: "expression <Boolean> must be Integer, String or Double",
@@ -521,7 +454,7 @@ func TestTypeChecker(t *testing.T) {
 	for _, testCase := range testCases {
 		checker := NewTypeChecker()
 		checker.Context = &Context{}
-		checker.Context.ClassTypes = builtin.PrimitiveClassMap()
+		checker.Context.ClassTypes = builtin.NewClassMapWithPrimivie([]*builtin.ClassType{testCase.Input})
 		checker.VisitClassType(testCase.Input)
 
 		messages := make([]string, len(checker.Errors))
@@ -542,5 +475,25 @@ func TestTypeChecker(t *testing.T) {
 				}
 			}
 		}
+	}
+}
+
+func newTestClassType(statements []ast.Node) *builtin.ClassType {
+	return &builtin.ClassType{
+		Name: "klass",
+		InstanceMethods: &builtin.MethodMap{
+			Data: map[string][]ast.Node{
+				"foo": {
+					&ast.MethodDeclaration{
+						Statements: &ast.Block{
+							Statements: statements,
+						},
+						Parent: &ast.ClassDeclaration{
+							Name: "klass",
+						},
+					},
+				},
+			},
+		},
 	}
 }

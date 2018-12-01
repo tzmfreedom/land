@@ -152,6 +152,14 @@ var System = &ClassType{
 	},
 }
 
+func NewClassMapWithPrimivie(classTypes []*ClassType) *ClassMap{
+	classMap := PrimitiveClassMap()
+	for _, classType := range classTypes {
+		classMap.Set(classType.Name, classType)
+	}
+	return classMap
+}
+
 func PrimitiveClassMap() *ClassMap {
 	return &ClassMap{
 		Data: map[string]*ClassType{

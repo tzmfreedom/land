@@ -2,8 +2,22 @@ language: go
 go:
 - '1.11'
 before_install:
-  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+- curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 install:
-  - dep ensure
+- make deps
 script:
-  - make test
+- make test
+before_deploy:
+- make cross-build
+- make dist
+deploy:
+  provider: releases
+  api_key:
+    secure: Z35/53kEJt0je9j18nOtuMSi4s0tmiPhVrThozzBN0nM7GodOkrWijTRhdkcOwPpn2Osqbtp9eb1Qc6RYc7WB7bdJ1QT3spD6AeehI6JOdde34NYAhlBl5bAXITXiIyXmCSoBEgTE6bb2rdJTe6jWGAtp+mwmCu66NzYeyho0t8bJAqLuxdwSavFwPyfxE228X4yFLss841PxBOqx2WBn9Z/VmBBY83HFQqHv7WxJ+RZMnHdEb8jilJv2rletFciQTP3V/ybjU7I0fw1cLF6Hdp+nwUVfW+PUb4t++SZNCx86EQFS+0Qr7fHqbRxwG6gb2+qOssJPeXOY/yENjh8II+mzjFpv/dFiEhdRaSG5InuIWBccGhluZvy84DJAGCNGsX6Nxw2X3NcLpk+hd6hdc0j2asnGSfb79NEFmeBmgY/l9SOfpbiWxuuVUx/x/LKqKAgV+DChQnLjoVzfTWmg2k1KYHlqJQZ6ASt/Y/NZLqATOj9TsuDcsiMMrwVvcxZMopAvu+YnUa/CGFYPPWr94AoIhe81+oz2cMUUfdGJgv+MW5s0ro916ixaidhvzjz5sZK5xRWrHU1PfALMRPRlvhB923vyO92Kxw/evZB0YAWrf1ikLlawD9YVxIeHRqbG2btKWxiaLmji4kX9VfDQYxr34Eo/u1HHsPKsM+48Ew=
+  skip_cleanup: true
+  overwrite: true
+  file_glob: true
+  file: dist/*.{tar.gz}
+  on:
+    repo: tzmfreedom/goland
+    tags: true

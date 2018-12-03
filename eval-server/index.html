@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
+
+    <!-- jQuery -->
+    <script
+            src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+
+    <script>
+        $(function(){
+            var Base64 = {
+                encode: function(str) {
+                    return btoa(unescape(encodeURIComponent(str)));
+                },
+                decode: function(str) {
+                    return decodeURIComponent(escape(atob(str)));
+                }
+            };
+
+            $("#submit").click(function(){
+                var code = $("#code").val();
+                $.post({
+                    url: "/eval",
+                    data: JSON.stringify({
+                        Method: "action",
+                        String: Base64.encode(code)
+                    }),
+                    dataType: 'json',
+                }).then(function(result, success){
+                    if (result.String !== "") {
+                        $("#result").text(Base64.decode(result.String));
+                    }
+                });
+                return false;
+            });
+        });
+    </script>
+    <title>LAND playground</title>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <h1 class="col-sm-12">LAND PlayGround</h1>
+    </div>
+    <div class="row">
+        <div class="col-sm-8">
+            <form>
+                <textarea id="code" rows="20" class="form-control"></textarea>
+                <button id="submit" type="submit"
+                        class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+        <pre id="result" class="col-sm-4"></pre>
+    </div>
+    <!-- Content here -->
+</div>
+</body>
+</html>

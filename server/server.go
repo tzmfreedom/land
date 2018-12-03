@@ -92,6 +92,8 @@ func (s *EvalServer) Run() {
 	http.HandleFunc("/eval", func(w http.ResponseWriter, r *http.Request) {
 		eval(w, r)
 	})
+	http.Handle("/", http.FileServer(http.Dir("eval-server")))
+
 	port := "8080"
 	if os.Getenv("PORT") != "" {
 		port = os.Getenv("PORT")

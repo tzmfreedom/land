@@ -10,9 +10,9 @@ type TosVisitor struct {
 }
 
 func (v *TosVisitor) AddIndent(f func()) {
-	v.Indent += 2
+	v.Indent += 4
 	f()
-	v.Indent -= 2
+	v.Indent -= 4
 }
 
 func (v *TosVisitor) withIndent(src string) string {
@@ -328,7 +328,7 @@ func (v *TosVisitor) VisitMethodDeclaration(n *MethodDeclaration) (interface{}, 
 		r, _ := m.Accept(v)
 		modifiers[i] = r.(string)
 	}
-	returnType := ""
+	returnType := "void"
 	if n.ReturnType != nil {
 		r, _ := n.ReturnType.Accept(v)
 		returnType = r.(string)

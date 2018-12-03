@@ -1,6 +1,7 @@
 package interpreter
 
 import (
+	"io"
 	"strings"
 
 	"github.com/tzmfreedom/goland/ast"
@@ -15,6 +16,9 @@ type Context struct {
 
 	CurrentMethod *ast.MethodDeclaration
 	CurrentClass  *builtin.ClassType
+
+	Stdout io.Writer
+	Stderr io.Writer
 }
 
 func NewContext() *Context {

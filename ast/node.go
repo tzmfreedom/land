@@ -158,14 +158,15 @@ type If struct {
 }
 
 type MethodDeclaration struct {
-	Name           string
-	Annotations    []Node
-	Modifiers      []Node
-	ReturnType     Node
-	Parameters     []Node
-	Throws         []Node
-	Statements     Node
-	NativeFunction func(interface{}, []interface{}) interface{}
+	Name        string
+	Annotations []Node
+	Modifiers   []Node
+	ReturnType  Node
+	Parameters  []Node
+	Throws      []Node
+	Statements  Node
+	// func(receiver, value, options)
+	NativeFunction func(interface{}, []interface{}, ...interface{}) interface{}
 	Location       *Location
 	Parent         Node
 }

@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/tzmfreedom/goland/ast"
@@ -83,7 +84,7 @@ var ListType = &ClassType{
 			"size": {
 				&ast.MethodDeclaration{
 					Name: "size",
-					NativeFunction: func(this interface{}, params []interface{}) interface{} {
+					NativeFunction: func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 						thisObj := this.(*Object)
 						return len(thisObj.Extra["records"].([]*Object))
 					},
@@ -92,7 +93,7 @@ var ListType = &ClassType{
 			"isNext": {
 				&ast.MethodDeclaration{
 					Name: "next",
-					NativeFunction: func(this interface{}, params []interface{}) interface{} {
+					NativeFunction: func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 						thisObj := this.(*Object)
 						counter := thisObj.Extra["counter"].(int)
 						return thisObj.Extra["records"].([]*Object)[counter]
@@ -102,7 +103,7 @@ var ListType = &ClassType{
 			"next": {
 				&ast.MethodDeclaration{
 					Name: "next",
-					NativeFunction: func(this interface{}, params []interface{}) interface{} {
+					NativeFunction: func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 						thisObj := this.(*Object)
 						counter := thisObj.Extra["counter"].(int)
 						return thisObj.Extra["records"].([]*Object)[counter]
@@ -128,9 +129,10 @@ var System = &ClassType{
 			"debug": {
 				&ast.MethodDeclaration{
 					Name: "debug",
-					NativeFunction: func(this interface{}, parameter []interface{}) interface{} {
+					NativeFunction: func(this interface{}, parameter []interface{}, options ...interface{}) interface{} {
 						o := parameter[0].(*Object)
-						fmt.Println(String(o))
+						stdout := options[0].(io.Writer)
+						fmt.Fprintln(stdout, String(o))
 						return nil
 					},
 				},
@@ -138,7 +140,7 @@ var System = &ClassType{
 			"assertequals": {
 				&ast.MethodDeclaration{
 					Name: "assertequals",
-					NativeFunction: func(this interface{}, parameter []interface{}) interface{} {
+					NativeFunction: func(this interface{}, parameter []interface{}, options ...interface{}) interface{} {
 						expected := parameter[0].(*Object)
 						actual := parameter[1].(*Object)
 						if expected.Value() != actual.Value() {

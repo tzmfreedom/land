@@ -1,12 +1,16 @@
 package interpreter
 
 import (
+	"io"
+
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 )
 
 type Interpreter struct {
 	Context *Context
+	Stdout  io.Writer
+	Stderr  io.Writer
 }
 
 func NewInterpreter(classTypeMap *builtin.ClassMap) *Interpreter {
@@ -224,7 +228,7 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 	}
 	if m.NativeFunction != nil {
 		// set parameter
-		_ = m.NativeFunction(receiver, evaluated)
+		_ = m.NativeFunction(receiver, evaluated, v.Stdout, v.Stderr)
 		Publish("method_end", v.Context, n)
 	} else {
 		prev := v.Context.Env

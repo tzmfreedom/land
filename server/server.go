@@ -4,13 +4,17 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"os"
 
 	"encoding/json"
 
 	"regexp"
 
+	"encoding/base64"
+
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
+	"github.com/tzmfreedom/goland/compiler"
 	"github.com/tzmfreedom/goland/interpreter"
 )
 
@@ -18,10 +22,71 @@ type Server struct {
 	ClassTypes []*builtin.ClassType
 }
 
+type EvalRequest struct {
+	String string
+	Method string
+}
+
+type EvalResult struct {
+	String string
+}
+
 func (s *Server) Run() {
 	classMap := builtin.NewClassMapWithPrimivie(s.ClassTypes)
 	interpreter := interpreter.NewInterpreter(classMap)
 
+	http.HandleFunc("/eval", func(w http.ResponseWriter, r *http.Request) {
+		req := &EvalRequest{}
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(r.Body)
+		json.Unmarshal(buf.Bytes(), &req)
+		b, err := base64.StdEncoding.DecodeString(req.String)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error")
+		}
+		root, err := ast.ParseString(string(b))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error")
+		}
+		register := &compiler.ClassRegisterVisitor{}
+		t, err := root.Accept(register)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error")
+		}
+		classType := t.(*builtin.ClassType)
+		classMap.Set(classType.Name, classType)
+		typeChecker := compiler.NewTypeChecker()
+		typeChecker.Context.ClassTypes = classMap
+		_, err = typeChecker.VisitClassType(classType)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error")
+		}
+		if len(typeChecker.Errors) != 0 {
+			for _, e := range typeChecker.Errors {
+				fmt.Fprintf(os.Stderr, "%s\n", e.Message)
+			}
+		}
+		invoke := &ast.MethodInvocation{
+			NameOrExpression: &ast.Name{
+				Value: []string{classType.Name, req.Method},
+			},
+		}
+		interpreter.LoadStaticField()
+		stdout := new(bytes.Buffer)
+		interpreter.Stdout = stdout
+		interpreter.Stderr = new(bytes.Buffer)
+		_, err = invoke.Accept(interpreter)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error")
+		}
+
+		b64body := base64.StdEncoding.EncodeToString(stdout.Bytes())
+		body, err := json.Marshal(&EvalResult{b64body})
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error")
+		}
+		fmt.Fprint(w, string(body))
+	})
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		reg := regexp.MustCompile("^/([^/]+)/([^/]+)")
 		match := reg.FindStringSubmatch(r.RequestURI)

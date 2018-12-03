@@ -2,6 +2,7 @@ package interpreter
 
 import (
 	"io"
+	"os"
 
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
@@ -16,6 +17,8 @@ type Interpreter struct {
 func NewInterpreter(classTypeMap *builtin.ClassMap) *Interpreter {
 	interpreter := &Interpreter{
 		Context: NewContext(),
+		Stdout:  os.Stdout,
+		Stderr:  os.Stderr,
 	}
 	interpreter.Context.ClassTypes = classTypeMap
 	return interpreter

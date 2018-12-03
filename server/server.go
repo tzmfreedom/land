@@ -88,9 +88,48 @@ type EvalResult struct {
 	String string
 }
 
+type FormatRequest struct {
+	String string
+}
+
+type FormatResponse struct {
+	String string
+}
+
 func (s *EvalServer) Run() {
 	http.HandleFunc("/eval", func(w http.ResponseWriter, r *http.Request) {
 		eval(w, r)
+	})
+	http.HandleFunc("/format", func(w http.ResponseWriter, r *http.Request) {
+		// parse request
+		req := &FormatRequest{}
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(r.Body)
+		json.Unmarshal(buf.Bytes(), &req)
+		b, err := base64.StdEncoding.DecodeString(req.String)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error")
+		}
+
+		// parse source
+		root, err := ast.ParseString(string(b))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error")
+		}
+		// format
+		visitor := &ast.TosVisitor{}
+		str, _ := root.Accept(visitor)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error")
+		}
+
+		// response
+		b64body := base64.StdEncoding.EncodeToString([]byte(str.(string)))
+		body, err := json.Marshal(&EvalResult{b64body})
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error")
+		}
+		fmt.Fprintf(w, string(body))
 	})
 	http.Handle("/", http.FileServer(http.Dir("eval-server")))
 

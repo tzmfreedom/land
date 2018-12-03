@@ -25,7 +25,7 @@
                 }
             };
 
-            $("#submit").click(function(){
+            $("#eval").click(function(){
                 var code = $("#code").val();
                 $.post({
                     url: "/eval",
@@ -37,6 +37,21 @@
                 }).then(function(result, success){
                     if (result.String !== "") {
                         $("#result").text(Base64.decode(result.String));
+                    }
+                });
+                return false;
+            });
+            $("#format").click(function(){
+                var code = $("#code").val();
+                $.post({
+                    url: "/format",
+                    data: JSON.stringify({
+                        String: Base64.encode(code)
+                    }),
+                    dataType: 'json',
+                }).then(function(result, success){
+                    if (result.String !== "") {
+                        $("#code").val(Base64.decode(result.String));
                     }
                 });
                 return false;
@@ -54,8 +69,10 @@
         <div class="col-sm-8">
             <form>
                 <textarea id="code" rows="20" class="form-control"></textarea>
-                <button id="submit" type="submit"
-                        class="btn btn-primary">Submit</button>
+                <button id="eval" type="submit"
+                        class="btn btn-primary">Run</button>
+                <button id="format" type="submit"
+                        class="btn btn-primary">Format</button>
             </form>
         </div>
         <pre id="result" class="col-sm-4"></pre>

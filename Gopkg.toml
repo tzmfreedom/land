@@ -36,3 +36,8 @@
 [[constraint]]
   name = "github.com/fsnotify/fsnotify"
   version = "1.4.7"
+
+[metadata.heroku]
+  root-package = "github.com/tzmfreedom/goland"
+  go-version = "go1.11"
+  ensure = "true"

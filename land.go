@@ -42,31 +42,43 @@ func main() {
 		return
 	}
 
-	trees := make([]ast.Node, len(option.Files))
-	for i, file := range option.Files {
-		trees[i], err = ast.ParseFile(file, preprocessors...)
+	switch option.SubCommand {
+	case "watch":
+		trees, err := parse(option.Files)
 		if err != nil {
 			handleError(err)
 		}
-	}
-	switch option.SubCommand {
-	case "watch":
 		classTypes, err := buildAllFile(trees)
 		if err != nil {
 			handleError(err)
 		}
 		watchAndRunTest(classTypes, option)
 	case "server":
+		trees, err := parse(option.Files)
+		if err != nil {
+			handleError(err)
+		}
 		classTypes, err := buildAllFile(trees)
 		if err != nil {
 			handleError(err)
 		}
 		server.Run(classTypes)
+	case "eval-server":
+		s := &server.EvalServer{}
+		s.Run()
 	case "format":
+		trees, err := parse(option.Files)
+		if err != nil {
+			handleError(err)
+		}
 		for _, t := range trees {
 			tos(t)
 		}
 	case "run":
+		trees, err := parse(option.Files)
+		if err != nil {
+			handleError(err)
+		}
 		classTypes, err := buildAllFile(trees)
 		if err != nil {
 			handleError(err)
@@ -83,7 +95,11 @@ func main() {
 			}
 		}
 	case "check":
+		trees, err := parse(option.Files)
 		newTrees := make([]*builtin.ClassType, len(trees))
+		if err != nil {
+			handleError(err)
+		}
 		for i, t := range trees {
 			root, err := convert(t)
 			if err != nil {
@@ -98,6 +114,18 @@ func main() {
 			}
 		}
 	}
+}
+
+func parse(files []string) ([]ast.Node, error) {
+	trees := make([]ast.Node, len(files))
+	var err error
+	for i, file := range files {
+		trees[i], err = ast.ParseFile(file, preprocessors...)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return trees, nil
 }
 
 func parseOption(args []string) (*option, error) {
@@ -117,13 +145,15 @@ func parseOption(args []string) (*option, error) {
 	}
 
 	cmd := os.Args[1]
-	if cmd != "format" && *action == "" {
+	if cmd != "format" &&
+		cmd != "eval-server" &&
+		cmd != "server" && *action == "" {
 		return nil, errors.New("-a CLASS#METHOD is required")
 	}
 	var files []string
 	if *fileName != "" {
 		files = []string{*fileName}
-	} else {
+	} else if *directory != "" {
 		filesInDirectory, err := ioutil.ReadDir(*directory)
 		if err != nil {
 			handleError(err)

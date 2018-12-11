@@ -147,7 +147,9 @@ func parseOption(args []string) (*option, error) {
 	cmd := os.Args[1]
 	if cmd != "format" &&
 		cmd != "eval-server" &&
-		cmd != "server" && *action == "" {
+		cmd != "server" &&
+		*action == "" &&
+		*interactive == false {
 		return nil, errors.New("-a CLASS#METHOD is required")
 	}
 	var files []string
@@ -232,9 +234,9 @@ func run(action string, classTypes []*builtin.ClassType) error {
 
 func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
 	lastReloadedAt := time.Now()
-	interpreter := interpreter.NewInterpreter(builtin.PrimitiveClassMap())
+	i := interpreter.NewInterpreter(builtin.PrimitiveClassMap())
 	for _, classType := range classTypes {
-		interpreter.Context.ClassTypes.Set(classType.Name, classType)
+		i.Context.ClassTypes.Set(classType.Name, classType)
 	}
 
 	l, _ := readline.NewEx(&readline.Config{
@@ -259,9 +261,9 @@ func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
 				}
 				ch <- true
 				if event.Op&fsnotify.Write == fsnotify.Write {
-					buildFile(interpreter, event.Name)
+					buildFile(i, event.Name)
 				} else if event.Op&fsnotify.Create == fsnotify.Create {
-					buildFile(interpreter, event.Name)
+					buildFile(i, event.Name)
 				}
 				<-ch
 			case err, ok := <-watcher.Errors:
@@ -277,6 +279,11 @@ func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
 		return err
 	}
 
+	// TODO: implement
+	env := interpreter.NewEnv(nil)
+	interpreter.Subscribe("method_end", func(ctx *interpreter.Context, n ast.Node) {
+		env = ctx.Env
+	})
 	for {
 		line, err := l.Readline()
 		if err != nil {
@@ -297,9 +304,9 @@ func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
 		case "reload":
 			ch <- true
 			if len(args) == 0 {
-				reloadAll(interpreter, option.Files)
+				reloadAll(i, option.Files)
 			} else {
-				_, err := buildFile(interpreter, args[0])
+				_, err := buildFile(i, args[0])
 				if err != nil {
 					fmt.Println(err.Error())
 				}
@@ -324,15 +331,24 @@ func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
 			ch <- true
 			if isReload {
 				lastReloadedAt = time.Now()
-				reloadAll(interpreter, option.Files)
+				reloadAll(i, option.Files)
 			}
 			run(args[0], classTypes)
 			<-ch
 		case "exit":
 			return nil
+		default:
+			code := createTempClass(line)
+			execFile(code, env)
 		}
 	}
 	return nil
+}
+
+func createTempClass(statement string) string {
+	return fmt.Sprintf(`public class Temporary {
+public static void action() { %s; }
+}`, statement)
 }
 
 func watchAndRunTest(classTypes []*builtin.ClassType, option *option) error {
@@ -422,6 +438,32 @@ func buildAllFile(trees []ast.Node) ([]*builtin.ClassType, error) {
 		}
 	}
 	return classTypes, nil
+}
+
+func execFile(code string, env *interpreter.Env) *interpreter.Env {
+	t, err := ast.ParseString(code, preprocessors...)
+	root, err := convert(t)
+	if err != nil {
+		panic(err)
+	}
+	classType, err := register(root)
+	if err = semanticAnalysis(classType); err != nil {
+		panic(err)
+	}
+	interpreter := interpreter.NewInterpreter(builtin.PrimitiveClassMap())
+	interpreter.Context.ClassTypes.Set(classType.Name, classType)
+	interpreter.Context.Env = env
+	invoke := &ast.MethodInvocation{
+		NameOrExpression: &ast.Name{
+			Value: []string{"Temporary", "action"},
+		},
+	}
+	interpreter.LoadStaticField()
+	_, err = invoke.Accept(interpreter)
+	if err != nil {
+		panic(err)
+	}
+	return env
 }
 
 func reloadAll(interpreter *interpreter.Interpreter, files []string) {

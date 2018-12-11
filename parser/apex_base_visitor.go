@@ -516,10 +516,6 @@ func (v *BaseapexVisitor) VisitGroupClause(ctx *GroupClauseContext) interface{} 
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseapexVisitor) VisitFieldGroupList(ctx *FieldGroupListContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
 func (v *BaseapexVisitor) VisitHavingConditionExpression(ctx *HavingConditionExpressionContext) interface{} {
 	return v.VisitChildren(ctx)
 }

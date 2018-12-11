@@ -279,10 +279,21 @@ type Throw struct {
 	Parent     Node
 }
 
+type NoopAccepter struct{}
+
+func (n *NoopAccepter) Accept(v Visitor) (interface{}, error) {
+	return nil, nil
+}
+
+func (n *NoopAccepter) GetChildren() []interface{} {
+	return []interface{}{}
+}
+
 type Soql struct {
 	SelectFields []Node
 	FromObject   string
-	Where        []Node
+	Where        Node
+	Group        []Node
 	Order        Node
 	Limit        Node
 	Offset       Node
@@ -294,6 +305,14 @@ type SelectField struct {
 	Value    []string
 	Location *Location
 	Parent   Node
+	*NoopAccepter
+}
+
+type SoqlFunction struct {
+	Name     string
+	Location *Location
+	Parent   Node
+	*NoopAccepter
 }
 
 type WhereBinaryOperator struct {
@@ -302,6 +321,7 @@ type WhereBinaryOperator struct {
 	Op       string
 	Location *Location
 	Parent   Node
+	*NoopAccepter
 }
 
 type WhereCondition struct {
@@ -311,14 +331,16 @@ type WhereCondition struct {
 	Not        bool
 	Location   *Location
 	Parent     Node
+	*NoopAccepter
 }
 
 type Order struct {
-	Field    Node
+	Field    []Node
 	Asc      bool
 	Nulls    string
 	Location *Location
 	Parent   Node
+	*NoopAccepter
 }
 
 type Sosl struct {
@@ -1347,6 +1369,26 @@ func (n *ConstructorDeclaration) GetType() string {
 	return "ConstructorDeclaration"
 }
 
+func (n *WhereBinaryOperator) GetType() string {
+	return "WhereBinaryOperator"
+}
+
+func (n *WhereCondition) GetType() string {
+	return "WhereCondition"
+}
+
+func (n *SelectField) GetType() string {
+	return "SelectField"
+}
+
+func (n *SoqlFunction) GetType() string {
+	return "SoqlFunction"
+}
+
+func (n *Order) GetType() string {
+	return "Order"
+}
+
 func (n *ClassDeclaration) GetParent() Node {
 	return n.Parent
 }
@@ -1507,6 +1549,26 @@ func (n *Name) GetParent() Node {
 	return n.Parent
 }
 func (n *ConstructorDeclaration) GetParent() Node {
+	return n.Parent
+}
+
+func (n *WhereBinaryOperator) GetParent() Node {
+	return n.Parent
+}
+
+func (n *WhereCondition) GetParent() Node {
+	return n.Parent
+}
+
+func (n *SelectField) GetParent() Node {
+	return n.Parent
+}
+
+func (n *SoqlFunction) GetParent() Node {
+	return n.Parent
+}
+
+func (n *Order) GetParent() Node {
 	return n.Parent
 }
 
@@ -1723,6 +1785,26 @@ func (n *Name) SetParent(parent Node) {
 }
 
 func (n *ConstructorDeclaration) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *WhereBinaryOperator) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *WhereCondition) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *SelectField) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *SoqlFunction) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *Order) SetParent(parent Node) {
 	n.Parent = parent
 }
 
@@ -1943,5 +2025,25 @@ func (n *Name) GetLocation() *Location {
 }
 
 func (n *ConstructorDeclaration) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *WhereBinaryOperator) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *WhereCondition) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *SelectField) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *SoqlFunction) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *Order) GetLocation() *Location {
 	return n.Location
 }

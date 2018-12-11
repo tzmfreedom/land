@@ -421,7 +421,37 @@ func (v *TosVisitor) VisitThrow(n *Throw) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitSoql(n *Soql) (interface{}, error) {
-	return VisitSoql(v, n)
+	fields := make([]string, len(n.SelectFields))
+	v.AddIndent(func() {
+		v.AddIndent(func() {
+			for i, f := range n.SelectFields {
+				if val := f.(SelectField); val != nil {
+					fields[i] = strings.Join(val.Value, ".")
+				} else if val := f.(SoqlFunction); val != nil {
+					fields[i] = val.Name + "()"
+				}
+			}
+		})
+	})
+
+	indent := ""
+	v.AddIndent(func() {
+		indent = v.withIndent("")
+	})
+
+	return fmt.Sprintf(`%s
+%sSELECT
+%s
+%sFROM
+%s
+%s`,
+		v.withIndent("["),
+		indent,
+		v.withIndent(strings.Join(fields, ",\n")),
+		indent,
+		n.FromObject,
+		v.withIndent("]"),
+	), nil
 }
 
 func (v *TosVisitor) VisitSosl(n *Sosl) (interface{}, error) {

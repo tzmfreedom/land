@@ -659,7 +659,7 @@ limitClause
     ;
 
 orderClause
-    :  ORDER BY soqlField asc_desc=(ASC | DESC)? (NULLS nulls=(LAST | FIRST))?
+    :  ORDER BY soqlField (',' soqlField)* asc_desc=(ASC | DESC)? (NULLS nulls=(LAST | FIRST))?
     ;
 
 bindVariable
@@ -681,11 +681,7 @@ soqlFilteringExpression
     ;
 
 groupClause
-    :  GROUP BY fieldGroupList (HAVING havingConditionExpression)?
-    ;
-
-fieldGroupList
-    :
+    :  GROUP BY soqlField (',' soqlField)* (HAVING havingConditionExpression)?
     ;
 
 havingConditionExpression

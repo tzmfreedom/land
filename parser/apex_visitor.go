@@ -389,9 +389,6 @@ type apexVisitor interface {
 	// Visit a parse tree produced by apexParser#groupClause.
 	VisitGroupClause(ctx *GroupClauseContext) interface{}
 
-	// Visit a parse tree produced by apexParser#fieldGroupList.
-	VisitFieldGroupList(ctx *FieldGroupListContext) interface{}
-
 	// Visit a parse tree produced by apexParser#havingConditionExpression.
 	VisitHavingConditionExpression(ctx *HavingConditionExpressionContext) interface{}
 

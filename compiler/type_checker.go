@@ -414,7 +414,6 @@ func (v *TypeChecker) VisitWhile(n *ast.While) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitNothingStatement(n *ast.NothingStatement) (interface{}, error) {
-	panic("Not pass")
 	return nil, nil
 }
 

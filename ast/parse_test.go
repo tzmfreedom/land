@@ -718,6 +718,104 @@ try {
 			}),
 		},
 		{
+			`class Foo {
+public void action(){
+[
+  SELECT
+    id,
+    Name,
+    count()
+  FROM
+    Account
+  WHERE
+    Name = ''
+    AND A__c = 1
+    AND B__c = true
+    OR  C__c = :foo
+    OR  D__c = :bar()
+  GROUP BY
+    E__c,
+    F__c
+  ORDER BY
+    id,
+    Name ASC
+  OFFSET
+    1000
+];
+}
+}`,
+			createExpectedClass([]Node{
+				&Soql{
+					SelectFields: []Node{},
+					FromObject:   "Account",
+					Where: &WhereBinaryOperator{
+						Left: &WhereBinaryOperator{
+							Left: &WhereBinaryOperator{
+								Left: &WhereBinaryOperator{
+									Left: &WhereCondition{
+										Field: &SelectField{
+											Value: []string{"Name"},
+										},
+										Op: "=",
+										Expression: &StringLiteral{
+											Value: "",
+										},
+										Not: false,
+									},
+									Right: &WhereCondition{
+										Field: &SelectField{
+											Value: []string{"B__c"},
+										},
+										Op: "=",
+										Expression: &BooleanLiteral{
+											Value: true,
+										},
+										Not: false,
+									},
+									Op: "AND",
+								},
+								Right: &WhereCondition{
+									Field: &SelectField{
+										Value: []string{"B__c"},
+									},
+									Op: "=",
+									Expression: &BooleanLiteral{
+										Value: true,
+									},
+									Not: false,
+								},
+								Op: "AND",
+							},
+							Right: &WhereCondition{
+								Field: &SelectField{
+									Value: []string{"C__c"},
+								},
+								Op: "=",
+								Expression: &Name{
+									Value: []string{"foo"},
+								},
+								Not: false,
+							},
+							Op: "OR",
+						},
+						Right: &WhereCondition{
+							Field: &SelectField{
+								Value: []string{"D__c"},
+							},
+							Op: "=",
+							Expression: &MethodInvocation{
+								NameOrExpression: &Name{
+									Value: []string{"bar"},
+								},
+							},
+							Not: false,
+						},
+						Op: "OR",
+					},
+				},
+			}),
+		},
+		{
 			`trigger Foo on Account(before insert, after update) {
 true;
 }`,

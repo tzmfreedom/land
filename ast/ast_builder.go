@@ -1175,19 +1175,23 @@ func (v *Builder) VisitTypeIdentifier(ctx *parser.TypeIdentifierContext) interfa
  * SOQL
  */
 func (v *Builder) VisitSoqlLiteral(ctx *parser.SoqlLiteralContext) interface{} {
-	return &Soql{}
-	// return ctx.Query().Accept(v)
+	return ctx.Query().Accept(v)
 }
 
 func (v *Builder) VisitQuery(ctx *parser.QueryContext) interface{} {
 	n := &Soql{Location: v.newLocation(ctx)}
 	n.SelectFields = ctx.SelectClause().Accept(v).([]Node)
-	setParentNodes(n.SelectFields, n)
 	n.FromObject = ctx.FromClause().Accept(v).(string)
-	n.Where = ctx.WhereClause().Accept(v).([]Node)
+	n.Where = ctx.WhereClause().Accept(v).(Node)
+	n.Group = ctx.GroupClause().Accept(v).([]Node)
 	n.Order = ctx.OrderClause().Accept(v).(Node)
-	n.Offset = ctx.OffsetClause().Accept(v).(Node)
-	return v.VisitChildren(ctx)
+	if limit := ctx.LimitClause(); limit != nil {
+		n.Limit = limit.Accept(v).(Node)
+	}
+	if offset := ctx.OffsetClause(); offset != nil {
+		n.Offset = offset.Accept(v).(Node)
+	}
+	return n
 }
 
 func (v *Builder) VisitSelectClause(ctx *parser.SelectClauseContext) interface{} {
@@ -1232,7 +1236,12 @@ func (v *Builder) VisitSoqlFieldReference(ctx *parser.SoqlFieldReferenceContext)
 }
 
 func (v *Builder) VisitSoqlFunctionCall(ctx *parser.SoqlFunctionCallContext) interface{} {
-	return v.VisitChildren(ctx)
+	n := &SoqlFunction{}
+	n.Name = ctx.ApexIdentifier().GetText()
+	for _, f := range ctx.AllSoqlField() {
+		f.Accept(v)
+	}
+	return n
 }
 
 func (v *Builder) VisitSubquery(ctx *parser.SubqueryContext) interface{} {
@@ -1257,7 +1266,7 @@ func (v *Builder) VisitWhereFields(ctx *parser.WhereFieldsContext) interface{} {
 func (v *Builder) VisitWhereField(ctx *parser.WhereFieldContext) interface{} {
 	n := &WhereCondition{Location: v.newLocation(ctx)}
 	n.Field = ctx.SoqlField().Accept(v).(Node)
-	n.Not = ctx.SOQL_NOT().GetText() != ""
+	n.Not = ctx.SOQL_NOT() != nil
 	n.Op = ctx.GetOp().GetText()
 	n.Expression = ctx.SoqlValue().Accept(v).(Node)
 	return n
@@ -1272,9 +1281,14 @@ func (v *Builder) VisitLimitClause(ctx *parser.LimitClauseContext) interface{} {
 
 func (v *Builder) VisitOrderClause(ctx *parser.OrderClauseContext) interface{} {
 	n := &Order{Location: v.newLocation(ctx)}
-	n.Field = ctx.SoqlField().Accept(v).(Node)
+	fields := make([]Node, len(ctx.AllSoqlField()))
+	for i, f := range ctx.AllSoqlField() {
+		fields[i] = f.Accept(v).(Node)
+	}
 	n.Asc = ctx.GetAsc_desc().GetText() == "asc"
-	n.Nulls = ctx.GetNulls().GetText()
+	if nulls := ctx.GetNulls(); nulls != nil {
+		n.Nulls = nulls.GetText()
+	}
 	return n
 }
 
@@ -1301,11 +1315,11 @@ func (v *Builder) VisitSoqlFilteringExpression(ctx *parser.SoqlFilteringExpressi
 }
 
 func (v *Builder) VisitGroupClause(ctx *parser.GroupClauseContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *Builder) VisitFieldGroupList(ctx *parser.FieldGroupListContext) interface{} {
-	return v.VisitChildren(ctx)
+	fields := make([]Node, len(ctx.AllSoqlField()))
+	for i, f := range ctx.AllSoqlField() {
+		fields[i] = f.Accept(v).(Node)
+	}
+	return fields
 }
 
 func (v *Builder) VisitHavingConditionExpression(ctx *parser.HavingConditionExpressionContext) interface{} {
@@ -1314,7 +1328,8 @@ func (v *Builder) VisitHavingConditionExpression(ctx *parser.HavingConditionExpr
 
 func (v *Builder) VisitOffsetClause(ctx *parser.OffsetClauseContext) interface{} {
 	if l := ctx.IntegerLiteral(); l != nil {
-		return l.Accept(v)
+		val, _ := strconv.Atoi(l.GetText())
+		return &IntegerLiteral{Value: val, Location: v.newLocation(ctx)}
 	}
 	return ctx.BindVariable().Accept(v)
 }

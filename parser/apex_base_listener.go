@@ -791,12 +791,6 @@ func (s *BaseapexListener) EnterGroupClause(ctx *GroupClauseContext) {}
 // ExitGroupClause is called when production groupClause is exited.
 func (s *BaseapexListener) ExitGroupClause(ctx *GroupClauseContext) {}
 
-// EnterFieldGroupList is called when production fieldGroupList is entered.
-func (s *BaseapexListener) EnterFieldGroupList(ctx *FieldGroupListContext) {}
-
-// ExitFieldGroupList is called when production fieldGroupList is exited.
-func (s *BaseapexListener) ExitFieldGroupList(ctx *FieldGroupListContext) {}
-
 // EnterHavingConditionExpression is called when production havingConditionExpression is entered.
 func (s *BaseapexListener) EnterHavingConditionExpression(ctx *HavingConditionExpressionContext) {}
 

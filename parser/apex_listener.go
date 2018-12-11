@@ -389,9 +389,6 @@ type apexListener interface {
 	// EnterGroupClause is called when entering the groupClause production.
 	EnterGroupClause(c *GroupClauseContext)
 
-	// EnterFieldGroupList is called when entering the fieldGroupList production.
-	EnterFieldGroupList(c *FieldGroupListContext)
-
 	// EnterHavingConditionExpression is called when entering the havingConditionExpression production.
 	EnterHavingConditionExpression(c *HavingConditionExpressionContext)
 
@@ -796,9 +793,6 @@ type apexListener interface {
 
 	// ExitGroupClause is called when exiting the groupClause production.
 	ExitGroupClause(c *GroupClauseContext)
-
-	// ExitFieldGroupList is called when exiting the fieldGroupList production.
-	ExitFieldGroupList(c *FieldGroupListContext)
 
 	// ExitHavingConditionExpression is called when exiting the havingConditionExpression production.
 	ExitHavingConditionExpression(c *HavingConditionExpressionContext)

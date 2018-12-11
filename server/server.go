@@ -86,6 +86,8 @@ type EvalRequest struct {
 
 type EvalResult struct {
 	String string
+	Result bool
+	Error  string
 }
 
 type FormatRequest struct {
@@ -125,7 +127,9 @@ func (s *EvalServer) Run() {
 
 		// response
 		b64body := base64.StdEncoding.EncodeToString([]byte(str.(string)))
-		body, err := json.Marshal(&EvalResult{b64body})
+		body, err := json.Marshal(&FormatResponse{
+			String: b64body,
+		})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error")
 		}
@@ -133,7 +137,7 @@ func (s *EvalServer) Run() {
 	})
 	http.Handle("/", http.FileServer(http.Dir("eval-server")))
 
-	port := "8080"
+	port := "8081"
 	if os.Getenv("PORT") != "" {
 		port = os.Getenv("PORT")
 	}
@@ -171,7 +175,17 @@ func eval(w http.ResponseWriter, r *http.Request) {
 	typeChecker.Context.ClassTypes = classMap
 	_, err = typeChecker.VisitClassType(classType)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error")
+		fmt.Fprintf(os.Stderr, err.Error())
+		body, err := json.Marshal(&EvalResult{
+			Error:  err.Error(),
+			Result: false,
+		})
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error")
+		}
+		w.WriteHeader(400)
+		fmt.Fprint(w, string(body))
+		return
 	}
 	if len(typeChecker.Errors) != 0 {
 		for _, e := range typeChecker.Errors {
@@ -196,7 +210,10 @@ func eval(w http.ResponseWriter, r *http.Request) {
 	}
 
 	b64body := base64.StdEncoding.EncodeToString(stdout.Bytes())
-	body, err := json.Marshal(&EvalResult{b64body})
+	body, err := json.Marshal(&EvalResult{
+		String: b64body,
+		Result: true,
+	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error")
 	}

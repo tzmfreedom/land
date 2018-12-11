@@ -7,15 +7,23 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Pacifico" rel="stylesheet">
 
+    <style>
+        .title {
+            font-family: 'Pacifico', cursive;
+        }
+    </style>
     <!-- jQuery -->
     <script
             src="https://code.jquery.com/jquery-3.3.1.min.js"
             integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
             crossorigin="anonymous"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.2/ace.js"></script>
     <script>
         $(function(){
+            var editor = ace.edit("editor");
+            editor.session.setMode("ace/mode/apex");
             var Base64 = {
                 encode: function(str) {
                     return btoa(unescape(encodeURIComponent(str)));
@@ -26,7 +34,7 @@
             };
 
             $("#eval").click(function(){
-                var code = $("#code").val();
+                var code = editor.getValue();
                 $.post({
                     url: "/eval",
                     data: JSON.stringify({
@@ -34,15 +42,20 @@
                         String: Base64.encode(code)
                     }),
                     dataType: 'json',
-                }).then(function(result, success){
+                }).then(function(result){
                     if (result.String !== "") {
                         $("#result").text(Base64.decode(result.String));
+                    }
+                }, function(result) {
+                    var res = result.responseJSON
+                    if (res.Error !== "") {
+                        alert(res.Error);
                     }
                 });
                 return false;
             });
             $("#format").click(function(){
-                var code = $("#code").val();
+                var code = editor.getValue();
                 $.post({
                     url: "/format",
                     data: JSON.stringify({
@@ -51,29 +64,34 @@
                     dataType: 'json',
                 }).then(function(result, success){
                     if (result.String !== "") {
-                        $("#code").val(Base64.decode(result.String));
+                        editor.setValue(Base64.decode(result.String));
+                    }
+                }, function(result){
+                    var res = result.responseJSON
+                    if (res.Error !== "") {
+                        alert(res.Error);
                     }
                 });
                 return false;
             });
         });
     </script>
-    <title>LAND playground</title>
+    <title>Land playground</title>
 </head>
 <body>
 <div class="container">
     <div class="row">
-        <h1 class="col-sm-12">LAND PlayGround</h1>
+      <h1 class="col-sm-12 title" style="padding: 10px 40px;">Land Playground</h1>
     </div>
     <div class="row">
         <div class="col-sm-8">
-            <form>
-                <textarea id="code" rows="20" class="form-control"></textarea>
-                <button id="eval" type="submit"
-                        class="btn btn-primary">Run</button>
-                <button id="format" type="submit"
-                        class="btn btn-primary">Format</button>
+            <form class="col-sm-12">
+                <div id="editor" style="height: 400px; font-size: 0.9rem;" class="form-control"></div>
             </form>
+            <div class="col-sm-12" style="margin-top: 10px; text-align: right;" >
+                <button id="eval" type="submit" class="btn btn-primary">Run</button>
+                <button id="format" type="submit" class="btn btn-primary">Format</button>
+            </div>
         </div>
         <pre id="result" class="col-sm-4"></pre>
     </div>

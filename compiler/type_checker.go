@@ -45,7 +45,10 @@ func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) 
 	if n.StaticMethods != nil {
 		for _, methods := range n.StaticMethods.All() {
 			for _, m := range methods {
-				m.Accept(v)
+				_, err := m.Accept(v)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 	}
@@ -53,7 +56,10 @@ func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) 
 	if n.InstanceMethods != nil {
 		for _, methods := range n.InstanceMethods.All() {
 			for _, m := range methods {
-				m.Accept(v)
+				_, err := m.Accept(v)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 	}
@@ -210,7 +216,10 @@ func (v *TypeChecker) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 		t, _ := p.Type.Accept(v)
 		env.Set(p.Name, t.(*builtin.ClassType))
 	}
-	n.Statements.Accept(v)
+	_, err := n.Statements.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	v.Context.CurrentMethod = nil
 	return nil, nil
 }
@@ -221,7 +230,10 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 	nameOrExp := n.NameOrExpression
 	types := make([]*builtin.ClassType, len(n.Parameters))
 	for i, p := range n.Parameters {
-		t, _ := p.Accept(v)
+		t, err := p.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		types[i] = t.(*builtin.ClassType)
 	}
 	if name, ok := nameOrExp.(*ast.Name); ok {
@@ -231,8 +243,7 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		}
 		method, err := resolver.ResolveMethod(name.Value, types)
 		if err != nil {
-			// TODO: implement
-			return nil, nil
+			return nil, err
 		}
 		if method.ReturnType != nil {
 			return method.ReturnType.Accept(v)
@@ -463,7 +474,10 @@ func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
 
 func (v *TypeChecker) VisitBlock(n *ast.Block) (interface{}, error) {
 	for _, stmt := range n.Statements {
-		stmt.Accept(v)
+		_, err := stmt.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return nil, nil
 }

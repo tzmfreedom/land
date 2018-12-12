@@ -746,8 +746,18 @@ public void action(){
 }`,
 			createExpectedClass([]Node{
 				&Soql{
-					SelectFields: []Node{},
-					FromObject:   "Account",
+					SelectFields: []Node{
+						&SelectField{
+							Value: []string{"id"},
+						},
+						&SelectField{
+							Value: []string{"Name"},
+						},
+						&SoqlFunction{
+							Name: "count",
+						},
+					},
+					FromObject: "Account",
 					Where: &WhereBinaryOperator{
 						Left: &WhereBinaryOperator{
 							Left: &WhereBinaryOperator{
@@ -764,11 +774,11 @@ public void action(){
 									},
 									Right: &WhereCondition{
 										Field: &SelectField{
-											Value: []string{"B__c"},
+											Value: []string{"A__c"},
 										},
 										Op: "=",
-										Expression: &BooleanLiteral{
-											Value: true,
+										Expression: &IntegerLiteral{
+											Value: 1,
 										},
 										Not: false,
 									},

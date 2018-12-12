@@ -141,11 +141,11 @@ func (v *TosVisitor) VisitBooleanLiteral(n *BooleanLiteral) (interface{}, error)
 }
 
 func (v *TosVisitor) VisitBreak(n *Break) (interface{}, error) {
-	return "break;", nil
+	return "break", nil
 }
 
 func (v *TosVisitor) VisitContinue(n *Continue) (interface{}, error) {
-	return "continue;", nil
+	return "continue", nil
 }
 
 func (v *TosVisitor) VisitDml(n *Dml) (interface{}, error) {
@@ -267,7 +267,7 @@ func (v *TosVisitor) VisitForControl(n *ForControl) (interface{}, error) {
 		updates[i] = r.(string)
 	}
 	return fmt.Sprintf(
-		`%s; %s; %s`,
+		`%s %s; %s`,
 		init.(string),
 		exp.(string),
 		strings.Join(updates, ","),
@@ -366,7 +366,7 @@ func (v *TosVisitor) VisitMethodInvocation(n *MethodInvocation) (interface{}, er
 		parameters[i] = r.(string)
 	}
 	return fmt.Sprintf(
-		"%s(%s);",
+		"%s(%s)",
 		exp.(string),
 		strings.Join(parameters, ", "),
 	), nil
@@ -407,30 +407,38 @@ func (v *TosVisitor) VisitBinaryOperator(n *BinaryOperator) (interface{}, error)
 func (v *TosVisitor) VisitReturn(n *Return) (interface{}, error) {
 	if n.Expression != nil {
 		exp, _ := n.Expression.Accept(v)
-		return fmt.Sprintf("return %s;", exp.(string)), nil
+		return fmt.Sprintf("return %s", exp.(string)), nil
 	}
-	return "return;", nil
+	return "return", nil
 }
 
 func (v *TosVisitor) VisitThrow(n *Throw) (interface{}, error) {
 	if n.Expression != nil {
 		exp, _ := n.Expression.Accept(v)
-		return fmt.Sprintf("throw %s;", exp.(string)), nil
+		return fmt.Sprintf("throw %s", exp.(string)), nil
 	}
-	return "throw;", nil
+	return "throw", nil
 }
 
 func (v *TosVisitor) VisitSoql(n *Soql) (interface{}, error) {
+	wheres := []string{}
 	fields := make([]string, len(n.SelectFields))
+	from := ""
 	v.AddIndent(func() {
 		v.AddIndent(func() {
 			for i, f := range n.SelectFields {
-				if val := f.(SelectField); val != nil {
-					fields[i] = strings.Join(val.Value, ".")
-				} else if val := f.(SoqlFunction); val != nil {
-					fields[i] = val.Name + "()"
+				switch val := f.(type) {
+				case *SelectField:
+					fields[i] = v.withIndent(strings.Join(val.Value, "."))
+				case *SoqlFunction:
+					fields[i] = v.withIndent(val.Name + "()")
 				}
 			}
+
+			from = v.withIndent(n.FromObject)
+
+			condition := n.Where.(*WhereBinaryOperator)
+			wheres = v.appendWhere(wheres, condition)
 		})
 	})
 
@@ -438,20 +446,52 @@ func (v *TosVisitor) VisitSoql(n *Soql) (interface{}, error) {
 	v.AddIndent(func() {
 		indent = v.withIndent("")
 	})
+	where := ""
+	if len(wheres) != 0 {
+		where = "\n" + indent + "WHERE\n" + strings.Join(wheres, "\n")
+	}
+	orderBy := ""
+	groupBy := ""
+	limit := ""
 
-	return fmt.Sprintf(`%s
+	return fmt.Sprintf(`[
 %sSELECT
 %s
 %sFROM
-%s
-%s`,
-		v.withIndent("["),
+%s%s%s%s%s%s`,
 		indent,
-		v.withIndent(strings.Join(fields, ",\n")),
+		strings.Join(fields, ",\n"),
 		indent,
-		n.FromObject,
-		v.withIndent("]"),
+		from,
+		where,
+		orderBy,
+		groupBy,
+		limit,
+		"\n"+v.withIndent("]"),
 	), nil
+}
+
+func (v *TosVisitor) appendWhere(wheres []string, n Node) []string {
+	switch val := n.(type) {
+	case *WhereCondition:
+		var field string
+		switch f := val.Field.(type) {
+		case *SelectField:
+			field = v.withIndent(strings.Join(f.Value, "."))
+		case *SoqlFunction:
+			field = v.withIndent(f.Name + "()")
+		}
+		value, _ := val.Expression.Accept(v)
+		wheres = append(wheres, fmt.Sprintf("%s %s %s", field, val.Op, value.(string)))
+	case *WhereBinaryOperator:
+		if val.Left != nil {
+			wheres = v.appendWhere(wheres, val.Left)
+		}
+		if val.Right != nil {
+			wheres = v.appendWhere(wheres, val.Right)
+		}
+	}
+	return wheres
 }
 
 func (v *TosVisitor) VisitSosl(n *Sosl) (interface{}, error) {
@@ -528,7 +568,7 @@ func (v *TosVisitor) VisitVariableDeclaration(n *VariableDeclaration) (interface
 		declarators[i] = r.(string)
 	}
 	return fmt.Sprintf(
-		"%s %s;",
+		"%s %s",
 		t.(string),
 		strings.Join(declarators, ", "),
 	), nil
@@ -592,7 +632,7 @@ func (v *TosVisitor) VisitWhile(n *While) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitNothingStatement(n *NothingStatement) (interface{}, error) {
-	return ";", nil
+	return "", nil
 }
 
 func (v *TosVisitor) VisitCastExpression(n *CastExpression) (interface{}, error) {
@@ -627,7 +667,7 @@ func (v *TosVisitor) VisitBlock(n *Block) (interface{}, error) {
 	statements := make([]string, len(n.Statements))
 	for i, s := range n.Statements {
 		r, _ := s.Accept(v)
-		statements[i] = v.withIndent(r.(string))
+		statements[i] = v.withIndent(r.(string)) + ";"
 	}
 	return strings.Join(statements, "\n"), nil
 }

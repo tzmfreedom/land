@@ -84,6 +84,9 @@ var ListType = &ClassType{
 			"size": {
 				&ast.MethodDeclaration{
 					Name: "size",
+					Modifiers: []ast.Node{
+						&ast.Modifier{Name: "public"},
+					},
 					NativeFunction: func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 						thisObj := this.(*Object)
 						return len(thisObj.Extra["records"].([]*Object))
@@ -129,6 +132,9 @@ var System = &ClassType{
 			"debug": {
 				&ast.MethodDeclaration{
 					Name: "debug",
+					Modifiers: []ast.Node{
+						&ast.Modifier{Name: "public"},
+					},
 					NativeFunction: func(this interface{}, parameter []interface{}, options ...interface{}) interface{} {
 						o := parameter[0].(*Object)
 						stdout := options[0].(io.Writer)
@@ -140,6 +146,9 @@ var System = &ClassType{
 			"assertequals": {
 				&ast.MethodDeclaration{
 					Name: "assertequals",
+					Modifiers: []ast.Node{
+						&ast.Modifier{Name: "public"},
+					},
 					NativeFunction: func(this interface{}, parameter []interface{}, options ...interface{}) interface{} {
 						expected := parameter[0].(*Object)
 						actual := parameter[1].(*Object)

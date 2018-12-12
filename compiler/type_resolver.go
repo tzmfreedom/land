@@ -321,6 +321,11 @@ func (r *TypeResolver) searchMethod(methods []ast.Node, parameters []*builtin.Cl
 	l := len(parameters)
 	for _, method := range methods {
 		m := method.(*ast.MethodDeclaration)
+		// TODO: implement
+		if m.NativeFunction != nil {
+			return m
+		}
+
 		if len(m.Parameters) != l {
 			continue
 		}

@@ -640,7 +640,7 @@ func (v *Interpreter) VisitSoql(n *ast.Soql) (interface{}, error) {
 	username := os.Getenv("SALESFORCE_USERNAME")
 	password := os.Getenv("SALESFORCE_PASSWORD")
 	client.Login(username, password)
-	result, err := client.Query(sql[1:len(sql)-1])
+	result, err := client.Query(sql[1 : len(sql)-1])
 	if err != nil {
 		return nil, err
 	}

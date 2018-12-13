@@ -186,7 +186,7 @@ func PrimitiveClassMap() *ClassMap {
 			"set":     SetType,
 			"map":     MapType,
 			// temporary
-			"system": System,
+			"system":  System,
 			"account": AccountType,
 		},
 	}

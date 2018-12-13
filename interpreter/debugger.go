@@ -2,6 +2,7 @@ package interpreter
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strings"
 
@@ -95,7 +96,7 @@ func showCurrent(n ast.Node) {
 		panic(err)
 	}
 	sc := bufio.NewScanner(f)
-	width := (line + 5) / 10
+	width := int(math.Floor(math.Log10(float64(line) + 5.0)))
 	for i := 1; sc.Scan(); i++ {
 		if line == i {
 			format := ">> %0" + strconv.Itoa(width) + "d %s\n"

@@ -4,6 +4,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/k0kubun/pp"
+	"github.com/tzmfreedom/go-soapforce"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 )
@@ -628,7 +630,22 @@ func (v *Interpreter) VisitThrow(n *ast.Throw) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitSoql(n *ast.Soql) (interface{}, error) {
-	return ast.VisitSoql(v, n)
+	visitor := &ast.TosVisitor{}
+	r, err := n.Accept(visitor)
+	if err != nil {
+		return nil, err
+	}
+	sql := r.(string)
+	client := soapforce.NewClient()
+	username := os.Getenv("SALESFORCE_USERNAME")
+	password := os.Getenv("SALESFORCE_PASSWORD")
+	client.Login(username, password)
+	result, err := client.Query(sql[1:len(sql)-1])
+	if err != nil {
+		return nil, err
+	}
+	pp.Println(result.Records)
+	return nil, nil
 }
 
 func (v *Interpreter) VisitSosl(n *ast.Sosl) (interface{}, error) {
@@ -655,7 +672,10 @@ func (v *Interpreter) VisitTriggerTiming(n *ast.TriggerTiming) (interface{}, err
 func (v *Interpreter) VisitVariableDeclaration(n *ast.VariableDeclaration) (interface{}, error) {
 	for _, declarator := range n.Declarators {
 		d := declarator.(*ast.VariableDeclarator)
-		val, _ := d.Expression.Accept(v)
+		val, err := d.Expression.Accept(v)
+		if err != nil {
+			panic(err)
+		}
 		v.Context.Env.Set(d.Name, val.(*builtin.Object))
 	}
 	return nil, nil

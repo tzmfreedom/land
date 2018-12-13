@@ -41,3 +41,7 @@
   root-package = "github.com/tzmfreedom/goland"
   go-version = "go1.11"
   ensure = "true"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/tzmfreedom/go-soapforce"

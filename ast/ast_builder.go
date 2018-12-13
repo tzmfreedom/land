@@ -1182,9 +1182,15 @@ func (v *Builder) VisitQuery(ctx *parser.QueryContext) interface{} {
 	n := &Soql{Location: v.newLocation(ctx)}
 	n.SelectFields = ctx.SelectClause().Accept(v).([]Node)
 	n.FromObject = ctx.FromClause().Accept(v).(string)
-	n.Where = ctx.WhereClause().Accept(v).(Node)
-	n.Group = ctx.GroupClause().Accept(v).([]Node)
-	n.Order = ctx.OrderClause().Accept(v).(Node)
+	if where := ctx.WhereClause(); where != nil {
+		n.Where = where.Accept(v).(Node)
+	}
+	if group := ctx.GroupClause(); group != nil {
+		n.Group = group.Accept(v).([]Node)
+	}
+	if order := ctx.OrderClause(); order != nil {
+		n.Order = order.Accept(v).(Node)
+	}
 	if limit := ctx.LimitClause(); limit != nil {
 		n.Limit = limit.Accept(v).(Node)
 	}

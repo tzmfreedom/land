@@ -421,7 +421,7 @@ func (v *TosVisitor) VisitThrow(n *Throw) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitSoql(n *Soql) (interface{}, error) {
-	wheres := []string{}
+	where := ""
 	fields := make([]string, len(n.SelectFields))
 	from := ""
 	v.AddIndent(func() {
@@ -437,8 +437,7 @@ func (v *TosVisitor) VisitSoql(n *Soql) (interface{}, error) {
 
 			from = v.withIndent(n.FromObject)
 
-			condition := n.Where.(*WhereBinaryOperator)
-			wheres = v.appendWhere(wheres, condition)
+			where = v.withIndent(v.createWhere(n.Where))
 		})
 	})
 
@@ -446,9 +445,8 @@ func (v *TosVisitor) VisitSoql(n *Soql) (interface{}, error) {
 	v.AddIndent(func() {
 		indent = v.withIndent("")
 	})
-	where := ""
-	if len(wheres) != 0 {
-		where = "\n" + indent + "WHERE\n" + strings.Join(wheres, "\n")
+	if where != "" {
+		where = "\n" + indent + "WHERE\n" + where
 	}
 	orderBy := ""
 	groupBy := ""
@@ -471,27 +469,29 @@ func (v *TosVisitor) VisitSoql(n *Soql) (interface{}, error) {
 	), nil
 }
 
-func (v *TosVisitor) appendWhere(wheres []string, n Node) []string {
+func (v *TosVisitor) createWhere(n Node) string {
 	switch val := n.(type) {
 	case *WhereCondition:
 		var field string
 		switch f := val.Field.(type) {
 		case *SelectField:
-			field = v.withIndent(strings.Join(f.Value, "."))
+			field = strings.Join(f.Value, ".")
 		case *SoqlFunction:
-			field = v.withIndent(f.Name + "()")
+			field = f.Name + "()"
 		}
 		value, _ := val.Expression.Accept(v)
-		wheres = append(wheres, fmt.Sprintf("%s %s %s", field, val.Op, value.(string)))
+		return fmt.Sprintf("%s %s %s", field, val.Op, value.(string))
 	case *WhereBinaryOperator:
+		where := ""
 		if val.Left != nil {
-			wheres = v.appendWhere(wheres, val.Left)
+			where += v.createWhere(val.Left)
 		}
 		if val.Right != nil {
-			wheres = v.appendWhere(wheres, val.Right)
+			where += fmt.Sprintf("\n%s %s", v.withIndent(val.Op), v.createWhere(val.Right))
 		}
+		return where
 	}
-	return wheres
+	return ""
 }
 
 func (v *TosVisitor) VisitSosl(n *Sosl) (interface{}, error) {

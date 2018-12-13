@@ -358,7 +358,17 @@ func (v *TypeChecker) VisitThrow(n *ast.Throw) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitSoql(n *ast.Soql) (interface{}, error) {
-	return ast.VisitSoql(v, n)
+	resolver := &TypeResolver{Context: v.Context}
+	t, err := resolver.ResolveType([]string{n.FromObject})
+	if err != nil {
+		return nil, err
+	}
+	return &builtin.ClassType{
+		Name: "List",
+		Extra: map[string]interface{}{
+			"generics": []interface{}{t},
+		},
+	}, nil
 }
 
 func (v *TypeChecker) VisitSosl(n *ast.Sosl) (interface{}, error) {

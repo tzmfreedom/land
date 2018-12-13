@@ -163,6 +163,10 @@ var System = &ClassType{
 	},
 }
 
+var AccountType = &ClassType{
+	Name: "Account",
+}
+
 func NewClassMapWithPrimivie(classTypes []*ClassType) *ClassMap {
 	classMap := PrimitiveClassMap()
 	for _, classType := range classTypes {
@@ -183,6 +187,7 @@ func PrimitiveClassMap() *ClassMap {
 			"map":     MapType,
 			// temporary
 			"system": System,
+			"account": AccountType,
 		},
 	}
 }

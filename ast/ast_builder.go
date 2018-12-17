@@ -1280,7 +1280,8 @@ func (v *Builder) VisitWhereField(ctx *parser.WhereFieldContext) interface{} {
 
 func (v *Builder) VisitLimitClause(ctx *parser.LimitClauseContext) interface{} {
 	if l := ctx.IntegerLiteral(); l != nil {
-		return l.Accept(v)
+		val, _ := strconv.Atoi(l.GetText())
+		return &IntegerLiteral{Value: val, Location: v.newLocation(ctx)}
 	}
 	return ctx.BindVariable().Accept(v)
 }

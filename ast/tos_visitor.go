@@ -451,6 +451,10 @@ func (v *TosVisitor) VisitSoql(n *Soql) (interface{}, error) {
 	orderBy := ""
 	groupBy := ""
 	limit := ""
+	if n.Limit != nil {
+		i, _ := n.Limit.Accept(v)
+		limit = "\n" + indent + "LIMIT\n" + indent + i.(string)
+	}
 
 	return fmt.Sprintf(`[
 %sSELECT

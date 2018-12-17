@@ -20,11 +20,6 @@ func ParseFile(f string, processors ...PreProcessor) (Node, error) {
 	}
 	input := antlr.NewInputStream(src)
 	return parse(input, f), nil
-	//input, err := antlr.NewFileStream(f)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//return parse(input, f), nil
 }
 
 func ParseString(src string, processors ...PreProcessor) (Node, error) {

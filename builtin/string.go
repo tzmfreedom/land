@@ -30,6 +30,23 @@ func (v *ToStringer) String(o *Object) string {
 		return fmt.Sprintf("%t", o.Value().(bool))
 	case DoubleType:
 		return fmt.Sprintf("%f", o.Value().(float64))
+	case ListType:
+		records := o.Extra["records"].([]*Object)
+		recordExpressions := make([]string, len(records))
+		v.AddIndent(func(){
+			for i, record := range records {
+				recordExpressions[i] = v.withIndent(v.String(record))
+			}
+		})
+		recordsString := ""
+		if len(recordExpressions) != 0 {
+			recordsString = "\n" + strings.Join(recordExpressions, ",\n") + "\n"
+		}
+		return fmt.Sprintf(
+			`<List> {%s%s`,
+			recordsString,
+			v.withIndent("}"),
+		)
 	}
 	fields := make([]string, len(o.InstanceFields.All()))
 	v.AddIndent(func() {

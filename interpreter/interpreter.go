@@ -4,8 +4,6 @@ import (
 	"io"
 	"os"
 
-	"github.com/k0kubun/pp"
-	"github.com/tzmfreedom/go-soapforce"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 )
@@ -636,16 +634,12 @@ func (v *Interpreter) VisitSoql(n *ast.Soql) (interface{}, error) {
 		return nil, err
 	}
 	sql := r.(string)
-	client := soapforce.NewClient()
-	username := os.Getenv("SALESFORCE_USERNAME")
-	password := os.Getenv("SALESFORCE_PASSWORD")
-	client.Login(username, password)
-	result, err := client.Query(sql[1 : len(sql)-1])
+	executor := &SoqlExecutor{}
+	objects, err := executor.Execute(sql[1 : len(sql)-1])
 	if err != nil {
 		return nil, err
 	}
-	pp.Println(result.Records)
-	return nil, nil
+	return objects, nil
 }
 
 func (v *Interpreter) VisitSosl(n *ast.Sosl) (interface{}, error) {

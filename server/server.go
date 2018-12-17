@@ -71,7 +71,9 @@ func (s *Server) Run() {
 		fmt.Fprintf(w, builtin.String(res.(*builtin.Object)))
 		fmt.Fprintln(w)
 	})
-	err := http.ListenAndServe(":8080", nil)
+	port := getServerPort()
+	fmt.Println("listening to 0.0.0.0:"+port)
+	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -82,6 +84,7 @@ type EvalServer struct{}
 type EvalRequest struct {
 	String string
 	Method string
+	WithClass bool
 }
 
 type EvalResult struct {
@@ -137,10 +140,8 @@ func (s *EvalServer) Run() {
 	})
 	http.Handle("/", http.FileServer(http.Dir("eval-server")))
 
-	port := "8081"
-	if os.Getenv("PORT") != "" {
-		port = os.Getenv("PORT")
-	}
+	port := getServerPort()
+	fmt.Println("listening to 0.0.0.0:"+port)
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		panic(err)
@@ -159,8 +160,12 @@ func eval(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(os.Stderr, "Error")
 	}
 
+	classBody := string(b)
+	if !req.WithClass {
+		classBody = fmt.Sprintf(`public class Land { public static void action() { %s; } }`, classBody)
+	}
 	// compile
-	root, err := ast.ParseString(string(b))
+	root, err := ast.ParseString(classBody)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error")
 	}
@@ -218,6 +223,14 @@ func eval(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(os.Stderr, "Error")
 	}
 	fmt.Fprint(w, string(body))
+}
+
+func getServerPort() string {
+	port := "8080"
+	if os.Getenv("PORT") != "" {
+		port = os.Getenv("PORT")
+	}
+	return port
 }
 
 func Run(classTypes []*builtin.ClassType) {

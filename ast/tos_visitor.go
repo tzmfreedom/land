@@ -437,7 +437,9 @@ func (v *TosVisitor) VisitSoql(n *Soql) (interface{}, error) {
 
 			from = v.withIndent(n.FromObject)
 
-			where = v.withIndent(v.createWhere(n.Where))
+			if n.Where != nil {
+				where = v.withIndent(v.createWhere(n.Where))
+			}
 		})
 	})
 
@@ -453,7 +455,11 @@ func (v *TosVisitor) VisitSoql(n *Soql) (interface{}, error) {
 	limit := ""
 	if n.Limit != nil {
 		i, _ := n.Limit.Accept(v)
-		limit = "\n" + indent + "LIMIT\n" + indent + i.(string)
+		v.AddIndent(func(){
+			v.AddIndent(func() {
+				limit = "\n" + indent + "LIMIT\n" + v.withIndent(i.(string))
+			})
+		})
 	}
 
 	return fmt.Sprintf(`[

@@ -613,11 +613,29 @@ func (s *BaseapexListener) EnterMapCreatorRest(ctx *MapCreatorRestContext) {}
 // ExitMapCreatorRest is called when production mapCreatorRest is exited.
 func (s *BaseapexListener) ExitMapCreatorRest(ctx *MapCreatorRestContext) {}
 
+// EnterMapKey is called when production mapKey is entered.
+func (s *BaseapexListener) EnterMapKey(ctx *MapKeyContext) {}
+
+// ExitMapKey is called when production mapKey is exited.
+func (s *BaseapexListener) ExitMapKey(ctx *MapKeyContext) {}
+
+// EnterMapValue is called when production mapValue is entered.
+func (s *BaseapexListener) EnterMapValue(ctx *MapValueContext) {}
+
+// ExitMapValue is called when production mapValue is exited.
+func (s *BaseapexListener) ExitMapValue(ctx *MapValueContext) {}
+
 // EnterSetCreatorRest is called when production setCreatorRest is entered.
 func (s *BaseapexListener) EnterSetCreatorRest(ctx *SetCreatorRestContext) {}
 
 // ExitSetCreatorRest is called when production setCreatorRest is exited.
 func (s *BaseapexListener) ExitSetCreatorRest(ctx *SetCreatorRestContext) {}
+
+// EnterSetValue is called when production setValue is entered.
+func (s *BaseapexListener) EnterSetValue(ctx *SetValueContext) {}
+
+// ExitSetValue is called when production setValue is exited.
+func (s *BaseapexListener) ExitSetValue(ctx *SetValueContext) {}
 
 // EnterClassCreatorRest is called when production classCreatorRest is entered.
 func (s *BaseapexListener) EnterClassCreatorRest(ctx *ClassCreatorRestContext) {}

@@ -400,7 +400,19 @@ func (v *BaseapexVisitor) VisitMapCreatorRest(ctx *MapCreatorRestContext) interf
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseapexVisitor) VisitMapKey(ctx *MapKeyContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseapexVisitor) VisitMapValue(ctx *MapValueContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseapexVisitor) VisitSetCreatorRest(ctx *SetCreatorRestContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseapexVisitor) VisitSetValue(ctx *SetValueContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 

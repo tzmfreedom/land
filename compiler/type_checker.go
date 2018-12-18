@@ -414,7 +414,7 @@ func (v *TypeChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (inte
 		t, _ := d.Accept(v)
 		decl := d.(*ast.VariableDeclarator)
 		v.Context.Env.Set(decl.Name, declType.(*builtin.ClassType))
-		if !declType.(*builtin.ClassType).Equals(t.(*builtin.ClassType)) {
+		if t != nil && !declType.(*builtin.ClassType).Equals(t.(*builtin.ClassType)) {
 			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", declType.(*builtin.ClassType).String(), t.(*builtin.ClassType).String()), n.Type)
 		}
 	}
@@ -422,7 +422,10 @@ func (v *TypeChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (inte
 }
 
 func (v *TypeChecker) VisitVariableDeclarator(n *ast.VariableDeclarator) (interface{}, error) {
-	return n.Expression.Accept(v)
+	if n.Expression != nil {
+		return n.Expression.Accept(v)
+	}
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitWhen(n *ast.When) (interface{}, error) {

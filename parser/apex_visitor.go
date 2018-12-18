@@ -302,8 +302,17 @@ type apexVisitor interface {
 	// Visit a parse tree produced by apexParser#mapCreatorRest.
 	VisitMapCreatorRest(ctx *MapCreatorRestContext) interface{}
 
+	// Visit a parse tree produced by apexParser#mapKey.
+	VisitMapKey(ctx *MapKeyContext) interface{}
+
+	// Visit a parse tree produced by apexParser#mapValue.
+	VisitMapValue(ctx *MapValueContext) interface{}
+
 	// Visit a parse tree produced by apexParser#setCreatorRest.
 	VisitSetCreatorRest(ctx *SetCreatorRestContext) interface{}
+
+	// Visit a parse tree produced by apexParser#setValue.
+	VisitSetValue(ctx *SetValueContext) interface{}
 
 	// Visit a parse tree produced by apexParser#classCreatorRest.
 	VisitClassCreatorRest(ctx *ClassCreatorRestContext) interface{}

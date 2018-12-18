@@ -65,10 +65,10 @@ func (t *ClassType) IsGeneric() bool {
 
 func (t *ClassType) String() string {
 	if t.IsGeneric() {
-		classTypes := t.Extra["generics"].([]interface{})
+		classTypes := t.Extra["generics"].([]*ClassType)
 		generics := make([]string, len(classTypes))
 		for i, classType := range classTypes {
-			generics[i] = classType.(*ClassType).String()
+			generics[i] = classType.String()
 		}
 		return fmt.Sprintf("%s<%s>", t.Name, strings.Join(generics, ", "))
 	}

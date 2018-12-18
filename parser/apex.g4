@@ -531,12 +531,27 @@ arrayCreatorRest
 
 mapCreatorRest
     :   '{' '}'
-    |   '{' ( apexIdentifier | expression ) '=>' ( literal | expression ) (',' (apexIdentifier | expression) '=>' ( literal | expression ) )* '}'
+    |   '{' mapKey '=>' mapValue (',' mapKey '=>' mapValue )* '}'
+    ;
+
+mapKey
+    : apexIdentifier
+    | expression
+    ;
+
+mapValue
+    : literal
+    | expression
     ;
 
 setCreatorRest
-	: '{' ( literal | expression ) (',' ( literal | expression ))* '}'
+	: '{' setValue (',' setValue)* '}'
 	;
+
+setValue
+    : literal
+    | expression
+    ;
 
 classCreatorRest
     :   arguments classBody?

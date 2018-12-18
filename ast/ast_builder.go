@@ -413,13 +413,13 @@ func (v *Builder) VisitVariableInitializer(ctx *parser.VariableInitializerContex
 
 func (v *Builder) VisitArrayInitializer(ctx *parser.ArrayInitializerContext) interface{} {
 	if inits := ctx.AllVariableInitializer(); len(inits) != 0 {
-		initializers := make([]Node, len(inits))
+		records := make([]Node, len(inits))
 		for i, init := range inits {
-			initializers[i] = init.Accept(v).(Node)
+			records[i] = init.Accept(v).(Node)
 		}
-		return initializers
+		return &Init{Records: records}
 	}
-	return nil
+	return &Init{}
 }
 
 func (v *Builder) VisitEnumConstantName(ctx *parser.EnumConstantNameContext) interface{} {
@@ -1020,11 +1020,45 @@ func (v *Builder) VisitPrimary(ctx *parser.PrimaryContext) interface{} {
 }
 
 func (v *Builder) VisitCreator(ctx *parser.CreatorContext) interface{} {
-	classType := ctx.CreatedName().Accept(v)
-	classCreatorRest := ctx.ClassCreatorRest().Accept(v)
+	classType := ctx.CreatedName().Accept(v).(Node)
+	if r := ctx.ArrayCreatorRest(); r != nil {
+		init := r.Accept(v).(*Init)
+		return &New{
+			Type: &TypeRef{
+				Name:       []string{"List"},
+				Parameters: []Node{classType},
+			},
+			Parameters: []Node{},
+			Init:       init,
+			Location:   v.newLocation(ctx),
+		}
+	}
+
+	if r := ctx.ClassCreatorRest(); r != nil {
+		init := r.Accept(v)
+		return &New{
+			Type:       classType,
+			Parameters: []Node{},
+			Init:       init.(*Init),
+			Location:   v.newLocation(ctx),
+		}
+	}
+
+	if r := ctx.MapCreatorRest(); r != nil {
+		init := r.Accept(v)
+		return &New{
+			Type:       classType,
+			Parameters: []Node{},
+			Init:       init.(*Init),
+			Location:   v.newLocation(ctx),
+		}
+	}
+
+	init := ctx.SetCreatorRest().Accept(v)
 	return &New{
-		Type:       classType.(Node),
-		Parameters: classCreatorRest.([]Node),
+		Type:       classType,
+		Parameters: []Node{},
+		Init:       init.(*Init),
 		Location:   v.newLocation(ctx),
 	}
 }
@@ -1037,7 +1071,13 @@ func (v *Builder) VisitCreatedName(ctx *parser.CreatedNameContext) interface{} {
 		}
 		names := make([]string, len(identifiers))
 		for i, ident := range identifiers {
-			names[i] = ident.Accept(v).(string)
+			// TODO
+			name := ident.Accept(v)
+			if val := name.(*TypeRef); val != nil {
+				names[i] = val.Name[0]
+			} else {
+				names[i] = name.(string)
+			}
 		}
 		n.Name = names
 		// TODO: implement
@@ -1051,25 +1091,66 @@ func (v *Builder) VisitInnerCreator(ctx *parser.InnerCreatorContext) interface{}
 }
 
 func (v *Builder) VisitArrayCreatorRest(ctx *parser.ArrayCreatorRestContext) interface{} {
-	n := &ArrayCreator{Location: v.newLocation(ctx)}
-	n.Dim = len(ctx.AllTypedArray())
-	if init := ctx.ArrayInitializer(); init != nil {
-		n.ArrayInitializer = init.Accept(v).(Node)
+	if expressions := ctx.AllExpression(); len(expressions) != 0 {
+		// TODO: implement
+		init := &Init{}
+		init.Size = expressions[0].Accept(v).(Node)
+		return init
 	}
-	expressions := ctx.AllExpression()
-	n.Expressions = make([]Node, len(expressions))
-	for i, e := range expressions {
-		n.Expressions[i] = e.Accept(v).(Node)
+	// TODO: implement
+	if r := ctx.ArrayInitializer(); r != nil {
+		init := r.Accept(v).(*Init)
+		init.Size = &IntegerLiteral{Value: 1}
+		return init
 	}
-	return n
+	return &Init{Size: &IntegerLiteral{Value: 1}}
 }
 
 func (v *Builder) VisitMapCreatorRest(ctx *parser.MapCreatorRestContext) interface{} {
-	return &MapCreator{Location: v.newLocation(ctx)}
+	keys := ctx.AllMapKey()
+	values := ctx.AllMapValue()
+	if len(keys) == 0 {
+		return &Init{
+			Values: map[Node]Node{},
+		}
+	}
+	initValues := map[Node]Node{}
+	for i, key := range keys {
+		keyNode := key.Accept(v).(Node)
+		valueNode := values[i].Accept(v).(Node)
+		initValues[keyNode] = valueNode
+	}
+	return &Init{Values: initValues}
+}
+
+func (v *Builder) VisitMapKey(ctx *parser.MapKeyContext) interface{} {
+	if r := ctx.ApexIdentifier(); r != nil {
+		return r.Accept(v)
+	}
+	return ctx.Expression().Accept(v)
+}
+
+func (v *Builder) VisitMapValue(ctx *parser.MapValueContext) interface{} {
+	if r := ctx.Literal(); r != nil {
+		return r.Accept(v)
+	}
+	return ctx.Expression().Accept(v)
 }
 
 func (v *Builder) VisitSetCreatorRest(ctx *parser.SetCreatorRestContext) interface{} {
-	return &SetCreator{Location: v.newLocation(ctx)}
+	setValues := ctx.AllSetValue()
+	initValues := make([]Node, len(setValues))
+	for i, setValue := range setValues {
+		initValues[i] = setValue.Accept(v).(Node)
+	}
+	return &Init{Records: initValues}
+}
+
+func (v *Builder) VisitSetValue(ctx *parser.SetValueContext) interface{} {
+	if r := ctx.Literal(); r != nil {
+		return r.Accept(v)
+	}
+	return ctx.Expression().Accept(v)
 }
 
 func (v *Builder) VisitClassCreatorRest(ctx *parser.ClassCreatorRestContext) interface{} {

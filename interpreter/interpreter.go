@@ -323,11 +323,43 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 			v.Context.Env = prev
 		}
 	}
+	if classType == builtin.ListType {
+		if len(n.Init.Records) != 0 {
+			records := make([]*builtin.Object, len(n.Init.Records))
+			for i, r := range n.Init.Records {
+				initRecord, err := r.Accept(v)
+				if err != nil {
+					return nil, err
+				}
+				records[i] = initRecord.(*builtin.Object)
+			}
+			newObj.Extra["records"] = records
+		} else {
+			newObj.Extra["records"] = []*builtin.Object{}
+		}
+	}
+	if classType == builtin.MapType {
+		if len(n.Init.Values) != 0 {
+			values := map[string]*builtin.Object{}
+			for key, value := range n.Init.Values {
+				mapValue, err := value.Accept(v)
+				if err != nil {
+					return nil, err
+				}
+				mapKey, err := key.Accept(v)
+				if err != nil {
+					return nil, err
+				}
+				values[mapKey.(*builtin.Object).StringValue()] = mapValue.(*builtin.Object)
+			}
+			newObj.Extra["values"] = values
+		}
+	}
 	return newObj, nil
 }
 
 func (v *Interpreter) VisitNullLiteral(n *ast.NullLiteral) (interface{}, error) {
-	return &Null{}, nil
+	return Null, nil
 }
 
 func (v *Interpreter) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, error) {
@@ -682,11 +714,15 @@ func (v *Interpreter) VisitTriggerTiming(n *ast.TriggerTiming) (interface{}, err
 func (v *Interpreter) VisitVariableDeclaration(n *ast.VariableDeclaration) (interface{}, error) {
 	for _, declarator := range n.Declarators {
 		d := declarator.(*ast.VariableDeclarator)
-		val, err := d.Expression.Accept(v)
-		if err != nil {
-			panic(err)
+		if d.Expression != nil {
+			val, err := d.Expression.Accept(v)
+			if err != nil {
+				panic(err)
+			}
+			v.Context.Env.Set(d.Name, val.(*builtin.Object))
+		} else {
+			v.Context.Env.Set(d.Name, Null)
 		}
-		v.Context.Env.Set(d.Name, val.(*builtin.Object))
 	}
 	return nil, nil
 }
@@ -817,7 +853,12 @@ func (v *Interpreter) VisitConstructorDeclaration(n *ast.ConstructorDeclaration)
 	return ast.VisitConstructorDeclaration(v, n)
 }
 
-type Null struct{}
+var Null = &builtin.Object{
+	ClassType:      nil,
+	InstanceFields: builtin.NewObjectMap(),
+	GenericType:    []*builtin.ClassType{},
+	Extra:          map[string]interface{}{},
+}
 
 func newInteger(value int) *builtin.Object {
 	t := createObject(builtin.IntegerType)

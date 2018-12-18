@@ -72,7 +72,7 @@ func (s *Server) Run() {
 		fmt.Fprintln(w)
 	})
 	port := getServerPort()
-	fmt.Println("listening to 0.0.0.0:"+port)
+	fmt.Println("listening to 0.0.0.0:" + port)
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		panic(err)
@@ -82,8 +82,8 @@ func (s *Server) Run() {
 type EvalServer struct{}
 
 type EvalRequest struct {
-	String string
-	Method string
+	String    string
+	Method    string
 	WithClass bool
 }
 
@@ -141,7 +141,7 @@ func (s *EvalServer) Run() {
 	http.Handle("/", http.FileServer(http.Dir("eval-server")))
 
 	port := getServerPort()
-	fmt.Println("listening to 0.0.0.0:"+port)
+	fmt.Println("listening to 0.0.0.0:" + port)
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		panic(err)

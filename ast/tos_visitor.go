@@ -455,7 +455,7 @@ func (v *TosVisitor) VisitSoql(n *Soql) (interface{}, error) {
 	limit := ""
 	if n.Limit != nil {
 		i, _ := n.Limit.Accept(v)
-		v.AddIndent(func(){
+		v.AddIndent(func() {
 			v.AddIndent(func() {
 				limit = "\n" + indent + "LIMIT\n" + v.withIndent(i.(string))
 			})

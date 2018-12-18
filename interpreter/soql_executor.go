@@ -45,7 +45,7 @@ func (e *SoqlExecutor) getListFromResponse(records []*soapforce.SObject) (*built
 		ClassType:      builtin.ListType,
 		InstanceFields: builtin.NewObjectMap(),
 		GenericType:    []*builtin.ClassType{classType},
-		Extra:          map[string]interface{}{
+		Extra: map[string]interface{}{
 			"records": objects,
 		},
 	}

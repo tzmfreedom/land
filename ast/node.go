@@ -242,8 +242,15 @@ type MethodInvocation struct {
 type New struct {
 	Type       Node
 	Parameters []Node
+	Init       *Init
 	Location   *Location
 	Parent     Node
+}
+
+type Init struct {
+	Records []Node
+	Values  map[Node]Node
+	Size    Node
 }
 
 type NullLiteral struct {

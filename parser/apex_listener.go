@@ -302,8 +302,17 @@ type apexListener interface {
 	// EnterMapCreatorRest is called when entering the mapCreatorRest production.
 	EnterMapCreatorRest(c *MapCreatorRestContext)
 
+	// EnterMapKey is called when entering the mapKey production.
+	EnterMapKey(c *MapKeyContext)
+
+	// EnterMapValue is called when entering the mapValue production.
+	EnterMapValue(c *MapValueContext)
+
 	// EnterSetCreatorRest is called when entering the setCreatorRest production.
 	EnterSetCreatorRest(c *SetCreatorRestContext)
+
+	// EnterSetValue is called when entering the setValue production.
+	EnterSetValue(c *SetValueContext)
 
 	// EnterClassCreatorRest is called when entering the classCreatorRest production.
 	EnterClassCreatorRest(c *ClassCreatorRestContext)
@@ -707,8 +716,17 @@ type apexListener interface {
 	// ExitMapCreatorRest is called when exiting the mapCreatorRest production.
 	ExitMapCreatorRest(c *MapCreatorRestContext)
 
+	// ExitMapKey is called when exiting the mapKey production.
+	ExitMapKey(c *MapKeyContext)
+
+	// ExitMapValue is called when exiting the mapValue production.
+	ExitMapValue(c *MapValueContext)
+
 	// ExitSetCreatorRest is called when exiting the setCreatorRest production.
 	ExitSetCreatorRest(c *SetCreatorRestContext)
+
+	// ExitSetValue is called when exiting the setValue production.
+	ExitSetValue(c *SetValueContext)
 
 	// ExitClassCreatorRest is called when exiting the classCreatorRest production.
 	ExitClassCreatorRest(c *ClassCreatorRestContext)

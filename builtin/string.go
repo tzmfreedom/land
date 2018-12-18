@@ -33,7 +33,7 @@ func (v *ToStringer) String(o *Object) string {
 	case ListType:
 		records := o.Extra["records"].([]*Object)
 		recordExpressions := make([]string, len(records))
-		v.AddIndent(func(){
+		v.AddIndent(func() {
 			for i, record := range records {
 				recordExpressions[i] = v.withIndent(v.String(record))
 			}
@@ -72,6 +72,9 @@ func (v *ToStringer) String(o *Object) string {
 	fieldStr := ""
 	if len(fields) != 0 {
 		fieldStr = fmt.Sprintf("\n%s\n", strings.Join(fields, "\n"))
+	}
+	if o.ClassType == nil {
+		return "null"
 	}
 	return fmt.Sprintf(
 		`<%s> {%s%s`,

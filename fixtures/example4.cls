@@ -16,6 +16,6 @@ public with sharing class Foo extends Bar implements Baz {
             OFFSET
                 1000
         ];
-        System.debug(accounts);
+        System.debug(accounts[0]);
     }
 }

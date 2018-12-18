@@ -68,7 +68,23 @@ func (v *Interpreter) VisitParameter(n *ast.Parameter) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) {
-	return ast.VisitArrayAccess(v, n)
+	r, err := n.Receiver.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	k, err := n.Key.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	receiver := r.(*builtin.Object)
+	key := k.(*builtin.Object)
+	if receiver.ClassType == builtin.ListType {
+		records := receiver.Extra["records"].([]*builtin.Object)
+		return records[key.IntegerValue()], nil
+	}
+
+	records := receiver.Extra["values"].(map[string]builtin.Object)
+	return records[key.StringValue()], nil
 }
 
 func (v *Interpreter) VisitBooleanLiteral(n *ast.BooleanLiteral) (interface{}, error) {

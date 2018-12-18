@@ -97,12 +97,20 @@ func (v *TypeChecker) VisitParameter(n *ast.Parameter) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) {
-	n.Receiver.Accept(v)
+	k, err := n.Receiver.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	klass := k.(*builtin.ClassType)
 	t, _ := n.Key.Accept(v)
 	if t != builtin.IntegerType && t != builtin.StringType {
 		v.AddError(fmt.Sprintf("array key <%v> must be Integer or string", t.(*builtin.ClassType).String()), n.Key)
 	}
-	return nil, nil
+	generics := klass.Extra["generics"].([]*builtin.ClassType)
+	if len(generics) == 0 {
+		v.AddError("generics is not specified", n)
+	}
+	return generics[0], nil
 }
 
 func (v *TypeChecker) VisitBooleanLiteral(n *ast.BooleanLiteral) (interface{}, error) {
@@ -366,7 +374,7 @@ func (v *TypeChecker) VisitSoql(n *ast.Soql) (interface{}, error) {
 	return &builtin.ClassType{
 		Name: "List",
 		Extra: map[string]interface{}{
-			"generics": []interface{}{t},
+			"generics": []*builtin.ClassType{t},
 		},
 	}, nil
 }
@@ -463,12 +471,13 @@ func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
 		v.AddError(err.Error(), n)
 	}
 	if t.IsGeneric() {
-		types := make([]interface{}, len(n.Parameters))
+		types := make([]*builtin.ClassType, len(n.Parameters))
 		for i, p := range n.Parameters {
-			types[i], err = p.(*ast.TypeRef).Accept(v)
+			classType, err := p.(*ast.TypeRef).Accept(v)
 			if err != nil {
 				v.AddError(err.Error(), n)
 			}
+			types[i] = classType.(*builtin.ClassType)
 		}
 		return &builtin.ClassType{
 			Name:            t.Name,

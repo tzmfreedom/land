@@ -39,13 +39,13 @@ func (t *ClassType) Equals(other *ClassType) bool {
 		if t.Name != other.Name {
 			return false
 		}
-		types := t.Extra["generics"].([]interface{})
-		otherTypes := other.Extra["generics"].([]interface{})
+		types := t.Extra["generics"].([]*ClassType)
+		otherTypes := other.Extra["generics"].([]*ClassType)
 		if len(types) != len(otherTypes) {
 			return false
 		}
 		for i, classType := range types {
-			if !classType.(*ClassType).Equals(otherTypes[i].(*ClassType)) {
+			if !classType.Equals(otherTypes[i]) {
 				return false
 			}
 		}

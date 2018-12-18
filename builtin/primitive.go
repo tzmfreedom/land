@@ -165,6 +165,19 @@ var System = &ClassType{
 
 var AccountType = &ClassType{
 	Name: "Account",
+	InstanceFields: &FieldMap{
+		Data: map[string]*Field{
+			"name": {
+				Type: &ast.TypeRef{Name: []string{"String"}},
+				Name: "name",
+				Modifiers: []ast.Node{
+					&ast.Modifier{
+						Name: "public",
+					},
+				},
+			},
+		},
+	},
 }
 
 func NewClassMapWithPrimivie(classTypes []*ClassType) *ClassMap {

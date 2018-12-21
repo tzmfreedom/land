@@ -1073,9 +1073,10 @@ func (v *Builder) VisitCreatedName(ctx *parser.CreatedNameContext) interface{} {
 		for i, ident := range identifiers {
 			// TODO
 			name := ident.Accept(v)
-			if val := name.(*TypeRef); val != nil {
+			switch val := name.(type) {
+			case *TypeRef:
 				names[i] = val.Name[0]
-			} else {
+			case string:
 				names[i] = name.(string)
 			}
 		}

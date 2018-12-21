@@ -2,16 +2,17 @@ package server
 
 import (
 	"bytes"
+	"crypto/rand"
+	"database/sql"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
-
-	"encoding/json"
-
 	"regexp"
+	"strings"
 
-	"encoding/base64"
-
+	_ "github.com/lib/pq"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 	"github.com/tzmfreedom/goland/compiler"
@@ -102,6 +103,60 @@ type FormatResponse struct {
 }
 
 func (s *EvalServer) Run() {
+	dbUrl := os.Getenv("DATABASE_URL")
+	db, err := sql.Open("postgres", dbUrl)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+	}
+
+	http.HandleFunc("/code/", func(w http.ResponseWriter, r *http.Request) {
+		id := strings.TrimPrefix(r.URL.Path, "/code/")
+		switch r.Method {
+		case "POST":
+			req := map[string]string{}
+			buf := new(bytes.Buffer)
+			buf.ReadFrom(r.Body)
+			json.Unmarshal(buf.Bytes(), &req)
+			_, err := db.Exec("UPDATE snippets SET code = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2", req["code"], id)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err.Error())
+			}
+			body, err := json.Marshal(map[string]string{
+				"id": id,
+			})
+			fmt.Fprintf(w, string(body))
+		case "GET":
+			rows, err := db.Query("SELECT code FROM snippets WHERE id = $1", id)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err.Error())
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			defer rows.Close()
+			var code string
+			rows.Next()
+			rows.Scan(&code)
+			body, err := json.Marshal(map[string]string{
+				"code": code,
+			})
+			fmt.Fprintf(w, string(body))
+		}
+	})
+	http.HandleFunc("/code", func(w http.ResponseWriter, r *http.Request) {
+		req := map[string]string{}
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(r.Body)
+		json.Unmarshal(buf.Bytes(), &req)
+		id := generateId()
+		_, err := db.Exec("INSERT INTO snippets(id, code) VALUES ($1, $2)", id, req["code"])
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+		}
+		body, err := json.Marshal(map[string]string{
+			"id": id,
+		})
+		fmt.Fprintf(w, string(body))
+	})
 	http.HandleFunc("/eval", func(w http.ResponseWriter, r *http.Request) {
 		eval(w, r)
 	})
@@ -142,7 +197,7 @@ func (s *EvalServer) Run() {
 
 	port := getServerPort()
 	fmt.Println("listening to 0.0.0.0:" + port)
-	err := http.ListenAndServe(":"+port, nil)
+	err = http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -188,7 +243,7 @@ func eval(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error")
 		}
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprint(w, string(body))
 		return
 	}
@@ -231,6 +286,15 @@ func getServerPort() string {
 		port = os.Getenv("PORT")
 	}
 	return port
+}
+
+func generateId() string {
+	b := make([]byte, 8)
+	_, err := rand.Read(b)
+	if err != nil {
+		panic(err)
+	}
+	return base64.URLEncoding.EncodeToString(b)
 }
 
 func Run(classTypes []*builtin.ClassType) {

@@ -9,9 +9,13 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css?family=Pacifico" rel="stylesheet">
 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
     <style>
         .title {
             font-family: 'Pacifico', cursive;
+        }
+        pre {
+            line-height: 2rem;
         }
     </style>
     <!-- jQuery -->
@@ -41,6 +45,33 @@
                 }).then(function(result) {
                     editor.setValue(Base64.decode(result.code));
                 });
+            } else {
+                var messages = [];
+                messages.push("System.debug('Hello Trailbrazers!!');");
+                messages.push("");
+                messages.push("String s = 'Here is Land Playground.';");
+                messages.push("System.debug(s);");
+                messages.push("");
+                messages.push("if (true) {");
+                messages.push("    System.debug('Land is Salesforce Apex Execution Environment on Local System.');");
+                messages.push("} else {");
+                messages.push("    System.debug('boo!');");
+                messages.push("}");
+                messages.push("");
+                messages.push("List<String> messages = new List<String>{");
+                messages.push("    'With Land, you can execute Apex on Local, not Cloud!!',");
+                messages.push("    'This is WIP Project.',");
+                messages.push("    'If you find bugs, please fill an issue or send pull request.'");
+                messages.push("};");
+                messages.push("");
+                messages.push("for (Integer i = 0; i < 3; i++) {");
+                messages.push("    System.debug(messages[i]);");
+                messages.push("}");
+                messages.push("");
+                messages.push("List<Account> accounts = [SELECT Id, Field1__c, Website FROM Account WHERE Name = 'Astro'];");
+                messages.push("System.debug(accounts[0].WebSite);");
+                messages.push("System.debug(accounts[0].Field1__c);");
+                editor.setValue(messages.join("\n"));
             }
             var $snippet = $("#snippet-url");
 
@@ -90,22 +121,26 @@
     <title>Land playground</title>
 </head>
 <body>
-<div class="container">
+<div >
     <div class="row">
       <h1 class="col-sm-12 title" style="padding: 10px 40px;">Land Playground</h1>
     </div>
     <div class="row">
-        <div class="col-sm-8">
+        <div class="col-sm-6">
             <form class="col-sm-12">
                 <input type="text" id="snippet-url" class="col-sm-12" style="display: none;"/>
                 <div id="editor" style="height: 400px; font-size: 0.9rem;" class="form-control"></div>
             </form>
             <div class="col-sm-12" style="margin-top: 10px; text-align: right;" >
-                <button id="eval" type="submit" class="btn btn-primary">Run</button>
-                <button id="save" type="submit" class="btn btn-primary">Save</button>
+                <button id="eval" type="submit" class="btn btn-primary">
+                    <i class="fas fa-play"></i><span style="margin-left: 10px;">Run</span>
+                </button>
+                <button id="save" type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i><span style="margin-left: 10px;">Save</span>
+                </button>
             </div>
         </div>
-        <pre id="result" class="col-sm-4"></pre>
+        <pre id="result" class="col-sm-6"></pre>
     </div>
     <!-- Content here -->
 </div>

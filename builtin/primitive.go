@@ -176,6 +176,24 @@ var AccountType = &ClassType{
 					},
 				},
 			},
+			"website": {
+				Type: &ast.TypeRef{Name: []string{"String"}},
+				Name: "website",
+				Modifiers: []ast.Node{
+					&ast.Modifier{
+						Name: "public",
+					},
+				},
+			},
+			"field1__c": {
+				Type: &ast.TypeRef{Name: []string{"String"}},
+				Name: "field1__c",
+				Modifiers: []ast.Node{
+					&ast.Modifier{
+						Name: "public",
+					},
+				},
+			},
 		},
 	},
 }

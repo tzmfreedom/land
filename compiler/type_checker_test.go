@@ -17,16 +17,37 @@ func TestTypeChecker(t *testing.T) {
 		{
 			newTestClassType([]ast.Node{
 				&ast.ArrayAccess{
-					Receiver: &ast.IntegerLiteral{},
-					Key:      &ast.IntegerLiteral{},
+					Receiver: &ast.TypeRef{
+						Name: []string{"List"},
+						Parameters: []ast.Node{
+							&ast.TypeRef{
+								Name: []string{"Integer"},
+							},
+						},
+					},
+					Key: &ast.IntegerLiteral{},
 				},
 				&ast.ArrayAccess{
-					Receiver: &ast.IntegerLiteral{},
-					Key:      &ast.StringLiteral{},
+					Receiver: &ast.TypeRef{
+						Name: []string{"List"},
+						Parameters: []ast.Node{
+							&ast.TypeRef{
+								Name: []string{"Integer"},
+							},
+						},
+					},
+					Key: &ast.StringLiteral{},
 				},
 				&ast.ArrayAccess{
-					Receiver: &ast.IntegerLiteral{},
-					Key:      &ast.BooleanLiteral{},
+					Receiver: &ast.TypeRef{
+						Name: []string{"List"},
+						Parameters: []ast.Node{
+							&ast.TypeRef{
+								Name: []string{"Integer"},
+							},
+						},
+					},
+					Key: &ast.BooleanLiteral{},
 				},
 			}),
 			[]*Error{

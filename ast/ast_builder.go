@@ -1035,11 +1035,11 @@ func (v *Builder) VisitCreator(ctx *parser.CreatorContext) interface{} {
 	}
 
 	if r := ctx.ClassCreatorRest(); r != nil {
-		init := r.Accept(v)
+		parameters := r.Accept(v)
 		return &New{
 			Type:       classType,
-			Parameters: []Node{},
-			Init:       init.(*Init),
+			Parameters: parameters.([]Node),
+			Init:       nil,
 			Location:   v.newLocation(ctx),
 		}
 	}

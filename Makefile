@@ -67,3 +67,9 @@ dist:
 .PHONY: deploy
 deploy:
 	git push heroku master -f
+
+.PHONY: tag
+tag:
+	git tag v$(VERSION) -f
+	git push origin v$(VERSION) -f
+

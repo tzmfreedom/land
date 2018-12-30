@@ -1,6 +1,7 @@
 #!/bin/bash
 
-NAME="land"
+NAME="goland"
+BIN_NAME="land"
 VERSION="0.1.0"
 PREFIX="/usr/local"
 COMP_PREFIX="/usr/local/share/zsh/site-functions"
@@ -59,20 +60,20 @@ elif [ "${UNAME}" = "Linux" ] ; then
   fi
 fi
 
-ARCHIVE_FILE=${NAME}-${VERSION}-${OS}-${ARCH}.tar.gz
+ARCHIVE_FILE=${BIN_NAME}-${VERSION}-${OS}-${ARCH}.tar.gz
 BINARY="https://github.com/${GITHUB_USER}/${NAME}/releases/download/v${VERSION}/${ARCHIVE_FILE}"
 
 cd $TMP_DIR
 curl -sL -O ${BINARY}
 
 tar xzf ${ARCHIVE_FILE}
-mv ${OS}-${ARCH}/${NAME} ${PREFIX}/bin/${NAME}
-chmod +x ${PREFIX}/bin/${NAME}
+mv ${OS}-${ARCH}/${BIN_NAME} ${PREFIX}/bin/${BIN_NAME}
+chmod +x ${PREFIX}/bin/${BIN_NAME}
 
 # completion
 if [ -d ${COMP_PREFIX} ]; then
   if [ "${ZSH_COMPLETION}" == "t" ]; then
-    mv ${OS}-${ARCH}/_${NAME} ${COMP_PREFIX}/_${NAME}
+    mv ${OS}-${ARCH}/_${BIN_NAME} ${COMP_PREFIX}/_${BIN_NAME}
   fi
 fi
 

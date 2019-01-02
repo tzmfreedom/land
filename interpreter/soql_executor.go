@@ -19,13 +19,8 @@ func (e *SoqlExecutor) Execute(n *ast.Soql) (*builtin.Object, error) {
 	}
 	soql := r.(string)
 	soql = soql[1 : len(soql)-1]
-	client := soapforce.NewClient()
-	username := os.Getenv("SALESFORCE_USERNAME")
-	password := os.Getenv("SALESFORCE_PASSWORD")
-	endpoint := os.Getenv("SALESFORCE_ENDPOINT")
-	client.SetLoginUrl(endpoint)
-	client.Login(username, password)
-	result, err := client.Query(soql)
+
+	result, err := executeQuery(soql)
 	if err != nil {
 		return nil, err
 	}
@@ -58,4 +53,14 @@ func (e *SoqlExecutor) getListFromResponse(n *ast.Soql, records []*soapforce.SOb
 		},
 	}
 	return list, nil
+}
+
+func executeQuery(soql string) (*soapforce.QueryResult, error) {
+	client := soapforce.NewClient()
+	username := os.Getenv("SALESFORCE_USERNAME")
+	password := os.Getenv("SALESFORCE_PASSWORD")
+	endpoint := os.Getenv("SALESFORCE_ENDPOINT")
+	client.SetLoginUrl(endpoint)
+	client.Login(username, password)
+	return client.Query(soql)
 }

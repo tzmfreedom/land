@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"errors"
 	"sort"
 	"testing"
 
@@ -13,7 +14,7 @@ func TestTypeChecker(t *testing.T) {
 		Input        *builtin.ClassType
 		ExpectErrors []*Error
 	}{
-		// Array Access
+		// Array key must be integer or string
 		{
 			newTestClassType([]ast.Node{
 				&ast.ArrayAccess{
@@ -56,7 +57,7 @@ func TestTypeChecker(t *testing.T) {
 				},
 			},
 		},
-		// If, Else
+		// `if` condition type must be boolean
 		{
 			newTestClassType([]ast.Node{
 				&ast.If{
@@ -92,7 +93,7 @@ func TestTypeChecker(t *testing.T) {
 				},
 			},
 		},
-		// While
+		// `while` condition must be boolean
 		{
 			newTestClassType([]ast.Node{
 				&ast.While{
@@ -124,7 +125,7 @@ func TestTypeChecker(t *testing.T) {
 				},
 			},
 		},
-		// Ternaly
+		// ternaly condition must be boolean
 		{
 			newTestClassType([]ast.Node{
 				&ast.TernalyExpression{
@@ -160,7 +161,7 @@ func TestTypeChecker(t *testing.T) {
 				},
 			},
 		},
-		// Return Type
+		// method return type must be return expression type
 		{
 			&builtin.ClassType{
 				Name: "klass",
@@ -241,7 +242,9 @@ func TestTypeChecker(t *testing.T) {
 				},
 			},
 		},
-		// For
+		// for
+		// * break must be in for/while loop
+		// * condition must be boolean
 		{
 			newTestClassType([]ast.Node{
 				func() *ast.For {
@@ -323,7 +326,7 @@ func TestTypeChecker(t *testing.T) {
 				},
 			},
 		},
-		// Variable Declaration, Variable Assignment
+		// types must equal on variable declaration, variable assignment
 		{
 			&builtin.ClassType{
 				Name: "klass",
@@ -380,7 +383,7 @@ func TestTypeChecker(t *testing.T) {
 				},
 			},
 		},
-		//
+		// arithmetic expression type
 		{
 			newTestClassType([]ast.Node{
 				&ast.BinaryOperator{
@@ -476,7 +479,10 @@ func TestTypeChecker(t *testing.T) {
 		checker := NewTypeChecker()
 		checker.Context = &Context{}
 		checker.Context.ClassTypes = builtin.NewClassMapWithPrimivie([]*builtin.ClassType{testCase.Input})
-		checker.VisitClassType(testCase.Input)
+		_, err := checker.VisitClassType(testCase.Input)
+		if err != nil {
+			panic(err)
+		}
 
 		messages := make([]string, len(checker.Errors))
 		for i, err := range checker.Errors {
@@ -495,6 +501,162 @@ func TestTypeChecker(t *testing.T) {
 					t.Errorf("expected: %s, actual: %s", expected.Message, message)
 				}
 			}
+		}
+	}
+}
+
+func TestModifier(t *testing.T) {
+	testCases := []struct {
+		Input       *builtin.ClassType
+		ExpectError error
+	}{
+		// method call on `this` context
+		{
+			&builtin.ClassType{
+				Name: "klass",
+				InstanceMethods: &builtin.MethodMap{
+					Data: map[string][]ast.Node{
+						"private_method": {
+							&ast.MethodDeclaration{
+								Modifiers: []ast.Node{
+									&ast.Modifier{Name: "private"},
+								},
+								ReturnType: nil,
+								Statements: &ast.Block{},
+								Parent: &ast.ClassDeclaration{
+									Name: "klass",
+								},
+							},
+						},
+						"caller": {
+							&ast.MethodDeclaration{
+								ReturnType: nil,
+								Statements: &ast.Block{
+									Statements: []ast.Node{
+										&ast.MethodInvocation{
+											NameOrExpression: &ast.Name{Value: []string{"this", "private_method"}},
+											Parameters:       []ast.Node{},
+										},
+									},
+								},
+								Parent: &ast.ClassDeclaration{
+									Name: "klass",
+								},
+							},
+						},
+					},
+				},
+			},
+			nil,
+		},
+		//
+		{
+			&builtin.ClassType{
+				Name: "klass",
+				InstanceMethods: &builtin.MethodMap{
+					Data: map[string][]ast.Node{
+						"protected_method": {
+							&ast.MethodDeclaration{
+								Modifiers: []ast.Node{
+									&ast.Modifier{Name: "protected"},
+								},
+								ReturnType: nil,
+								Statements: &ast.Block{},
+								Parent: &ast.ClassDeclaration{
+									Name: "klass",
+								},
+							},
+						},
+						"caller": {
+							&ast.MethodDeclaration{
+								ReturnType: nil,
+								Statements: &ast.Block{
+									Statements: []ast.Node{
+										&ast.MethodInvocation{
+											NameOrExpression: &ast.FieldAccess{
+												Expression: &ast.New{
+													Type: &ast.TypeRef{Name: []string{"klass"}},
+												},
+												FieldName: "protected_method",
+											},
+											Parameters: []ast.Node{},
+										},
+									},
+								},
+								Parent: &ast.ClassDeclaration{
+									Name: "klass",
+								},
+							},
+						},
+					},
+				},
+			},
+			errors.New("Method access modifier must be public but protected"),
+		},
+		{
+			&builtin.ClassType{
+				Name: "klass",
+				InstanceMethods: &builtin.MethodMap{
+					Data: map[string][]ast.Node{
+						"public_method": {
+							&ast.MethodDeclaration{
+								Modifiers: []ast.Node{
+									&ast.Modifier{Name: "public"},
+								},
+								ReturnType: nil,
+								Statements: &ast.Block{},
+								Parent: &ast.ClassDeclaration{
+									Name: "klass",
+								},
+							},
+						},
+						"caller": {
+							&ast.MethodDeclaration{
+								ReturnType: nil,
+								Statements: &ast.Block{
+									Statements: []ast.Node{
+										&ast.MethodInvocation{
+											NameOrExpression: &ast.FieldAccess{
+												Expression: &ast.New{
+													Type: &ast.TypeRef{Name: []string{"klass"}},
+												},
+												FieldName: "public_method",
+											},
+											Parameters: []ast.Node{},
+										},
+									},
+								},
+								Parent: &ast.ClassDeclaration{
+									Name: "klass",
+								},
+							},
+						},
+					},
+				},
+			},
+			nil,
+		},
+	}
+	for _, testCase := range testCases {
+		checker := NewTypeChecker()
+		checker.Context = &Context{}
+		checker.Context.ClassTypes = builtin.NewClassMapWithPrimivie([]*builtin.ClassType{testCase.Input})
+		_, err := checker.VisitClassType(testCase.Input)
+
+		expected := testCase.ExpectError
+		if expected == nil {
+			if err != nil {
+				t.Errorf("unexpected error raised: %s", err.Error())
+			}
+			continue
+		}
+		if expected != nil && err == nil {
+			t.Errorf("error is expected, but not raised: %s", expected.Error())
+			continue
+		}
+
+		if expected.Error() != err.Error() {
+			t.Errorf("expected: %s, actual: %s", expected.Error(), err.Error())
 		}
 	}
 }

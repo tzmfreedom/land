@@ -266,8 +266,7 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 			MODIFIER_PUBLIC_ONLY,
 		)
 		if err != nil {
-			// TODO: implmenet
-			return nil, nil
+			return nil, err
 		}
 		if method.ReturnType != nil {
 			return method.ReturnType.Accept(v)

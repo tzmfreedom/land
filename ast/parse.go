@@ -34,7 +34,7 @@ func parse(input antlr.CharStream, src string) Node {
 	lexer := parser.NewapexLexer(input)
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	p := parser.NewapexParser(stream)
-	p.AddErrorListener(antlr.NewDiagnosticErrorListener(true))
+	// p.AddErrorListener(antlr.NewDiagnosticErrorListener(true))
 	p.BuildParseTrees = true
 	tree := p.CompilationUnit()
 	t := tree.Accept(&Builder{

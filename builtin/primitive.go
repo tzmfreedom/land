@@ -1,8 +1,6 @@
 package builtin
 
 import (
-	"fmt"
-	"io"
 	"strings"
 
 	"github.com/tzmfreedom/goland/ast"
@@ -125,79 +123,6 @@ var SetType = &ClassType{
 	Name: "Set",
 }
 
-var System = &ClassType{
-	Name: "System",
-	StaticMethods: &MethodMap{
-		Data: map[string][]ast.Node{
-			"debug": {
-				&ast.MethodDeclaration{
-					Name: "debug",
-					Modifiers: []ast.Node{
-						&ast.Modifier{Name: "public"},
-					},
-					NativeFunction: func(this interface{}, parameter []interface{}, options ...interface{}) interface{} {
-						o := parameter[0].(*Object)
-						stdout := options[0].(io.Writer)
-						fmt.Fprintln(stdout, String(o))
-						return nil
-					},
-				},
-			},
-			"assertequals": {
-				&ast.MethodDeclaration{
-					Name: "assertequals",
-					Modifiers: []ast.Node{
-						&ast.Modifier{Name: "public"},
-					},
-					NativeFunction: func(this interface{}, parameter []interface{}, options ...interface{}) interface{} {
-						expected := parameter[0].(*Object)
-						actual := parameter[1].(*Object)
-						if expected.Value() != actual.Value() {
-							fmt.Printf("expected: %s, actual: %s\n", String(expected), String(actual))
-						}
-						return nil
-					},
-				},
-			},
-		},
-	},
-}
-
-var AccountType = &ClassType{
-	Name: "Account",
-	InstanceFields: &FieldMap{
-		Data: map[string]*Field{
-			"name": {
-				Type: &ast.TypeRef{Name: []string{"String"}},
-				Name: "name",
-				Modifiers: []ast.Node{
-					&ast.Modifier{
-						Name: "public",
-					},
-				},
-			},
-			"website": {
-				Type: &ast.TypeRef{Name: []string{"String"}},
-				Name: "website",
-				Modifiers: []ast.Node{
-					&ast.Modifier{
-						Name: "public",
-					},
-				},
-			},
-			"field1__c": {
-				Type: &ast.TypeRef{Name: []string{"String"}},
-				Name: "field1__c",
-				Modifiers: []ast.Node{
-					&ast.Modifier{
-						Name: "public",
-					},
-				},
-			},
-		},
-	},
-}
-
 func NewClassMapWithPrimivie(classTypes []*ClassType) *ClassMap {
 	classMap := PrimitiveClassMap()
 	for _, classType := range classTypes {
@@ -206,21 +131,20 @@ func NewClassMapWithPrimivie(classTypes []*ClassType) *ClassMap {
 	return classMap
 }
 
+var primitiveClassMap = &ClassMap{
+	Data: map[string]*ClassType{
+		"integer": IntegerType,
+		"string":  StringType,
+		"double":  DoubleType,
+		"boolean": BooleanType,
+		"list":    ListType,
+		"set":     SetType,
+		"map":     MapType,
+	},
+}
+
 func PrimitiveClassMap() *ClassMap {
-	return &ClassMap{
-		Data: map[string]*ClassType{
-			"integer": IntegerType,
-			"string":  StringType,
-			"double":  DoubleType,
-			"boolean": BooleanType,
-			"list":    ListType,
-			"set":     SetType,
-			"map":     MapType,
-			// temporary
-			"system":  System,
-			"account": AccountType,
-		},
-	}
+	return primitiveClassMap
 }
 
 type Object struct {

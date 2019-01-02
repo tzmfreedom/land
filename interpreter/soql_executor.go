@@ -4,13 +4,21 @@ import (
 	"os"
 
 	"github.com/tzmfreedom/go-soapforce"
+	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 )
 
 type SoqlExecutor struct {
 }
 
-func (e *SoqlExecutor) Execute(soql string) (*builtin.Object, error) {
+func (e *SoqlExecutor) Execute(n *ast.Soql) (*builtin.Object, error) {
+	visitor := &ast.TosVisitor{}
+	r, err := n.Accept(visitor)
+	if err != nil {
+		return nil, err
+	}
+	soql := r.(string)
+	soql = soql[1 : len(soql)-1]
 	client := soapforce.NewClient()
 	username := os.Getenv("SALESFORCE_USERNAME")
 	password := os.Getenv("SALESFORCE_PASSWORD")
@@ -21,12 +29,12 @@ func (e *SoqlExecutor) Execute(soql string) (*builtin.Object, error) {
 	if err != nil {
 		return nil, err
 	}
-	return e.getListFromResponse(result.Records)
+	return e.getListFromResponse(n, result.Records)
 }
 
-func (e *SoqlExecutor) getListFromResponse(records []*soapforce.SObject) (*builtin.Object, error) {
+func (e *SoqlExecutor) getListFromResponse(n *ast.Soql, records []*soapforce.SObject) (*builtin.Object, error) {
 	objects := make([]*builtin.Object, len(records))
-	classType := builtin.AccountType
+	classType, _ := builtin.PrimitiveClassMap().Get(n.FromObject)
 	for i, r := range records {
 		object := &builtin.Object{}
 		object.ClassType = classType

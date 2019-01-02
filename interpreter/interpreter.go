@@ -676,14 +676,8 @@ func (v *Interpreter) VisitThrow(n *ast.Throw) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitSoql(n *ast.Soql) (interface{}, error) {
-	visitor := &ast.TosVisitor{}
-	r, err := n.Accept(visitor)
-	if err != nil {
-		return nil, err
-	}
-	sql := r.(string)
 	executor := &SoqlExecutor{}
-	objects, err := executor.Execute(sql[1 : len(sql)-1])
+	objects, err := executor.Execute(n)
 	if err != nil {
 		return nil, err
 	}

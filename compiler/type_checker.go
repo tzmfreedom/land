@@ -63,6 +63,22 @@ func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) 
 			}
 		}
 	}
+
+	if n.SuperClass != nil {
+		_, err := n.SuperClass.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if n.ImplementClasses != nil {
+		for _, impl := range n.ImplementClasses {
+			_, err := impl.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 	v.Context.CurrentClass = nil
 	return nil, nil
 }
@@ -327,7 +343,7 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		}
 	}
 	if n.Op == "=" || n.Op == "+=" || n.Op == "-=" || n.Op == "*=" || n.Op == "/=" || n.Op == "%=" {
-		if !l.(*builtin.ClassType).Equals(r.(*builtin.ClassType)) {
+		if r != nil && !l.(*builtin.ClassType).Equals(r.(*builtin.ClassType)) {
 			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", l.(*builtin.ClassType).String(), r.(*builtin.ClassType).String()), n.Left)
 		}
 		return l, nil
@@ -470,7 +486,7 @@ func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
 	resolver := &TypeResolver{Context: v.Context}
 	t, err := resolver.ResolveType(n.Name)
 	if err != nil {
-		v.AddError(err.Error(), n)
+		return nil, err
 	}
 	if t.IsGeneric() {
 		types := make([]*builtin.ClassType, len(n.Parameters))

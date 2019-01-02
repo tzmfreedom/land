@@ -212,7 +212,7 @@ func (r *TypeResolver) ResolveType(names []string) (*builtin.ClassType, error) {
 			}
 		}
 	}
-	return nil, nil
+	return nil, fmt.Errorf("%s does not found", strings.Join(names, "."))
 }
 
 func (r *TypeResolver) FindInstanceMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType, allowedModifier int) (*ast.MethodDeclaration, error) {

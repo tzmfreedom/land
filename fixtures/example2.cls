@@ -1,4 +1,4 @@
-public with sharing class Foo extends Bar implements Baz {
+public with sharing class Foo {
     public Integer i = 0;
     public Boolean b = false;
     public String s = 'foo';

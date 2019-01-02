@@ -324,7 +324,7 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 		}
 	}
 	if classType == builtin.ListType {
-		if len(n.Init.Records) != 0 {
+		if n.Init != nil && len(n.Init.Records) != 0 {
 			records := make([]*builtin.Object, len(n.Init.Records))
 			for i, r := range n.Init.Records {
 				initRecord, err := r.Accept(v)

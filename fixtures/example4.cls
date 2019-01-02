@@ -1,4 +1,4 @@
-public with sharing class Foo extends Bar implements Baz {
+public with sharing class Foo {
     public static String action() {
         List<Account> accounts = [
             SELECT

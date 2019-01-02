@@ -1,4 +1,4 @@
-public with sharing class Foo extends Bar implements Baz {
+public with sharing class Foo {
     public static String action() {
         System.debug(1 + 2 + 3);
         System.debug(1 + 2 * 3);

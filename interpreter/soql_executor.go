@@ -1,8 +1,6 @@
 package interpreter
 
 import (
-	"os"
-
 	"github.com/tzmfreedom/go-soapforce"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
@@ -56,11 +54,6 @@ func (e *SoqlExecutor) getListFromResponse(n *ast.Soql, records []*soapforce.SOb
 }
 
 func executeQuery(soql string) (*soapforce.QueryResult, error) {
-	client := soapforce.NewClient()
-	username := os.Getenv("SALESFORCE_USERNAME")
-	password := os.Getenv("SALESFORCE_PASSWORD")
-	endpoint := os.Getenv("SALESFORCE_ENDPOINT")
-	client.SetLoginUrl(endpoint)
-	client.Login(username, password)
+	client := builtin.NewSoapClient()
 	return client.Query(soql)
 }

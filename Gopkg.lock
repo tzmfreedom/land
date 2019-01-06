@@ -39,6 +39,14 @@
   version = "v0.2.0"
 
 [[projects]]
+  digest = "1:ecd9aa82687cf31d1585d4ac61d0ba180e42e8a6182b85bd785fcca8dfeefc1b"
+  name = "github.com/joho/godotenv"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "23d116af351c84513e1946b527c88823e476be13"
+  version = "v1.3.0"
+
+[[projects]]
   digest = "1:16dd6b893b78a50564cdde1d9f7ea67224dece11bb0886bd882f1dc3dc1d440d"
   name = "github.com/k0kubun/pp"
   packages = ["."]
@@ -74,12 +82,12 @@
   version = "v0.0.4"
 
 [[projects]]
-  digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
+  digest = "1:cf31692c14422fa27c83a05292eb5cbe0fb2775972e8f1f8446a71549bd8980b"
   name = "github.com/pkg/errors"
   packages = ["."]
   pruneopts = "UT"
-  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
-  version = "v0.8.0"
+  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
+  version = "v0.8.1"
 
 [[projects]]
   branch = "master"
@@ -91,11 +99,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b5babcc7bb742f395b1339fdc9ebd8a43eed70bbdcf808265e97ff1c67f268bd"
+  digest = "1:5004e851e5eccde563d17871cd9d11c82e2faa578b1a0de81dc74867ad3845a4"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "8ff4e546d48be377a38a3ab13ef2dd4dd8dce06a"
+  revision = "badf5585203e739f88c2c6cd34188a6f54b5d619"
 
 [solve-meta]
   analyzer-name = "dep"
@@ -105,6 +113,7 @@
     "github.com/chzyer/readline",
     "github.com/fsnotify/fsnotify",
     "github.com/google/go-cmp/cmp",
+    "github.com/joho/godotenv",
     "github.com/k0kubun/pp",
     "github.com/lib/pq",
     "github.com/pkg/errors",

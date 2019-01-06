@@ -2,3 +2,4 @@ vendor/
 example.cls
 .idea/
 *.js
+.env

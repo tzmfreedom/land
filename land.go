@@ -13,6 +13,7 @@ import (
 
 	"github.com/chzyer/readline"
 	"github.com/fsnotify/fsnotify"
+	"github.com/joho/godotenv"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 	"github.com/tzmfreedom/goland/compiler"
@@ -29,20 +30,33 @@ var preprocessors = []ast.PreProcessor{
 }
 
 type option struct {
-	SubCommand  string
-	Action      string
-	Files       []string
-	Interactive bool
+	SubCommand   string
+	Action       string
+	Files        []string
+	Interactive  bool
+	LoaderSource string
 }
 
 func main() {
+	err := godotenv.Load()
 	option, err := parseOption(os.Args)
 	if err != nil {
 		handleError(err)
 		return
 	}
 
+	// TODO: namespace(not builtin?)
+	if option.SubCommand != "setup" {
+		builtin.Load(option.LoaderSource)
+	}
+
 	switch option.SubCommand {
+	case "setup":
+		err := builtin.CreateMetadataFile(option.LoaderSource)
+		if err != nil {
+			handleError(err)
+			return
+		}
 	case "watch":
 		trees, err := parse(option.Files)
 		if err != nil {
@@ -134,6 +148,7 @@ func parseOption(args []string) (*option, error) {
 	directory := flg.String("d", "", "directory")
 	action := flg.String("a", "", "action")
 	interactive := flg.Bool("i", false, "interactive")
+	loaderSource := flg.String("l", builtin.DefaultMetafileName, "loader")
 
 	err := flg.Parse(args[2:])
 	if err != nil {
@@ -148,6 +163,7 @@ func parseOption(args []string) (*option, error) {
 	if cmd != "format" &&
 		cmd != "eval-server" &&
 		cmd != "server" &&
+		cmd != "setup" &&
 		*action == "" &&
 		*interactive == false {
 		return nil, errors.New("-a CLASS#METHOD is required")
@@ -169,10 +185,11 @@ func parseOption(args []string) (*option, error) {
 		}
 	}
 	return &option{
-		SubCommand:  cmd,
-		Action:      *action,
-		Files:       files,
-		Interactive: *interactive,
+		SubCommand:   cmd,
+		Action:       *action,
+		Files:        files,
+		Interactive:  *interactive,
+		LoaderSource: *loaderSource,
 	}, nil
 }
 

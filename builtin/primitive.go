@@ -8,121 +8,6 @@ import (
 
 var PrimitiveClasses []*ClassType
 
-var IntegerType = &ClassType{
-	Name: "Integer",
-}
-
-var StringType = &ClassType{
-	Name: "String",
-}
-
-var DoubleType = &ClassType{
-	Name: "Double",
-}
-
-var BooleanType = &ClassType{
-	Name: "Boolean",
-}
-
-var ListType = &ClassType{
-	Name: "List",
-	Modifiers: []ast.Node{
-		&ast.Modifier{
-			Name: "public",
-		},
-	},
-	Constructors: []*ast.ConstructorDeclaration{
-		{
-			Modifiers: []ast.Node{
-				&ast.Modifier{
-					Name: "public",
-				},
-			},
-			Parameters:     []ast.Node{},
-			NativeFunction: func(params []interface{}) {},
-		},
-		{
-			Modifiers: []ast.Node{
-				&ast.Modifier{
-					Name: "public",
-				},
-			},
-			Parameters: []ast.Node{
-				&ast.Parameter{
-					Type: &ast.TypeRef{
-						Name: []string{"List"},
-						Parameters: []ast.Node{
-							&ast.TypeRef{
-								Name: []string{"T:1"},
-							},
-						},
-					},
-					Name: "list",
-				},
-			},
-			NativeFunction: func(params []interface{}) {
-				listObj := params[1].(*Object)
-				listParams := listObj.Extra["records"].([]*Object)
-				newListParams := make([]*Object, len(listParams))
-				for i, listParam := range listParams {
-					newListParams[i] = &Object{
-						ClassType: listParam.ClassType,
-					}
-				}
-				this := params[0].(*Object)
-				this.Extra = map[string]interface{}{
-					"records": newListParams,
-				}
-			},
-		},
-	},
-	InstanceFields: NewFieldMap(),
-	InstanceMethods: &MethodMap{
-		Data: map[string][]ast.Node{
-			"size": {
-				&ast.MethodDeclaration{
-					Name: "size",
-					Modifiers: []ast.Node{
-						&ast.Modifier{Name: "public"},
-					},
-					NativeFunction: func(this interface{}, params []interface{}, options ...interface{}) interface{} {
-						thisObj := this.(*Object)
-						return len(thisObj.Extra["records"].([]*Object))
-					},
-				},
-			},
-			"isNext": {
-				&ast.MethodDeclaration{
-					Name: "next",
-					NativeFunction: func(this interface{}, params []interface{}, options ...interface{}) interface{} {
-						thisObj := this.(*Object)
-						counter := thisObj.Extra["counter"].(int)
-						return thisObj.Extra["records"].([]*Object)[counter]
-					},
-				},
-			},
-			"next": {
-				&ast.MethodDeclaration{
-					Name: "next",
-					NativeFunction: func(this interface{}, params []interface{}, options ...interface{}) interface{} {
-						thisObj := this.(*Object)
-						counter := thisObj.Extra["counter"].(int)
-						return thisObj.Extra["records"].([]*Object)[counter]
-					},
-				},
-			},
-		},
-	},
-}
-
-var MapType = &ClassType{
-	Name: "Map",
-}
-
-var SetType = &ClassType{
-	Name: "Set",
-}
-
 func NewClassMapWithPrimivie(classTypes []*ClassType) *ClassMap {
 	classMap := PrimitiveClassMap()
 	for _, classType := range classTypes {
@@ -137,9 +22,6 @@ var primitiveClassMap = &ClassMap{
 		"string":  StringType,
 		"double":  DoubleType,
 		"boolean": BooleanType,
-		"list":    ListType,
-		"set":     SetType,
-		"map":     MapType,
 	},
 }
 
@@ -208,4 +90,41 @@ func (m *ObjectMap) Get(k string) (*Object, bool) {
 
 func (m *ObjectMap) All() map[string]*Object {
 	return m.Data
+}
+
+var publicModifier = &ast.Modifier{Name: "public"}
+var privateModifier = &ast.Modifier{Name: "private"}
+var protectedModifier = &ast.Modifier{Name: "protected"}
+var globalModifier = &ast.Modifier{Name: "global"}
+
+func PublicModifier() *ast.Modifier {
+	return publicModifier
+}
+
+func CreateClass(
+	name string,
+	constructors []*ast.ConstructorDeclaration,
+	instanceMethods *MethodMap,
+	staticMethods *MethodMap,
+) *ClassType {
+	return &ClassType{
+		Name:            name,
+		Modifiers:       []ast.Node{PublicModifier()},
+		Constructors:    constructors,
+		InstanceFields:  NewFieldMap(),
+		StaticFields:    NewFieldMap(),
+		InstanceMethods: instanceMethods,
+		StaticMethods:   staticMethods,
+	}
+}
+
+func CreateMethod(
+	name string,
+	nativeFunction func(interface{}, []interface{}, ...interface{}) interface{},
+) *ast.MethodDeclaration {
+	return &ast.MethodDeclaration{
+		Name: name,
+		Modifiers: []ast.Node{PublicModifier()},
+		NativeFunction: nativeFunction,
+	}
 }

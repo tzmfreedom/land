@@ -123,8 +123,8 @@ func CreateMethod(
 	nativeFunction func(interface{}, []interface{}, ...interface{}) interface{},
 ) *ast.MethodDeclaration {
 	return &ast.MethodDeclaration{
-		Name: name,
-		Modifiers: []ast.Node{PublicModifier()},
+		Name:           name,
+		Modifiers:      []ast.Node{PublicModifier()},
 		NativeFunction: nativeFunction,
 	}
 }

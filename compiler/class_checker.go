@@ -12,6 +12,12 @@ type ClassChecker struct {
 }
 
 func (c *ClassChecker) Check(t *builtin.ClassType) error {
+	if err := c.checkSameParameterName(t.InstanceMethods); err != nil {
+		return err
+	}
+	if err := c.checkSameParameterName(t.StaticMethods); err != nil {
+		return err
+	}
 	if err := c.checkDuplicated(t.InstanceMethods); err != nil {
 		return err
 	}
@@ -27,9 +33,26 @@ func (c *ClassChecker) Check(t *builtin.ClassType) error {
 	return nil
 }
 
-func (c *ClassChecker) checkDuplicated(methods *builtin.MethodMap) error {
+func (c *ClassChecker) checkSameParameterName(m *builtin.MethodMap) error {
+	for _, methods := range m.Data {
+		for _, method := range methods {
+			m := method.(*ast.MethodDeclaration)
+			parameterNames := map[string]struct{}{}
+			for _, p := range m.Parameters {
+				name := p.(*ast.Parameter).Name
+				if _, ok := parameterNames[name]; ok {
+					return fmt.Errorf("parameter name is duplicated: %s", name)
+				}
+				parameterNames[name] = struct{}{}
+			}
+		}
+	}
+	return nil
+}
+
+func (c *ClassChecker) checkDuplicated(m *builtin.MethodMap) error {
 	resolver := &TypeResolver{Context: c.Context}
-	for _, methods := range methods.Data {
+	for _, methods := range m.Data {
 		if len(methods) == 1 {
 			continue
 		}
@@ -43,9 +66,10 @@ func (c *ClassChecker) checkDuplicated(methods *builtin.MethodMap) error {
 				}
 				match := true
 				for i, p := range m.Parameters {
-					otherParam := otherDeclaration.Parameters[i]
-					otherParamType, _ := resolver.ResolveType(otherParam.(*ast.TypeRef).Name)
-					methodParamType, _ := resolver.ResolveType(p.(*ast.TypeRef).Name)
+					otherParam := otherDeclaration.Parameters[i].(*ast.Parameter)
+					otherParamType, _ := resolver.ResolveType(otherParam.Type.(*ast.TypeRef).Name)
+					methodParam := p.(*ast.Parameter)
+					methodParamType, _ := resolver.ResolveType(methodParam.Type.(*ast.TypeRef).Name)
 					if methodParamType != otherParamType {
 						match = false
 						break
@@ -55,7 +79,6 @@ func (c *ClassChecker) checkDuplicated(methods *builtin.MethodMap) error {
 					return fmt.Errorf("method %s is duplicated", m.Name)
 				}
 			}
-			return nil
 		}
 	}
 	return nil

@@ -37,6 +37,7 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 		case *ast.ConstructorDeclaration:
 			t.Constructors = append(t.Constructors, decl)
 		case *ast.MethodDeclaration:
+			// TODO: check method name and signature to prevent conflict
 			if decl.IsStatic() {
 				t.StaticMethods.Add(decl.Name, decl)
 			} else {
@@ -62,7 +63,7 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 			} else {
 				for _, d := range decl.Declarators {
 					varDecl := d.(*ast.VariableDeclarator)
-					if _, ok := t.StaticFields.Get(varDecl.Name); ok {
+					if _, ok := t.InstanceFields.Get(varDecl.Name); ok {
 						return nil, fmt.Errorf("Field %s is already defined", varDecl.Name)
 					}
 					t.InstanceFields.Set(

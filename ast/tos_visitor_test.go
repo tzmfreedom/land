@@ -120,6 +120,30 @@ func TestToString(t *testing.T) {
 public class foo extends bar implements baz {
 }`,
 		},
+		{
+			&MethodDeclaration{
+				Name:       "foo",
+				ReturnType: &TypeRef{Name: []string{"Integer"}},
+				Modifiers: []Node{
+					&Modifier{Name: "public"},
+				},
+				Annotations: []Node{
+					&Annotation{Name: "@annotation"},
+				},
+				Parameters: []Node{
+					&Parameter{
+						Type: &TypeRef{Name: []string{"String"}},
+						Name: "s",
+					},
+				},
+				Statements: &Block{
+					Statements: []Node{},
+				},
+			},
+			`@annotation
+public Integer foo (String s) {
+}`,
+		},
 	}
 
 	for _, testCase := range testCases {

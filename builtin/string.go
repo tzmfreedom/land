@@ -1,10 +1,6 @@
 package builtin
 
-import (
-	"strings"
-
-	"github.com/tzmfreedom/goland/ast"
-)
+import "github.com/tzmfreedom/goland/ast"
 
 var StringType = createStringType()
 

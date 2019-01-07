@@ -323,6 +323,15 @@ func (v *TosVisitor) VisitIf(n *If) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitMethodDeclaration(n *MethodDeclaration) (interface{}, error) {
+	annotations := make([]string, len(n.Annotations))
+	for i, a := range n.Annotations {
+		r, _ := a.Accept(v)
+		annotations[i] = r.(string)
+	}
+	annotationStr := ""
+	if len(annotations) != 0 {
+		annotationStr = fmt.Sprintf("%s\n", strings.Join(annotations, "\n"))
+	}
 	modifiers := make([]string, len(n.Modifiers))
 	for i, m := range n.Modifiers {
 		r, _ := m.Accept(v)
@@ -347,8 +356,9 @@ func (v *TosVisitor) VisitMethodDeclaration(n *MethodDeclaration) (interface{}, 
 		block = fmt.Sprintf("%s\n", block)
 	}
 	return fmt.Sprintf(
-		`%s %s %s (%s) {
+		`%s%s %s %s (%s) {
 %s%s`,
+		annotationStr,
 		v.withIndent(strings.Join(modifiers, " ")),
 		returnType,
 		n.Name,

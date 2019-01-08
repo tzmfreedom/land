@@ -247,3 +247,34 @@ const (
 func TypeName(v interface{}) string {
 	return v.(*ClassType).Name
 }
+
+var Null = &Object{
+	ClassType:      nil,
+	InstanceFields: NewObjectMap(),
+	GenericType:    []*ClassType{},
+	Extra:          map[string]interface{}{},
+}
+
+func NewInteger(value int) *Object {
+	t := CreateObject(IntegerType)
+	t.Extra["value"] = value
+	return t
+}
+
+func NewDouble(value float64) *Object {
+	t := CreateObject(DoubleType)
+	t.Extra["value"] = value
+	return t
+}
+
+func NewString(value string) *Object {
+	t := CreateObject(StringType)
+	t.Extra["value"] = value
+	return t
+}
+
+func NewBoolean(value bool) *Object {
+	t := CreateObject(BooleanType)
+	t.Extra["value"] = value
+	return t
+}

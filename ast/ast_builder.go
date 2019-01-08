@@ -1003,7 +1003,14 @@ func (v *Builder) VisitPrimary(ctx *parser.PrimaryContext) interface{} {
 		return l.Accept(v)
 	} else if i := ctx.ApexIdentifier(); i != nil {
 		n := &Name{Location: v.newLocation(ctx)}
-		value := i.Accept(v).(string)
+		res := i.Accept(v)
+		var value string
+		switch r := res.(type) {
+		case string:
+			value = r
+		case *TypeRef:
+			value = strings.Join(r.Name, ".")
+		}
 		n.Value = []string{value}
 		return n
 	} else if l := ctx.SoqlLiteral(); l != nil {

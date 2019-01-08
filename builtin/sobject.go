@@ -24,14 +24,19 @@ type SobjectField struct {
 	ReferenceTo      []string
 }
 
+var soapClient *soapforce.Client
+
 func NewSoapClient() *soapforce.Client {
-	client := soapforce.NewClient()
+	if soapClient != nil {
+		return soapClient
+	}
+	soapClient := soapforce.NewClient()
 	username := os.Getenv("SALESFORCE_USERNAME")
 	password := os.Getenv("SALESFORCE_PASSWORD")
 	endpoint := os.Getenv("SALESFORCE_ENDPOINT")
-	client.SetLoginUrl(endpoint)
-	client.Login(username, password)
-	return client
+	soapClient.SetLoginUrl(endpoint)
+	soapClient.Login(username, password)
+	return soapClient
 }
 
 var typeMapper = map[string]string{

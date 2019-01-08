@@ -13,9 +13,10 @@ func createListType() *ClassType {
 		[]ast.Node{
 			CreateMethod(
 				"size",
+				"Integer",
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					thisObj := this.(*Object)
-					return len(thisObj.Extra["records"].([]*Object))
+					return NewInteger(len(thisObj.Extra["records"].([]*Object)))
 				},
 			),
 		},
@@ -25,6 +26,7 @@ func createListType() *ClassType {
 		[]ast.Node{
 			CreateMethod(
 				"next",
+				"Boolean",
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					thisObj := this.(*Object)
 					counter := thisObj.Extra["counter"].(int)
@@ -38,6 +40,7 @@ func createListType() *ClassType {
 		[]ast.Node{
 			CreateMethod(
 				"next",
+				"T:1",
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					thisObj := this.(*Object)
 					counter := thisObj.Extra["counter"].(int)

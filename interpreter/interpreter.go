@@ -59,7 +59,7 @@ func (v *Interpreter) VisitInterfaceDeclaration(n *ast.InterfaceDeclaration) (in
 }
 
 func (v *Interpreter) VisitIntegerLiteral(n *ast.IntegerLiteral) (interface{}, error) {
-	return newInteger(n.Value), nil
+	return builtin.NewInteger(n.Value), nil
 }
 
 func (v *Interpreter) VisitParameter(n *ast.Parameter) (interface{}, error) {
@@ -88,7 +88,7 @@ func (v *Interpreter) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) 
 }
 
 func (v *Interpreter) VisitBooleanLiteral(n *ast.BooleanLiteral) (interface{}, error) {
-	return newBoolean(n.Value), nil
+	return builtin.NewBoolean(n.Value), nil
 }
 
 func (v *Interpreter) VisitBreak(n *ast.Break) (interface{}, error) {
@@ -104,7 +104,7 @@ func (v *Interpreter) VisitDml(n *ast.Dml) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitDoubleLiteral(n *ast.DoubleLiteral) (interface{}, error) {
-	return newDouble(n.Value), nil
+	return builtin.NewDouble(n.Value), nil
 }
 
 func (v *Interpreter) VisitFieldDeclaration(n *ast.FieldDeclaration) (interface{}, error) {
@@ -246,9 +246,9 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		}
 	}
 	if m.NativeFunction != nil {
-		// set parameter
-		_ = m.NativeFunction(receiver, evaluated, v.Stdout, v.Stderr)
+		r := m.NativeFunction(receiver, evaluated, v.Stdout, v.Stderr)
 		Publish("method_end", v.Context, n)
+		return r, nil
 	} else {
 		prev := v.Context.Env
 		v.Context.Env = NewEnv(nil)
@@ -359,14 +359,14 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitNullLiteral(n *ast.NullLiteral) (interface{}, error) {
-	return Null, nil
+	return builtin.Null, nil
 }
 
 func (v *Interpreter) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, error) {
 	if n.Op == "++" {
 		name := n.Expression.(*ast.Name)
 		l, _ := name.Accept(v)
-		exp := newInteger(l.(*builtin.Object).IntegerValue() + 1)
+		exp := builtin.NewInteger(l.(*builtin.Object).IntegerValue() + 1)
 		// TODO: implement
 		v.Context.Env.Set(name.Value[0], exp)
 		return exp, nil
@@ -374,7 +374,7 @@ func (v *Interpreter) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, err
 	if n.Op == "--" {
 		name := n.Expression.(*ast.Name)
 		l, _ := name.Accept(v)
-		exp := newInteger(l.(*builtin.Object).IntegerValue() - 1)
+		exp := builtin.NewInteger(l.(*builtin.Object).IntegerValue() - 1)
 		// TODO: implement
 		v.Context.Env.Set(name.Value[0], exp)
 		return exp, nil
@@ -398,26 +398,26 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			l := lObj.IntegerValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newInteger(l + r), nil
+				return builtin.NewInteger(l + r), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newDouble(float64(l) + r), nil
+				return builtin.NewDouble(float64(l) + r), nil
 			}
 		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newDouble(l + float64(r)), nil
+				return builtin.NewDouble(l + float64(r)), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newDouble(r + l), nil
+				return builtin.NewDouble(r + l), nil
 			}
 		} else if lType == builtin.StringType {
 			l := lObj.StringValue()
 			r := rObj.StringValue()
-			return newString(l + r), nil
+			return builtin.NewString(l + r), nil
 		}
 		panic("type error")
 	case "-":
@@ -425,21 +425,21 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			l := lObj.IntegerValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newInteger(l - r), nil
+				return builtin.NewInteger(l - r), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newDouble(float64(l) - r), nil
+				return builtin.NewDouble(float64(l) - r), nil
 			}
 		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newDouble(l - float64(r)), nil
+				return builtin.NewDouble(l - float64(r)), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newDouble(r - l), nil
+				return builtin.NewDouble(r - l), nil
 			}
 		}
 		panic("type error")
@@ -448,21 +448,21 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			l := lObj.IntegerValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newInteger(l * r), nil
+				return builtin.NewInteger(l * r), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newDouble(float64(l) * r), nil
+				return builtin.NewDouble(float64(l) * r), nil
 			}
 		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newDouble(l * float64(r)), nil
+				return builtin.NewDouble(l * float64(r)), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newDouble(r * l), nil
+				return builtin.NewDouble(r * l), nil
 			}
 		}
 		panic("type error")
@@ -471,48 +471,48 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			l := lObj.IntegerValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newInteger(l / r), nil
+				return builtin.NewInteger(l / r), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newDouble(float64(l) / r), nil
+				return builtin.NewDouble(float64(l) / r), nil
 			}
 		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newDouble(l / float64(r)), nil
+				return builtin.NewDouble(l / float64(r)), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newDouble(r / l), nil
+				return builtin.NewDouble(r / l), nil
 			}
 		}
 		panic("type error")
 	case "%":
 		l := lObj.IntegerValue()
 		r := rObj.IntegerValue()
-		return newInteger(l % r), nil
+		return builtin.NewInteger(l % r), nil
 	case "<":
 		if lType == builtin.IntegerType {
 			l := lObj.IntegerValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newBoolean(l < r), nil
+				return builtin.NewBoolean(l < r), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newBoolean(float64(l) < r), nil
+				return builtin.NewBoolean(float64(l) < r), nil
 			}
 		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newBoolean(l < float64(r)), nil
+				return builtin.NewBoolean(l < float64(r)), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newBoolean(r < l), nil
+				return builtin.NewBoolean(r < l), nil
 			}
 		}
 		panic("type error")
@@ -521,21 +521,21 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			l := lObj.IntegerValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newBoolean(l > r), nil
+				return builtin.NewBoolean(l > r), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newBoolean(float64(l) > r), nil
+				return builtin.NewBoolean(float64(l) > r), nil
 			}
 		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newBoolean(l > float64(r)), nil
+				return builtin.NewBoolean(l > float64(r)), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newBoolean(r > l), nil
+				return builtin.NewBoolean(r > l), nil
 			}
 		}
 		panic("type error")
@@ -544,21 +544,21 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			l := lObj.IntegerValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newBoolean(l <= r), nil
+				return builtin.NewBoolean(l <= r), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newBoolean(float64(l) <= r), nil
+				return builtin.NewBoolean(float64(l) <= r), nil
 			}
 		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newBoolean(l <= float64(r)), nil
+				return builtin.NewBoolean(l <= float64(r)), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newBoolean(r <= l), nil
+				return builtin.NewBoolean(r <= l), nil
 			}
 		}
 		panic("type error")
@@ -567,21 +567,21 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			l := lObj.IntegerValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newBoolean(l >= r), nil
+				return builtin.NewBoolean(l >= r), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newBoolean(float64(l) >= r), nil
+				return builtin.NewBoolean(float64(l) >= r), nil
 			}
 		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newBoolean(l >= float64(r)), nil
+				return builtin.NewBoolean(l >= float64(r)), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newBoolean(r >= l), nil
+				return builtin.NewBoolean(r >= l), nil
 			}
 		}
 		panic("type error")
@@ -590,26 +590,26 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			l := lObj.IntegerValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newBoolean(l == r), nil
+				return builtin.NewBoolean(l == r), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newBoolean(float64(l) == r), nil
+				return builtin.NewBoolean(float64(l) == r), nil
 			}
 		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newBoolean(l == float64(r)), nil
+				return builtin.NewBoolean(l == float64(r)), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newBoolean(r == l), nil
+				return builtin.NewBoolean(r == l), nil
 			}
 		} else if lType == builtin.StringType {
 			l := lObj.StringValue()
 			r := rObj.StringValue()
-			return newBoolean(l == r), nil
+			return builtin.NewBoolean(l == r), nil
 		}
 		panic("type error")
 	case "!=":
@@ -617,26 +617,26 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			l := lObj.IntegerValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newBoolean(l != r), nil
+				return builtin.NewBoolean(l != r), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newBoolean(float64(l) != r), nil
+				return builtin.NewBoolean(float64(l) != r), nil
 			}
 		} else if lType == builtin.DoubleType {
 			l := lObj.DoubleValue()
 			if rType == builtin.IntegerType {
 				r := rObj.IntegerValue()
-				return newBoolean(l != float64(r)), nil
+				return builtin.NewBoolean(l != float64(r)), nil
 			}
 			if rType == builtin.DoubleType {
 				r := rObj.DoubleValue()
-				return newBoolean(r != l), nil
+				return builtin.NewBoolean(r != l), nil
 			}
 		} else if lType == builtin.StringType {
 			l := lObj.StringValue()
 			r := rObj.StringValue()
-			return newBoolean(l != r), nil
+			return builtin.NewBoolean(l != r), nil
 		}
 		panic("type error")
 	case "=":
@@ -689,7 +689,7 @@ func (v *Interpreter) VisitSosl(n *ast.Sosl) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitStringLiteral(n *ast.StringLiteral) (interface{}, error) {
-	return newString(n.Value), nil
+	return builtin.NewString(n.Value), nil
 }
 
 func (v *Interpreter) VisitSwitch(n *ast.Switch) (interface{}, error) {
@@ -715,7 +715,7 @@ func (v *Interpreter) VisitVariableDeclaration(n *ast.VariableDeclaration) (inte
 			}
 			v.Context.Env.Set(d.Name, val.(*builtin.Object))
 		} else {
-			v.Context.Env.Set(d.Name, Null)
+			v.Context.Env.Set(d.Name, builtin.Null)
 		}
 	}
 	return nil, nil
@@ -845,37 +845,6 @@ func (v *Interpreter) VisitName(n *ast.Name) (interface{}, error) {
 
 func (v *Interpreter) VisitConstructorDeclaration(n *ast.ConstructorDeclaration) (interface{}, error) {
 	return ast.VisitConstructorDeclaration(v, n)
-}
-
-var Null = &builtin.Object{
-	ClassType:      nil,
-	InstanceFields: builtin.NewObjectMap(),
-	GenericType:    []*builtin.ClassType{},
-	Extra:          map[string]interface{}{},
-}
-
-func newInteger(value int) *builtin.Object {
-	t := createObject(builtin.IntegerType)
-	t.Extra["value"] = value
-	return t
-}
-
-func newDouble(value float64) *builtin.Object {
-	t := createObject(builtin.DoubleType)
-	t.Extra["value"] = value
-	return t
-}
-
-func newString(value string) *builtin.Object {
-	t := createObject(builtin.StringType)
-	t.Extra["value"] = value
-	return t
-}
-
-func newBoolean(value bool) *builtin.Object {
-	t := createObject(builtin.BooleanType)
-	t.Extra["value"] = value
-	return t
 }
 
 var createObject = builtin.CreateObject

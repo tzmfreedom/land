@@ -97,7 +97,7 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 			m := method.(*ast.MethodDeclaration)
 			if m.IsOverride() {
 				if t.SuperClass == nil {
-					return fmt.Errorf("override %s is required super class", m.Name)
+					return fmt.Errorf("@Override specified for non-overriding method: %s", m.Name)
 				}
 
 				types := make([]*builtin.ClassType, len(m.Parameters))
@@ -107,6 +107,15 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 				_, err := resolver.FindInstanceMethod(super, m.Name, types, MODIFIER_NO_CHECK)
 				if err != nil {
 					return fmt.Errorf("method %s missing on super class", m.Name)
+				}
+			} else {
+				types := make([]*builtin.ClassType, len(m.Parameters))
+				for i, p := range m.Parameters {
+					types[i], _ = resolver.ResolveType(p.(*ast.Parameter).Type.(*ast.TypeRef).Name)
+				}
+				method, _ := resolver.FindInstanceMethod(super, m.Name, types, MODIFIER_NO_CHECK)
+				if method != nil {
+					method.
 				}
 			}
 		}

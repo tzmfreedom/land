@@ -32,11 +32,11 @@ func (e *SoqlExecutor) getListFromResponse(n *ast.Soql, records []*soapforce.SOb
 		object := &builtin.Object{}
 		object.ClassType = classType
 		object.InstanceFields = builtin.NewObjectMap()
-		object.InstanceFields.Set("id", newString(r.Id))
+		object.InstanceFields.Set("id", builtin.NewString(r.Id))
 		for k, v := range r.Fields {
 			switch val := v.(type) {
 			case string:
-				object.InstanceFields.Set(k, newString(val))
+				object.InstanceFields.Set(k, builtin.NewString(val))
 			}
 		}
 		objects[i] = object

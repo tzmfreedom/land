@@ -105,7 +105,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.O
 		name := names[0]
 		if val, ok := ctx.Env.Get(name); ok {
 			for _, f := range names[1:] {
-				if val == Null {
+				if val == builtin.Null {
 					return nil, errors.Errorf("null pointer exception: %s", f)
 				}
 				val, ok = val.InstanceFields.Get(f)

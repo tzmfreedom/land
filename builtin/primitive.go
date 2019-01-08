@@ -34,7 +34,6 @@ type Object struct {
 	InstanceFields *ObjectMap
 	GenericType    []*ClassType
 	Extra          map[string]interface{}
-	ToString       func(*Object) string
 }
 
 func CreateObject(t *ClassType) *Object {
@@ -120,11 +119,17 @@ func CreateClass(
 
 func CreateMethod(
 	name string,
+	returnType string,
 	nativeFunction func(interface{}, []interface{}, ...interface{}) interface{},
 ) *ast.MethodDeclaration {
+	var retType *ast.TypeRef
+	if returnType != "" {
+		retType = &ast.TypeRef{Name: []string{returnType}}
+	}
 	return &ast.MethodDeclaration{
 		Name:           name,
 		Modifiers:      []ast.Node{PublicModifier()},
+		ReturnType:     retType,
 		NativeFunction: nativeFunction,
 	}
 }

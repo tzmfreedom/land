@@ -115,7 +115,6 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 				}
 				method, _ := resolver.FindInstanceMethod(super, m.Name, types, MODIFIER_NO_CHECK)
 				if method != nil {
-					method.
 				}
 			}
 		}

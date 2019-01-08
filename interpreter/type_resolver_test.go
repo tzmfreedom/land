@@ -28,12 +28,12 @@ func TestResolveVariable(t *testing.T) {
 				Env: &Env{
 					Data: &builtin.ObjectMap{
 						Data: map[string]*builtin.Object{
-							"i": newInteger(1),
+							"i": builtin.NewInteger(1),
 						},
 					},
 				},
 			},
-			newInteger(1),
+			builtin.NewInteger(1),
 			nil,
 		},
 		{
@@ -62,7 +62,7 @@ func TestResolveVariable(t *testing.T) {
 							"i": {
 								InstanceFields: &builtin.ObjectMap{
 									Data: map[string]*builtin.Object{
-										"j": newInteger(2),
+										"j": builtin.NewInteger(2),
 									},
 								},
 							},
@@ -70,7 +70,7 @@ func TestResolveVariable(t *testing.T) {
 					},
 				},
 			},
-			newInteger(2),
+			builtin.NewInteger(2),
 			nil,
 		},
 		{
@@ -114,7 +114,7 @@ func TestResolveVariable(t *testing.T) {
 		//			},
 		//		},
 		//	},
-		//	newInteger(2),
+		//	builtin.NewInteger(2),
 		//	nil,
 		//},
 		//{

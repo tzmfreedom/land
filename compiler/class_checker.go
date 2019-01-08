@@ -113,6 +113,9 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 				for i, p := range m.Parameters {
 					types[i], _ = resolver.ResolveType(p.(*ast.Parameter).Type.(*ast.TypeRef).Name)
 				}
+				if t.SuperClass == nil {
+					continue
+				}
 				method, _ := resolver.FindInstanceMethod(super, m.Name, types, MODIFIER_NO_CHECK)
 				if method != nil {
 				}

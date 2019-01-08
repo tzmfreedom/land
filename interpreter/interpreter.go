@@ -652,6 +652,84 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			}
 			exp.(*builtin.Object).InstanceFields.Set(t.FieldName, rObj)
 		}
+		return rObj, nil
+	case "+=":
+		// TODO: implement
+		var value *builtin.Object
+		if lType == builtin.IntegerType {
+			l := lObj.IntegerValue()
+			if rType == builtin.IntegerType {
+				r := rObj.IntegerValue()
+				value = builtin.NewInteger(l + r)
+			}
+			if rType == builtin.DoubleType {
+				r := rObj.DoubleValue()
+				value = builtin.NewDouble(float64(l) + r)
+			}
+		} else if lType == builtin.DoubleType {
+			l := lObj.DoubleValue()
+			if rType == builtin.IntegerType {
+				r := rObj.IntegerValue()
+				value = builtin.NewDouble(l + float64(r))
+			}
+			if rType == builtin.DoubleType {
+				r := rObj.DoubleValue()
+				value = builtin.NewDouble(r + l)
+			}
+		} else if lType == builtin.StringType {
+			l := lObj.StringValue()
+			r := rObj.StringValue()
+			value = builtin.NewString(l + r)
+		}
+
+		switch t := n.Left.(type) {
+		case *ast.Name:
+			resolver := &TypeResolver{}
+			resolver.SetVariable(t.Value, v.Context, value)
+		case *ast.FieldAccess:
+			exp, err := t.Expression.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+			exp.(*builtin.Object).InstanceFields.Set(t.FieldName, value)
+		}
+		return value, nil
+	case "-=":
+		var value *builtin.Object
+		if lType == builtin.IntegerType {
+			l := lObj.IntegerValue()
+			if rType == builtin.IntegerType {
+				r := rObj.IntegerValue()
+				value = builtin.NewInteger(l - r)
+			}
+			if rType == builtin.DoubleType {
+				r := rObj.DoubleValue()
+				value = builtin.NewDouble(float64(l) - r)
+			}
+		} else if lType == builtin.DoubleType {
+			l := lObj.DoubleValue()
+			if rType == builtin.IntegerType {
+				r := rObj.IntegerValue()
+				value = builtin.NewDouble(l - float64(r))
+			}
+			if rType == builtin.DoubleType {
+				r := rObj.DoubleValue()
+				value = builtin.NewDouble(r - l)
+			}
+		}
+
+		switch t := n.Left.(type) {
+		case *ast.Name:
+			resolver := &TypeResolver{}
+			resolver.SetVariable(t.Value, v.Context, value)
+		case *ast.FieldAccess:
+			exp, err := t.Expression.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+			exp.(*builtin.Object).InstanceFields.Set(t.FieldName, value)
+		}
+		return value, nil
 	}
 	return nil, nil
 }

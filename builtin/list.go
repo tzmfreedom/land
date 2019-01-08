@@ -9,6 +9,22 @@ var ListType = createListType()
 func createListType() *ClassType {
 	instanceMethods := NewMethodMap()
 	instanceMethods.Set(
+		"add",
+		[]ast.Node{
+			CreateMethod(
+				"add",
+				"",
+				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+					thisObj := this.(*Object)
+					records := thisObj.Extra["records"].([]*Object)
+					listElement := params[0].(*Object)
+					records = append(records, listElement)
+					return nil
+				},
+			),
+		},
+	)
+	instanceMethods.Set(
 		"size",
 		[]ast.Node{
 			CreateMethod(

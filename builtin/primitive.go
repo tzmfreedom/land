@@ -122,7 +122,7 @@ func CreateMethod(
 	returnType string,
 	nativeFunction func(interface{}, []interface{}, ...interface{}) interface{},
 ) *ast.MethodDeclaration {
-	var retType *ast.TypeRef
+	var retType ast.Node
 	if returnType != "" {
 		retType = &ast.TypeRef{Name: []string{returnType}}
 	}

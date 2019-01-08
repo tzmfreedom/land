@@ -240,10 +240,6 @@ func (m *NameSpaceStore) Get(k string) (*ClassMap, bool) {
 	return n, ok
 }
 
-const (
-	VoidType = iota
-)
-
 func TypeName(v interface{}) string {
 	return v.(*ClassType).Name
 }

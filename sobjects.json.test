@@ -1,0 +1,42 @@
+{
+  "Account": {
+    "Name": "Account",
+    "Custom": false,
+    "CustomSetting": false,
+    "Label": "取引先",
+    "Fields": [
+      {
+        "Name": "Id",
+        "Type": "id",
+        "Label": "取引先 ID",
+        "RelationshipName": "",
+        "Custom": false,
+        "ReferenceTo": null
+      },
+      {
+        "Name": "Name",
+        "Type": "string",
+        "Label": "取引先 名",
+        "RelationshipName": "",
+        "Custom": false,
+        "ReferenceTo": null
+      },
+      {
+        "Name": "field1__c",
+        "Type": "string",
+        "Label": "field1",
+        "RelationshipName": "",
+        "Custom": true,
+        "ReferenceTo": null
+      },
+      {
+        "Name": "website",
+        "Type": "string",
+        "Label": "Webサイト",
+        "RelationshipName": "",
+        "Custom": true,
+        "ReferenceTo": null
+      },
+    ]
+  }
+}

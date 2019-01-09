@@ -13,7 +13,7 @@ func createMapType() *ClassType {
 		[]ast.Node{
 			CreateMethod(
 				"add",
-				"",
+				nil,
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					key := params[0].(*Object).StringValue()
 					thisObj := this.(*Object)
@@ -29,7 +29,7 @@ func createMapType() *ClassType {
 		[]ast.Node{
 			CreateMethod(
 				"size",
-				"Integer",
+				[]string{"Integer"},
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					thisObj := this.(*Object)
 					return NewInteger(len(thisObj.Extra["values"].(map[string]*Object)))

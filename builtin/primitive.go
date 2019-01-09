@@ -29,6 +29,12 @@ func PrimitiveClassMap() *ClassMap {
 	return primitiveClassMap
 }
 
+var nameSpaceStore = NewNameSpaceStore()
+
+func GetNameSpaceStore() *NameSpaceStore {
+	return nameSpaceStore
+}
+
 type Object struct {
 	ClassType      *ClassType
 	InstanceFields *ObjectMap
@@ -119,12 +125,12 @@ func CreateClass(
 
 func CreateMethod(
 	name string,
-	returnType string,
+	returnType []string,
 	nativeFunction func(interface{}, []interface{}, ...interface{}) interface{},
 ) *ast.MethodDeclaration {
 	var retType ast.Node
-	if returnType != "" {
-		retType = &ast.TypeRef{Name: []string{returnType}}
+	if returnType != nil {
+		retType = &ast.TypeRef{Name: returnType}
 	}
 	return &ast.MethodDeclaration{
 		Name:           name,

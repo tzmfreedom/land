@@ -12,7 +12,7 @@ func createStringType() *ClassType {
 	instanceMethods := NewMethodMap()
 	method := CreateMethod(
 		"split",
-		"List",
+		[]string{"List"},
 		func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 			split := params[0].(*Object).StringValue()
 			src := this.(*Object).StringValue()
@@ -35,7 +35,7 @@ func createStringType() *ClassType {
 	staticMethods.Set("valueOf", []ast.Node{
 		CreateMethod(
 			"valueOf",
-			"String",
+			[]string{"String"},
 			func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 				toConvert := params[0].(*Object)
 				return NewString(String(toConvert))

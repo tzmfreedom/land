@@ -6,26 +6,14 @@ import (
 	"github.com/tzmfreedom/goland/builtin"
 )
 
-type SoqlExecutor struct {
-}
+type SoqlExecutor struct{}
 
 func (e *SoqlExecutor) Execute(n *ast.Soql) (*builtin.Object, error) {
-	visitor := &ast.TosVisitor{}
-	r, err := n.Accept(visitor)
-	if err != nil {
-		return nil, err
-	}
-	soql := r.(string)
-	soql = soql[1 : len(soql)-1]
-
-	result, err := executeQuery(soql)
-	if err != nil {
-		return nil, err
-	}
-	return e.getListFromResponse(n, result.Records)
+	records := builtin.DatabaseDriver.Query(n)
+	return e.getListFromResponse(n, records)
 }
 
-func (e *SoqlExecutor) getListFromResponse(n *ast.Soql, records []*soapforce.SObject) (*builtin.Object, error) {
+func getRecords(n *ast.Soql, records []*soapforce.SObject) []*builtin.Object {
 	objects := make([]*builtin.Object, len(records))
 	classType, _ := builtin.PrimitiveClassMap().Get(n.FromObject)
 	for i, r := range records {
@@ -41,13 +29,18 @@ func (e *SoqlExecutor) getListFromResponse(n *ast.Soql, records []*soapforce.SOb
 		}
 		objects[i] = object
 	}
+	return objects
+}
+
+func (e *SoqlExecutor) getListFromResponse(n *ast.Soql, records []*builtin.Object) (*builtin.Object, error) {
 	// TODO: implement
+	classType, _ := builtin.PrimitiveClassMap().Get(n.FromObject)
 	list := &builtin.Object{
 		ClassType:      builtin.ListType,
 		InstanceFields: builtin.NewObjectMap(),
 		GenericType:    []*builtin.ClassType{classType},
 		Extra: map[string]interface{}{
-			"records": objects,
+			"records": records,
 		},
 	}
 	return list, nil

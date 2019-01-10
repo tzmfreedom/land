@@ -69,14 +69,17 @@ type Loader interface {
 	Load() (map[string]Sobject, error)
 }
 
+var sObjects map[string]Sobject
+
 func Load(src string) {
 	loader := newMetaFileLoader(src)
 	// TODO: sObject declaration
-	sobjects, err := loader.Load()
+	var err error
+	sObjects, err = loader.Load()
 	if err != nil {
 		panic(err)
 	}
-	for name, sobj := range sobjects {
+	for name, sobj := range sObjects {
 		fields := NewFieldMap()
 		for _, f := range sobj.Fields {
 			fields.Set(f.Name, &Field{

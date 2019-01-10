@@ -54,7 +54,6 @@ func init() {
 	classMap.Set("SaveResult", saveResult)
 	nameSpaceStore.Set("Database", classMap)
 
-
 	staticMethods := NewMethodMap()
 	method := CreateMethod(
 		"insert",
@@ -108,6 +107,5 @@ func init() {
 		staticMethods,
 	)
 	primitiveClassMap.Set("Database", databaseClass)
-
 
 }

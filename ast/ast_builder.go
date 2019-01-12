@@ -292,19 +292,19 @@ func (v *Builder) VisitFieldDeclaration(ctx *parser.FieldDeclarationContext) int
 func (v *Builder) VisitPropertyDeclaration(ctx *parser.PropertyDeclarationContext) interface{} {
 	t := ctx.ApexType().Accept(v).(Node)
 	d := ctx.VariableDeclaratorId().Accept(v).(string)
-	b := ctx.PropertyBodyDeclaration().Accept(v).(Node)
+	getterSetters := ctx.PropertyBodyDeclaration().Accept(v).([]Node)
 	return &PropertyDeclaration{
 		Type:          t,
 		Identifier:    d,
-		GetterSetters: b,
+		GetterSetters: getterSetters,
 	}
 }
 
 func (v *Builder) VisitPropertyBodyDeclaration(ctx *parser.PropertyBodyDeclarationContext) interface{} {
 	blocks := ctx.AllPropertyBlock()
-	declarations := make([]*Block, len(blocks))
+	declarations := make([]Node, len(blocks))
 	for i, b := range blocks {
-		declarations[i] = b.Accept(v).(*Block)
+		declarations[i] = b.Accept(v).(*GetterSetter)
 	}
 	return declarations
 }

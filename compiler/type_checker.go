@@ -36,6 +36,9 @@ func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) 
 		for _, f := range n.InstanceFields.Data {
 			t, _ := f.Type.Accept(v)
 			e, _ := f.Expression.Accept(v)
+			if e == nil {
+				continue
+			}
 			if !t.(*builtin.ClassType).Equals(e.(*builtin.ClassType)) {
 				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", e.(*builtin.ClassType).String(), t.(*builtin.ClassType).String()), f.Expression)
 			}

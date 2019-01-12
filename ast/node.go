@@ -468,7 +468,7 @@ type PropertyDeclaration struct {
 	Annotations   []Node
 	Type          Node
 	Identifier    string
-	GetterSetters Node
+	GetterSetters []Node
 	Location      *Location
 	Parent        Node
 }
@@ -1115,6 +1115,14 @@ func (n *GetterSetter) GetChildren() []interface{} {
 	}
 }
 
+func (n *GetterSetter) IsGet() bool {
+	return n.Type == "get"
+}
+
+func (n *GetterSetter) IsSet() bool {
+	return n.Type == "set"
+}
+
 func (n *PropertyDeclaration) Accept(v Visitor) (interface{}, error) {
 	return v.VisitPropertyDeclaration(n)
 }
@@ -1126,6 +1134,15 @@ func (n *PropertyDeclaration) GetChildren() []interface{} {
 		n.Modifiers,
 		n.GetterSetters,
 	}
+}
+
+func (n *PropertyDeclaration) IsStatic() bool {
+	for _, m := range n.Modifiers {
+		if m.(*Modifier).Name == "static" {
+			return true
+		}
+	}
+	return false
 }
 
 func (n *ArrayInitializer) Accept(v Visitor) (interface{}, error) {

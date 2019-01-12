@@ -43,6 +43,57 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 			} else {
 				t.InstanceMethods.Add(decl.Name, decl)
 			}
+		case *ast.PropertyDeclaration:
+			identifier := decl.Identifier
+			if decl.IsStatic() {
+				if _, ok := t.StaticFields.Get(identifier); ok {
+					return nil, fmt.Errorf("Field %s is already defined", identifier)
+				}
+				var setter ast.Node
+				var getter ast.Node
+				for _, getterSetter := range decl.GetterSetters {
+					if getterSetter.(*ast.GetterSetter).IsGet() {
+						getter = getterSetter
+					} else {
+						setter = getterSetter
+					}
+				}
+				t.StaticFields.Set(
+					identifier,
+					&builtin.Field{
+						Type:       decl.Type,
+						Modifiers:  decl.Modifiers,
+						Name:       identifier,
+						Expression: &ast.NullLiteral{},
+						Getter:     getter,
+						Setter:     setter,
+					},
+				)
+			} else {
+				if _, ok := t.InstanceFields.Get(identifier); ok {
+					return nil, fmt.Errorf("Field %s is already defined", identifier)
+				}
+				var setter ast.Node
+				var getter ast.Node
+				for _, getterSetter := range decl.GetterSetters {
+					if getterSetter.(*ast.GetterSetter).IsGet() {
+						getter = getterSetter
+					} else {
+						setter = getterSetter
+					}
+				}
+				t.InstanceFields.Set(
+					identifier,
+					&builtin.Field{
+						Type:       decl.Type,
+						Modifiers:  decl.Modifiers,
+						Name:       identifier,
+						Expression: &ast.NullLiteral{},
+						Getter:     getter,
+						Setter:     setter,
+					},
+				)
+			}
 		case *ast.FieldDeclaration:
 			if decl.IsStatic() {
 				for _, d := range decl.Declarators {

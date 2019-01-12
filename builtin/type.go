@@ -80,6 +80,8 @@ type Field struct {
 	Modifiers  []ast.Node
 	Name       string
 	Expression ast.Node
+	Getter     ast.Node
+	Setter     ast.Node
 	Location   *ast.Location
 	Parent     ast.Node
 }

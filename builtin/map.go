@@ -52,6 +52,27 @@ func createMapType() *ClassType {
 			),
 		},
 	)
+	instanceMethods.Set(
+		"keySet",
+		[]ast.Node{
+			CreateMethod(
+				"keySet",
+				[]string{"T:1"},
+				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+					thisObj := this.(*Object)
+					keySets := map[string]struct{}{}
+					for key, _ := range thisObj.Extra["values"].(map[string]*Object) {
+						keySets[key] = struct{}{}
+					}
+					setClass, _ := PrimitiveClassMap().Get("Set")
+					object := CreateObject(setClass)
+					object.Extra["values"] = keySets
+					object.Extra["generices"] = nil // TODO: implement
+					return object
+				},
+			),
+		},
+	)
 
 	return CreateClass(
 		"Map",

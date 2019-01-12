@@ -49,7 +49,7 @@ func (b *SqlBuilder) createWhere(n ast.Node) string {
 			field = f.Name + "()"
 		}
 		value, _ := val.Expression.Accept(b.interpreter)
-		return fmt.Sprintf("%s %s %s", field, val.Op, value.(string))
+		return fmt.Sprintf("%s %s '%s'", field, val.Op, String(value.(*Object)))
 	case *ast.WhereBinaryOperator:
 		where := ""
 		if val.Left != nil {

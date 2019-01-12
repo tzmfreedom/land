@@ -9,10 +9,25 @@ var MapType = createMapType()
 func createMapType() *ClassType {
 	instanceMethods := NewMethodMap()
 	instanceMethods.Set(
+		"get",
+		[]ast.Node{
+			CreateMethod(
+				"get",
+				[]string{"T:2"},
+				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+					key := params[0].(*Object).StringValue()
+					thisObj := this.(*Object)
+					values := thisObj.Extra["values"].(map[string]*Object)
+					return values[key]
+				},
+			),
+		},
+	)
+	instanceMethods.Set(
 		"put",
 		[]ast.Node{
 			CreateMethod(
-				"add",
+				"put",
 				nil,
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					key := params[0].(*Object).StringValue()

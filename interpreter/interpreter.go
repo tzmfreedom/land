@@ -339,7 +339,9 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 		}
 	}
 	if classType == builtin.MapType {
-		if len(n.Init.Values) != 0 {
+		if n.Init == nil {
+			newObj.Extra["values"] = map[string]*builtin.Object{}
+		} else if len(n.Init.Values) != 0 {
 			values := map[string]*builtin.Object{}
 			for key, value := range n.Init.Values {
 				mapValue, err := value.Accept(v)

@@ -8,8 +8,8 @@ import (
 
 type SoqlExecutor struct{}
 
-func (e *SoqlExecutor) Execute(n *ast.Soql) (*builtin.Object, error) {
-	records := builtin.DatabaseDriver.Query(n)
+func (e *SoqlExecutor) Execute(n *ast.Soql, visitor ast.Visitor) (*builtin.Object, error) {
+	records := builtin.DatabaseDriver.Query(n, visitor)
 	return e.getListFromResponse(n, records)
 }
 

@@ -755,7 +755,7 @@ func (v *Interpreter) VisitThrow(n *ast.Throw) (interface{}, error) {
 
 func (v *Interpreter) VisitSoql(n *ast.Soql) (interface{}, error) {
 	executor := &SoqlExecutor{}
-	objects, err := executor.Execute(n)
+	objects, err := executor.Execute(n, v)
 	if err != nil {
 		return nil, err
 	}

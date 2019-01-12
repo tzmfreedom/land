@@ -3,9 +3,6 @@ package builtin
 import (
 	"database/sql"
 
-	"fmt"
-	"strings"
-
 	"github.com/k0kubun/pp"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/tzmfreedom/goland/ast"
@@ -22,61 +19,12 @@ func NewDatabaseDriver() *databaseDriver {
 	return &databaseDriver{db}
 }
 
-type Relation struct {
-	Name        string
-	ReferenceTo string
-}
+func (d *databaseDriver) Query(n *ast.Soql, interpreter ast.Visitor) []*Object {
+	builder := SqlBuilder{interpreter: interpreter}
+	sql, fields := builder.Build(n)
 
-func (d *databaseDriver) Query(n *ast.Soql) []*Object {
-	visitor := &ast.TosVisitor{}
-	r, err := n.Accept(visitor)
-	if err != nil {
-		panic(err)
-	}
-	relations := map[string]Relation{}
-	fields := make([][]string, len(n.SelectFields))
-	for i, field := range n.SelectFields {
-		switch f := field.(type) {
-		case *ast.SelectField:
-			fields[i] = f.Value
-			// relation
-			if len(f.Value) == 2 {
-				sObject := sObjects[n.FromObject]
-				relationshipName := f.Value[0]
-				var targetField SobjectField
-				for _, sObjectField := range sObject.Fields {
-					if sObjectField.RelationshipName == relationshipName {
-						targetField = sObjectField
-						break
-					}
-				}
-				relations[targetField.RelationshipName] = Relation{
-					Name:        targetField.Name,
-					ReferenceTo: targetField.ReferenceTo[0],
-				}
-			}
-		}
-	}
-	leftJoins := []string{}
-	for _, relation := range relations {
-		leftJoins = append(
-			leftJoins,
-			fmt.Sprintf(
-				"LEFT JOIN %s ON %s.%s = %s.id",
-				relation.ReferenceTo,
-				n.FromObject,
-				relation.Name,
-				relation.ReferenceTo,
-			),
-		)
-	}
-
-	soql := r.(string)
-	soql = soql[1:len(soql)-1] + strings.Join(leftJoins, " ")
-	soql = strings.Replace(soql, " id", " "+n.FromObject+".id", -1)
-	soql = strings.Replace(soql, " name", " "+n.FromObject+".name", -1)
-	pp.Println(soql)
-	rows, err := d.db.Query(soql)
+	//pp.Println(sql)
+	rows, err := d.db.Query(sql)
 	if err != nil {
 		panic(err)
 	}
@@ -95,8 +43,23 @@ func (d *databaseDriver) Query(n *ast.Soql) []*Object {
 		}
 		record := CreateObject(classType)
 		for i, field := range fields {
-			fieldName := field[0]
-			record.InstanceFields.Set(fieldName, NewString(*dispatches[i].(*string)))
+			if len(field) == 1 {
+				fieldName := field[0]
+				record.InstanceFields.Set(fieldName, NewString(*dispatches[i].(*string)))
+			} else {
+				fieldName := field[0]
+				relation, ok := record.InstanceFields.Get(fieldName)
+				value := NewString(*dispatches[i].(*string))
+				if ok {
+					relation.InstanceFields.Set(field[1], value)
+				} else {
+					// TODO: duplicate code
+					relationType, _ := PrimitiveClassMap().Get(fieldName)
+					relation = CreateObject(relationType)
+					relation.InstanceFields.Set(field[1], value)
+					record.InstanceFields.Set(fieldName, relation)
+				}
+			}
 		}
 		records = append(records, record)
 	}

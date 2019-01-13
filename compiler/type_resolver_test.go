@@ -627,7 +627,7 @@ func TestResolveVariable(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		typeResolver := &TypeResolver{Context: testCase.Context}
-		actual, err := typeResolver.ResolveVariable(testCase.Input)
+		actual, err := typeResolver.ResolveVariable(testCase.Input, false)
 		if testCase.Error == nil && err != nil {
 			diff := cmp.Diff(testCase.Error, err.Error())
 			t.Errorf(diff)

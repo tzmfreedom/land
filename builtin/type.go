@@ -86,26 +86,40 @@ type Field struct {
 	Parent     ast.Node
 }
 
-func (f *Field) IsPublic() bool {
-	return f.Is("public")
+func (f *Field) IsAccessor(modifier string, checkSetter bool) bool {
+	is := f.Is(modifier)
+	if checkSetter {
+		if f.Setter != nil {
+			is = f.Setter.(*ast.GetterSetter).Is(modifier)
+		}
+	} else {
+		if f.Getter != nil {
+			is = f.Getter.(*ast.GetterSetter).Is(modifier)
+		}
+	}
+	return is
 }
 
-func (f *Field) IsPrivate() bool {
-	return f.Is("private")
+func (f *Field) IsPublic(checkSetter bool) bool {
+	return f.IsAccessor("public", checkSetter)
 }
 
-func (f *Field) IsProtected() bool {
-	return f.Is("protected")
+func (f *Field) IsPrivate(checkSetter bool) bool {
+	return f.IsAccessor("private", checkSetter)
 }
 
-func (f *Field) AccessModifier() string {
-	if f.IsPublic() {
+func (f *Field) IsProtected(checkSetter bool) bool {
+	return f.IsAccessor("protected", checkSetter)
+}
+
+func (f *Field) AccessModifier(checkSetter bool) string {
+	if f.IsPublic(checkSetter) {
 		return "public"
 	}
-	if f.IsPrivate() {
+	if f.IsPrivate(checkSetter) {
 		return "private"
 	}
-	if f.IsProtected() {
+	if f.IsProtected(checkSetter) {
 		return "protected"
 	}
 	return ""

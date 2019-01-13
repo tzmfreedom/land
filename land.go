@@ -223,8 +223,10 @@ func semanticAnalysis(t *builtin.ClassType) error {
 	_, err := typeChecker.VisitClassType(t)
 	if len(typeChecker.Errors) != 0 {
 		for _, e := range typeChecker.Errors {
-			fmt.Fprintf(os.Stderr, "%s\n", e.Message)
+			loc := e.Node.GetLocation()
+			fmt.Fprintf(os.Stderr, "%s at %d:%d in %s\n", e.Message, loc.Line, loc.Column, loc.FileName)
 		}
+		return errors.New("compile error")
 	}
 	return err
 }

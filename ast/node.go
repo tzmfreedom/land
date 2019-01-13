@@ -1123,6 +1123,15 @@ func (n *GetterSetter) IsSet() bool {
 	return n.Type == "set"
 }
 
+func (n *GetterSetter) Is(modifier string) bool {
+	for _, m := range n.Modifiers {
+		if m.(*Modifier).Name == modifier {
+			return true
+		}
+	}
+	return false
+}
+
 func (n *PropertyDeclaration) Accept(v Visitor) (interface{}, error) {
 	return v.VisitPropertyDeclaration(n)
 }

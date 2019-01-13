@@ -3,6 +3,9 @@ package builtin
 import (
 	"database/sql"
 
+	"fmt"
+	"strings"
+
 	"github.com/k0kubun/pp"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/tzmfreedom/goland/ast"
@@ -74,12 +77,70 @@ func (d *databaseDriver) QueryRaw(query string) {
 	pp.Println(rows)
 }
 
-func (d *databaseDriver) Execute(query string) {
+func (d *databaseDriver) Execute(dmlType string, sObjectType string, records []*Object, upsertKey string) {
+	for _, record := range records {
+		var query string
+
+		switch dmlType {
+		case "insert":
+			fields := []string{}
+			values := []string{}
+			for name, field := range record.InstanceFields.All() {
+				// TODO: convert type
+				if field == Null {
+					continue
+				}
+				fields = append(fields, name)
+				values = append(values, field.StringValue())
+			}
+			query = fmt.Sprintf(
+				"INSERT INTO %s(%s) VALUES (%s)",
+				sObjectType,
+				strings.Join(fields, ", "),
+				strings.Join(values, ", "),
+			)
+		case "update":
+			updateFields := []string{}
+			for name, field := range record.InstanceFields.All() {
+				// TODO: convert type
+				if field == Null {
+					continue
+				}
+				updateFields = append(updateFields, fmt.Sprintf("%s = '%s'", name, field.StringValue()))
+			}
+			id, ok := record.InstanceFields.Get("Id")
+			if !ok {
+				panic("id does not exist")
+			}
+			query = fmt.Sprintf(
+				"UPDATE %s SET %s WHERE id = '%s'",
+				sObjectType,
+				strings.Join(updateFields, ", "),
+				id.StringValue(),
+			)
+		case "upsert":
+			// TODO: implement
+		case "delete":
+			id, ok := record.InstanceFields.Get("Id")
+			if !ok {
+				panic("id does not exist")
+			}
+			query = fmt.Sprintf(
+				"DELETE FROM %s WHERE id = '%s'",
+				sObjectType,
+				id.StringValue(),
+			)
+		}
+		d.db.Exec(query)
+	}
+}
+
+func (d *databaseDriver) ExecuteRaw(query string) {
 	d.db.Exec(query)
 }
 
 func seed() {
-	DatabaseDriver.Execute(`
+	DatabaseDriver.ExecuteRaw(`
 INSERT INTO Account(id, name) VALUES ('12345', 'hoge');
 INSERT INTO Account(id, name) VALUES ('abcde', 'fuga');
 INSERT INTO Contact(id, lastname, firstname, accountid) VALUES ('a', 'l1', 'r1', '12345');
@@ -88,7 +149,7 @@ INSERT INTO Contact(id, lastname, firstname, accountid) VALUES ('b', 'l2', 'r2',
 }
 
 func init() {
-	DatabaseDriver.Execute(`
+	DatabaseDriver.ExecuteRaw(`
 CREATE TABLE IF NOT EXISTS Account (
 	id VARCHAR NOT NULL PRIMARY KEY,
 	name TEXT

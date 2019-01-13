@@ -103,7 +103,21 @@ func (v *Interpreter) VisitContinue(n *ast.Continue) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitDml(n *ast.Dml) (interface{}, error) {
-	return ast.VisitDml(v, n)
+	o, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	var records []*builtin.Object
+	obj := o.(*builtin.Object)
+	// TODO: check SObject class
+	if obj.ClassType == builtin.ListType {
+		records = obj.Extra["records"].([]*builtin.Object)
+	} else {
+		records = []*builtin.Object{obj}
+	}
+	sObjectType := records[0].ClassType.Name
+	builtin.DatabaseDriver.Execute(n.Type, sObjectType, records, n.UpsertKey)
+	return nil, nil
 }
 
 func (v *Interpreter) VisitDoubleLiteral(n *ast.DoubleLiteral) (interface{}, error) {

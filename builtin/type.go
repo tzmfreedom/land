@@ -89,11 +89,11 @@ type Field struct {
 func (f *Field) IsAccessor(modifier string, checkSetter bool) bool {
 	is := f.Is(modifier)
 	if checkSetter {
-		if f.Setter != nil {
+		if f.Setter != nil && !f.Setter.(*ast.GetterSetter).IsModifierBlank() {
 			is = f.Setter.(*ast.GetterSetter).Is(modifier)
 		}
 	} else {
-		if f.Getter != nil {
+		if f.Getter != nil && !f.Getter.(*ast.GetterSetter).IsModifierBlank() {
 			is = f.Getter.(*ast.GetterSetter).Is(modifier)
 		}
 	}

@@ -741,11 +741,11 @@ func (v *Builder) VisitPropertyBlock(ctx *parser.PropertyBlockContext) interface
 }
 
 func (v *Builder) VisitGetter(ctx *parser.GetterContext) interface{} {
-	return ctx.GetText()
+	return ctx.GET().GetText()
 }
 
 func (v *Builder) VisitSetter(ctx *parser.SetterContext) interface{} {
-	return ctx.GetText()
+	return ctx.SET().GetText()
 }
 
 func (v *Builder) VisitCatchClause(ctx *parser.CatchClauseContext) interface{} {

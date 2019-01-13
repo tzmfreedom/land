@@ -1132,6 +1132,10 @@ func (n *GetterSetter) Is(modifier string) bool {
 	return false
 }
 
+func (n *GetterSetter) IsModifierBlank() bool {
+	return n.Modifiers == nil || len(n.Modifiers) == 0
+}
+
 func (n *PropertyDeclaration) Accept(v Visitor) (interface{}, error) {
 	return v.VisitPropertyDeclaration(n)
 }

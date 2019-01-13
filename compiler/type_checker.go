@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/tzmfreedom/goland/ast"
@@ -323,28 +324,34 @@ func (v *TypeChecker) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, err
 
 func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, error) {
 	r, _ := n.Right.Accept(v)
-	if n.Op == "==" ||
+	if n.Op == "=" ||
 		n.Op == "=+" ||
 		n.Op == "=-" ||
 		n.Op == "=*" ||
 		n.Op == "=/" {
 
 		var l *builtin.ClassType
+		var err error
 		resolver := &TypeResolver{Context: v.Context}
 		switch leftNode := n.Left.(type) {
 		case *ast.Name:
-			l, _ = resolver.ResolveVariable(leftNode.Value, true)
+			l, err = resolver.ResolveVariable(leftNode.Value, true)
+			if err != nil {
+				v.AddError(err.Error(), n)
+				return nil, errors.New("compile error")
+			}
 		case *ast.FieldAccess:
 			classType, _ := leftNode.Expression.Accept(v)
 			f, _ := resolver.findInstanceField(classType.(*builtin.ClassType), leftNode.FieldName, MODIFIER_PUBLIC_ONLY, true)
-			l, _ = resolver.ResolveType(f.Type.(*ast.TypeRef).Name)
-		}
-		if n.Op == "=" || n.Op == "+=" || n.Op == "-=" || n.Op == "*=" || n.Op == "/=" || n.Op == "%=" {
-			if r != nil && !l.Equals(r.(*builtin.ClassType)) {
-				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", l.String(), r.(*builtin.ClassType).String()), n.Left)
+			l, err = resolver.ResolveType(f.Type.(*ast.TypeRef).Name)
+			if err != nil {
+				return nil, err
 			}
-			return l, nil
 		}
+		if r != nil && !l.Equals(r.(*builtin.ClassType)) {
+			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", l.String(), r.(*builtin.ClassType).String()), n.Left)
+		}
+		return l, nil
 	} else {
 		l, _ := n.Left.Accept(v)
 		if n.Op == "+" {

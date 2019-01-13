@@ -21,15 +21,10 @@ func (v *ToStringer) withIndent(src string) string {
 }
 
 func (v *ToStringer) String(o *Object) string {
+	if o.ClassType.ToString != nil {
+		return o.ClassType.ToString(o)
+	}
 	switch o.ClassType {
-	case IntegerType:
-		return fmt.Sprintf("%d", o.Value().(int))
-	case StringType:
-		return o.Value().(string)
-	case BooleanType:
-		return fmt.Sprintf("%t", o.Value().(bool))
-	case DoubleType:
-		return fmt.Sprintf("%f", o.Value().(float64))
 	case ListType:
 		records := o.Extra["records"].([]*Object)
 		recordExpressions := make([]string, len(records))

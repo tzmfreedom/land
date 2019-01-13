@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
@@ -625,6 +626,8 @@ func TestResolveVariable(t *testing.T) {
 			errors.New("Field access modifier must be public but private"),
 		},
 	}
+	ignore := cmpopts.IgnoreTypes(func(*builtin.Object) string { return "" })
+
 	for _, testCase := range testCases {
 		typeResolver := &TypeResolver{Context: testCase.Context}
 		actual, err := typeResolver.ResolveVariable(testCase.Input, false)
@@ -640,7 +643,7 @@ func TestResolveVariable(t *testing.T) {
 			t.Errorf(diff)
 		}
 
-		if ok := cmp.Equal(testCase.Expected, actual); !ok {
+		if ok := cmp.Equal(testCase.Expected, actual, ignore); !ok {
 			diff := cmp.Diff(testCase.Expected, actual)
 			pp.Print(actual)
 			t.Errorf(diff)

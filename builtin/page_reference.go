@@ -1,6 +1,8 @@
 package builtin
 
 import (
+	"fmt"
+
 	"github.com/tzmfreedom/goland/ast"
 )
 
@@ -44,7 +46,7 @@ func createPageReferenceType() *ClassType {
 		[]ast.Node{method},
 	)
 
-	return CreateClass(
+	classType := CreateClass(
 		"PageReference",
 		[]*ast.ConstructorDeclaration{
 			{
@@ -65,6 +67,11 @@ func createPageReferenceType() *ClassType {
 		instanceMethods,
 		nil,
 	)
+	classType.ToString = func(o *Object) string {
+		url := o.Extra["url"].(*Object)
+		return fmt.Sprintf("<%s> { url => %s }", o.ClassType.Name, url.StringValue())
+	}
+	return classType
 }
 
 func init() {

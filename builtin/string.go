@@ -49,12 +49,16 @@ func createStringType() *ClassType {
 			},
 		),
 	})
-	return CreateClass(
+	classType := CreateClass(
 		"String",
 		nil,
 		instanceMethods,
 		staticMethods,
 	)
+	classType.ToString = func(o *Object) string {
+		return o.Value().(string)
+	}
+	return classType
 }
 
 var stringTypeParameter = &ast.Parameter{

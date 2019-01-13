@@ -21,6 +21,7 @@ type ClassType struct {
 	InstanceMethods  *MethodMap
 	StaticMethods    *MethodMap
 	InnerClasses     *ClassMap
+	ToString         func(*Object) string
 	Extra            map[string]interface{}
 	Location         *ast.Location
 	Parent           ast.Node

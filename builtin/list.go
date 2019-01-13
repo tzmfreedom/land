@@ -86,7 +86,7 @@ func createListType() *ClassType {
 		},
 	)
 
-	return CreateClass(
+	classType := CreateClass(
 		"List",
 		[]*ast.ConstructorDeclaration{
 			{
@@ -136,6 +136,7 @@ func createListType() *ClassType {
 		instanceMethods,
 		nil,
 	)
+	return classType
 }
 
 func init() {

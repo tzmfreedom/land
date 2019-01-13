@@ -13,6 +13,7 @@ func init() {
 			CreateMethod(
 				"getErrors",
 				[]string{"List"},
+				[]ast.Node{},
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					return this.(*Object).Extra["errors"]
 				},
@@ -25,6 +26,7 @@ func init() {
 			CreateMethod(
 				"getId",
 				[]string{"String"},
+				[]ast.Node{},
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					return this.(*Object).Extra["id"]
 				},
@@ -37,6 +39,7 @@ func init() {
 			CreateMethod(
 				"isSuccess",
 				[]string{"Boolean"},
+				[]ast.Node{},
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					return this.(*Object).Extra["isSuccess"]
 				},
@@ -58,6 +61,7 @@ func init() {
 	method := CreateMethod(
 		"insert",
 		[]string{"Database", "SaveResult"},
+		[]ast.Node{objectTypeParameter}, // TODO: SObject or List<SObject>
 		func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 			sobj := params[0].(*Object)
 			record := &soapforce.SObject{}
@@ -86,6 +90,7 @@ func init() {
 	method = CreateMethod(
 		"setSavePoint",
 		[]string{"Database", "SavePoint"},
+		[]ast.Node{},
 		func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 			return Null
 		},
@@ -94,6 +99,7 @@ func init() {
 	method = CreateMethod(
 		"rollback",
 		nil,
+		[]ast.Node{objectTypeParameter}, // TODO: savepoint
 		func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 			return Null
 		},

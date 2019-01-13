@@ -1,8 +1,6 @@
 package builtin
 
-import (
-	"github.com/tzmfreedom/goland/ast"
-)
+import "github.com/tzmfreedom/goland/ast"
 
 var MapType = createMapType()
 
@@ -14,6 +12,7 @@ func createMapType() *ClassType {
 			CreateMethod(
 				"get",
 				[]string{"T:2"},
+				[]ast.Node{t1Parameter},
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					key := params[0].(*Object).StringValue()
 					thisObj := this.(*Object)
@@ -29,6 +28,7 @@ func createMapType() *ClassType {
 			CreateMethod(
 				"put",
 				nil,
+				[]ast.Node{t1Parameter, t2Parameter},
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					key := params[0].(*Object).StringValue()
 					thisObj := this.(*Object)
@@ -45,6 +45,7 @@ func createMapType() *ClassType {
 			CreateMethod(
 				"size",
 				[]string{"Integer"},
+				[]ast.Node{},
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					thisObj := this.(*Object)
 					return NewInteger(len(thisObj.Extra["values"].(map[string]*Object)))
@@ -58,6 +59,7 @@ func createMapType() *ClassType {
 			CreateMethod(
 				"keySet",
 				[]string{"T:1"},
+				[]ast.Node{},
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					thisObj := this.(*Object)
 					keySets := map[string]struct{}{}

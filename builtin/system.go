@@ -20,6 +20,7 @@ func init() {
 						Modifiers: []ast.Node{
 							&ast.Modifier{Name: "public"},
 						},
+						Parameters: []ast.Node{objectTypeParameter},
 						NativeFunction: func(this interface{}, parameter []interface{}, options ...interface{}) interface{} {
 							o := parameter[0].(*Object)
 							stdout := options[0].(io.Writer)

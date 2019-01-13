@@ -1,6 +1,9 @@
 package ast
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type Location struct {
 	FileName string
@@ -1091,6 +1094,17 @@ func (n *TypeRef) GetChildren() []interface{} {
 		n.Name,
 		n.Parameters,
 	}
+}
+
+func (n *TypeRef) IsGenerics() bool {
+	name := n.Name[0]
+	return name == "T:1" || name == "T:2"
+}
+
+func (n *TypeRef) IsGenericsNumber(number int) bool {
+	name := n.Name[0]
+	typeref := fmt.Sprintf("T:%d", number)
+	return name == typeref
 }
 
 func (n *Block) Accept(v Visitor) (interface{}, error) {

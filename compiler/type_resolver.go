@@ -115,18 +115,18 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*built
 	return nil, fmt.Errorf("local variable %s is not found", names[0])
 }
 
-func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.ClassType) (*ast.MethodDeclaration, error) {
+func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.ClassType) (*builtin.ClassType, *ast.MethodDeclaration, error) {
 	if len(names) == 1 {
 		methodName := names[0]
 		if v, ok := r.Context.Env.Get("this"); ok {
-			method, err := r.FindInstanceMethod(v, methodName, parameters, MODIFIER_ALL_OK)
+			classType, method, err := r.FindInstanceMethod(v, methodName, parameters, MODIFIER_ALL_OK)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			if method == nil {
-				return nil, errors.Errorf("%s is not found in this scope", methodName)
+				return nil, nil, errors.Errorf("%s is not found in this scope", methodName)
 			}
-			return method, nil
+			return classType, method, nil
 		}
 	} else {
 		first := names[0]
@@ -142,7 +142,7 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Class
 				}
 				instanceField, err := r.findInstanceField(fieldType, f, allowedModifier, false)
 				if err != nil {
-					return nil, err
+					return nil, nil, err
 				}
 				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
 			}
@@ -167,7 +167,7 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Class
 				for _, f := range names[2 : len(names)-1] {
 					instanceField, err := r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY, false)
 					if err != nil {
-						return nil, err
+						return nil, nil, err
 					}
 					fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
 				}
@@ -183,7 +183,7 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Class
 						for _, f := range names[3 : len(names)-1] {
 							instanceField, err := r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY, false)
 							if err != nil {
-								return nil, err
+								return nil, nil, err
 							}
 							fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
 						}
@@ -195,7 +195,7 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Class
 			}
 		}
 	}
-	return nil, errors.Errorf("%s is not found in this scope", strings.Join(names, "."))
+	return nil, nil, errors.Errorf("%s is not found in this scope", strings.Join(names, "."))
 }
 
 func (r *TypeResolver) ResolveType(names []string) (*builtin.ClassType, error) {
@@ -235,58 +235,58 @@ func (r *TypeResolver) ResolveType(names []string) (*builtin.ClassType, error) {
 	return nil, fmt.Errorf("%s does not found", strings.Join(names, "."))
 }
 
-func (r *TypeResolver) FindInstanceMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType, allowedModifier int) (*ast.MethodDeclaration, error) {
+func (r *TypeResolver) FindInstanceMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType, allowedModifier int) (*builtin.ClassType, *ast.MethodDeclaration, error) {
 	methods, ok := classType.InstanceMethods.Get(methodName)
 	if ok {
-		method := r.searchMethod(methods, parameters)
+		method := r.searchMethod(classType, methods, parameters)
 		if method != nil {
 			if allowedModifier == MODIFIER_PUBLIC_ONLY && !method.IsPublic() {
-				return nil, fmt.Errorf("Method access modifier must be public but %s", method.AccessModifier())
+				return nil, nil, fmt.Errorf("Method access modifier must be public but %s", method.AccessModifier())
 			}
 			if allowedModifier == MODIFIER_ALLOW_PROTECTED && method.IsPrivate() {
-				return nil, fmt.Errorf("Method access modifier must be public/protected but private")
+				return nil, nil, fmt.Errorf("Method access modifier must be public/protected but private")
 			}
-			return method, nil
+			return classType, method, nil
 		}
 	}
 	if classType.SuperClass != nil {
 		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
 		if err != nil {
-			return nil, errors.New("Method not found")
+			return nil, nil, methodNotFoundError(classType, methodName, parameters)
 		}
 		if allowedModifier == MODIFIER_ALL_OK {
 			allowedModifier = MODIFIER_ALLOW_PROTECTED
 		}
 		return r.FindInstanceMethod(super, methodName, parameters, allowedModifier)
 	}
-	return nil, errors.New("Method not found")
+	return nil, nil, methodNotFoundError(classType, methodName, parameters)
 }
 
-func (r *TypeResolver) FindStaticMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType, allowedModifier int) (*ast.MethodDeclaration, error) {
+func (r *TypeResolver) FindStaticMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType, allowedModifier int) (*builtin.ClassType, *ast.MethodDeclaration, error) {
 	methods, ok := classType.StaticMethods.Get(methodName)
 	if ok {
-		method := r.searchMethod(methods, parameters)
+		method := r.searchMethod(classType, methods, parameters)
 		if method != nil {
 			if allowedModifier == MODIFIER_PUBLIC_ONLY && !method.IsPublic() {
-				return nil, fmt.Errorf("Method access modifier must be public but %s", method.AccessModifier())
+				return nil, nil, fmt.Errorf("Method access modifier must be public but %s", method.AccessModifier())
 			}
 			if allowedModifier == MODIFIER_ALLOW_PROTECTED && method.IsPrivate() {
-				return nil, fmt.Errorf("Method access modifier must be public/protected but private")
+				return nil, nil, fmt.Errorf("Method access modifier must be public/protected but private")
 			}
-			return method, nil
+			return classType, method, nil
 		}
 	}
 	if classType.SuperClass != nil {
 		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
 		if err != nil {
-			return nil, errors.New("Method not found")
+			return nil, nil, methodNotFoundError(classType, methodName, parameters)
 		}
 		if allowedModifier == MODIFIER_ALL_OK {
 			allowedModifier = MODIFIER_ALLOW_PROTECTED
 		}
 		return r.FindStaticMethod(super, methodName, parameters, allowedModifier)
 	}
-	return nil, errors.New("Method not found")
+	return nil, nil, methodNotFoundError(classType, methodName, parameters)
 }
 
 func (r *TypeResolver) findInstanceField(classType *builtin.ClassType, fieldName string, allowedModifier int, checkSetter bool) (*builtin.Field, error) {
@@ -337,15 +337,10 @@ func (r *TypeResolver) findStaticField(classType *builtin.ClassType, fieldName s
 	return nil, nil
 }
 
-func (r *TypeResolver) searchMethod(methods []ast.Node, parameters []*builtin.ClassType) *ast.MethodDeclaration {
+func (r *TypeResolver) searchMethod(receiverClass *builtin.ClassType, methods []ast.Node, parameters []*builtin.ClassType) *ast.MethodDeclaration {
 	l := len(parameters)
 	for _, method := range methods {
 		m := method.(*ast.MethodDeclaration)
-		// TODO: implement
-		if m.NativeFunction != nil {
-			return m
-		}
-
 		if len(m.Parameters) != l {
 			continue
 		}
@@ -353,7 +348,23 @@ func (r *TypeResolver) searchMethod(methods []ast.Node, parameters []*builtin.Cl
 		for i, p := range m.Parameters {
 			inputParam := parameters[i]
 			typeRef := p.(*ast.Parameter).Type.(*ast.TypeRef)
-			methodParam, _ := r.ResolveType(typeRef.Name)
+
+			var methodParam *builtin.ClassType
+			if typeRef.IsGenerics() {
+				generics := receiverClass.Extra["generics"].([]*builtin.ClassType)
+				if typeRef.IsGenericsNumber(1) {
+					methodParam = generics[0]
+				} else {
+					methodParam = generics[1]
+				}
+			} else {
+				methodParam, _ = r.ResolveType(typeRef.Name)
+			}
+			// TODO: implement
+			// extend, implements, Object
+			if methodParam == builtin.ObjectType {
+				continue
+			}
 			if inputParam != methodParam {
 				match = false
 				break
@@ -364,4 +375,12 @@ func (r *TypeResolver) searchMethod(methods []ast.Node, parameters []*builtin.Cl
 		}
 	}
 	return nil
+}
+
+func methodNotFoundError(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType) error {
+	parameterStrings := make([]string, len(parameters))
+	for i, parameter := range parameters {
+		parameterStrings[i] = parameter.String()
+	}
+	return fmt.Errorf("Method not found: %s.%s(%s)", classType.Name, methodName, strings.Join(parameterStrings, ", "))
 }

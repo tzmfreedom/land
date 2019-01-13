@@ -22,6 +22,7 @@ func init() {
 			CreateMethod(
 				"format",
 				[]string{"String"},
+				[]ast.Node{},
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					thisObj := this.(*Object)
 					tm := thisObj.Extra["value"].(time.Time)
@@ -37,6 +38,7 @@ func init() {
 			CreateMethod(
 				"today",
 				[]string{"Date"},
+				[]ast.Node{},
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					obj := CreateObject(dateType)
 					obj.Extra["value"] = time.Now()

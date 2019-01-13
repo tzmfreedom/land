@@ -6,6 +6,22 @@ import (
 
 var ListType = createListType()
 
+var t1Parameter = &ast.Parameter{
+	Type: &ast.TypeRef{
+		Name:       []string{"T:1"},
+		Parameters: []ast.Node{},
+	},
+	Name: "_",
+}
+
+var t2Parameter = &ast.Parameter{
+	Type: &ast.TypeRef{
+		Name:       []string{"T:2"},
+		Parameters: []ast.Node{},
+	},
+	Name: "_",
+}
+
 func createListType() *ClassType {
 	instanceMethods := NewMethodMap()
 	instanceMethods.Set(
@@ -14,6 +30,7 @@ func createListType() *ClassType {
 			CreateMethod(
 				"add",
 				nil,
+				[]ast.Node{t1Parameter},
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					thisObj := this.(*Object)
 					records := thisObj.Extra["records"].([]*Object)
@@ -30,6 +47,7 @@ func createListType() *ClassType {
 			CreateMethod(
 				"size",
 				[]string{"Integer"},
+				[]ast.Node{},
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					thisObj := this.(*Object)
 					return NewInteger(len(thisObj.Extra["records"].([]*Object)))
@@ -43,6 +61,7 @@ func createListType() *ClassType {
 			CreateMethod(
 				"next",
 				[]string{"Boolean"},
+				[]ast.Node{},
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					thisObj := this.(*Object)
 					counter := thisObj.Extra["counter"].(int)
@@ -57,6 +76,7 @@ func createListType() *ClassType {
 			CreateMethod(
 				"next",
 				[]string{"T:1"},
+				[]ast.Node{},
 				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 					thisObj := this.(*Object)
 					counter := thisObj.Extra["counter"].(int)

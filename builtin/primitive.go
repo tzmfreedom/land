@@ -126,6 +126,7 @@ func CreateClass(
 func CreateMethod(
 	name string,
 	returnType []string,
+	parameters []ast.Node,
 	nativeFunction func(interface{}, []interface{}, ...interface{}) interface{},
 ) *ast.MethodDeclaration {
 	var retType ast.Node
@@ -136,6 +137,7 @@ func CreateMethod(
 		Name:           name,
 		Modifiers:      []ast.Node{PublicModifier()},
 		ReturnType:     retType,
+		Parameters:     parameters,
 		NativeFunction: nativeFunction,
 	}
 }

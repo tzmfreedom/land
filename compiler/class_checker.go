@@ -104,7 +104,7 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 				for i, p := range m.Parameters {
 					types[i], _ = resolver.ResolveType(p.(*ast.Parameter).Type.(*ast.TypeRef).Name)
 				}
-				_, err := resolver.FindInstanceMethod(super, m.Name, types, MODIFIER_NO_CHECK)
+				_, _, err := resolver.FindInstanceMethod(super, m.Name, types, MODIFIER_NO_CHECK)
 				if err != nil {
 					return fmt.Errorf("method %s missing on super class", m.Name)
 				}
@@ -116,7 +116,7 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 				if t.SuperClass == nil {
 					continue
 				}
-				method, _ := resolver.FindInstanceMethod(super, m.Name, types, MODIFIER_NO_CHECK)
+				_, method, _ := resolver.FindInstanceMethod(super, m.Name, types, MODIFIER_NO_CHECK)
 				if method != nil {
 				}
 			}
@@ -135,7 +135,7 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 				for i, p := range m.Parameters {
 					types[i], _ = resolver.ResolveType(p.(*ast.Parameter).Type.(*ast.TypeRef).Name)
 				}
-				_, err := resolver.FindStaticMethod(super, m.Name, types, MODIFIER_NO_CHECK)
+				_, _, err := resolver.FindStaticMethod(super, m.Name, types, MODIFIER_NO_CHECK)
 				if err != nil {
 					return fmt.Errorf("method %s missing on super class", m.Name)
 				}

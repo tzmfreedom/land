@@ -13,6 +13,7 @@ func createStringType() *ClassType {
 	method := CreateMethod(
 		"split",
 		[]string{"List"},
+		[]ast.Node{stringTypeParameter},
 		func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 			split := params[0].(*Object).StringValue()
 			src := this.(*Object).StringValue()
@@ -36,6 +37,7 @@ func createStringType() *ClassType {
 		CreateMethod(
 			"valueOf",
 			[]string{"String"},
+			[]ast.Node{objectTypeParameter},
 			func(this interface{}, params []interface{}, options ...interface{}) interface{} {
 				toConvert := params[0].(*Object)
 				return NewString(String(toConvert))
@@ -48,6 +50,14 @@ func createStringType() *ClassType {
 		instanceMethods,
 		staticMethods,
 	)
+}
+
+var stringTypeParameter = &ast.Parameter{
+	Type: &ast.TypeRef{
+		Name:       []string{"Object"},
+		Parameters: []ast.Node{},
+	},
+	Name: "_",
 }
 
 func init() {

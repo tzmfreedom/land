@@ -13,7 +13,7 @@ public with sharing class Foo {
         return i;
     }
 
-    public static String action() {
+    public static void action() {
         Foo f = new Foo(100);
         System.debug(f);
         System.debug(new Foo(200).i);

@@ -6,5 +6,6 @@ public with sharing class Foo {
         System.debug('hoge');
         System.debug('foo' + '/' + 'bar');
         System.debug(1.2 * 1.3);
+        return 'hello';
     }
 }

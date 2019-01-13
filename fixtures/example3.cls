@@ -1,5 +1,5 @@
 public with sharing class Foo {
-    public static String action() {
+    public static void action() {
         Integer i = 0;
         for (Integer i = 0; i < 3; i++) {
             System.debug(i);

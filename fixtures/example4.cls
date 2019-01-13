@@ -1,5 +1,5 @@
 public with sharing class Foo {
-    public static String action() {
+    public static void action() {
         List<Account> accounts = [
             SELECT
                 id,

@@ -7,6 +7,8 @@ import (
 	"github.com/tzmfreedom/goland/ast"
 )
 
+var NullType = &ClassType{Name: "null"}
+
 type ClassType struct {
 	Annotations      []ast.Node
 	Modifiers        []ast.Node
@@ -35,6 +37,9 @@ func (t *ClassType) IsPrimitive() bool {
 }
 
 func (t *ClassType) Equals(other *ClassType) bool {
+	if other == NullType {
+		return true
+	}
 	if t.IsGeneric() && other.IsGeneric() {
 		if t.Name != other.Name {
 			return false

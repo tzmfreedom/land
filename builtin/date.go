@@ -23,7 +23,7 @@ func init() {
 				"format",
 				[]string{"String"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					thisObj := this.(*Object)
 					tm := thisObj.Extra["value"].(time.Time)
 					return NewString(tm.Format("2006/01/02"))
@@ -39,7 +39,7 @@ func init() {
 				"today",
 				[]string{"Date"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					obj := CreateObject(dateType)
 					obj.Extra["value"] = time.Now()
 					return obj

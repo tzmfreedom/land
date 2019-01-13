@@ -13,7 +13,7 @@ func createMapType() *ClassType {
 				"get",
 				[]string{"T:2"},
 				[]ast.Node{t1Parameter},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					key := params[0].(*Object).StringValue()
 					thisObj := this.(*Object)
 					values := thisObj.Extra["values"].(map[string]*Object)
@@ -29,7 +29,7 @@ func createMapType() *ClassType {
 				"put",
 				nil,
 				[]ast.Node{t1Parameter, t2Parameter},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					key := params[0].(*Object).StringValue()
 					thisObj := this.(*Object)
 					values := thisObj.Extra["values"].(map[string]*Object)
@@ -46,7 +46,7 @@ func createMapType() *ClassType {
 				"size",
 				[]string{"Integer"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					thisObj := this.(*Object)
 					return NewInteger(len(thisObj.Extra["values"].(map[string]*Object)))
 				},
@@ -60,7 +60,7 @@ func createMapType() *ClassType {
 				"keySet",
 				[]string{"T:1"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					thisObj := this.(*Object)
 					keySets := map[string]struct{}{}
 					for key, _ := range thisObj.Extra["values"].(map[string]*Object) {

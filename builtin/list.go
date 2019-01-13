@@ -31,7 +31,7 @@ func createListType() *ClassType {
 				"add",
 				nil,
 				[]ast.Node{t1Parameter},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					thisObj := this.(*Object)
 					records := thisObj.Extra["records"].([]*Object)
 					listElement := params[0].(*Object)
@@ -48,7 +48,7 @@ func createListType() *ClassType {
 				"size",
 				[]string{"Integer"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					thisObj := this.(*Object)
 					return NewInteger(len(thisObj.Extra["records"].([]*Object)))
 				},
@@ -62,7 +62,7 @@ func createListType() *ClassType {
 				"next",
 				[]string{"Boolean"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					thisObj := this.(*Object)
 					counter := thisObj.Extra["counter"].(int)
 					return thisObj.Extra["records"].([]*Object)[counter]
@@ -77,7 +77,7 @@ func createListType() *ClassType {
 				"next",
 				[]string{"T:1"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					thisObj := this.(*Object)
 					counter := thisObj.Extra["counter"].(int)
 					return thisObj.Extra["records"].([]*Object)[counter]
@@ -96,7 +96,7 @@ func createListType() *ClassType {
 					},
 				},
 				Parameters:     []ast.Node{},
-				NativeFunction: func(params []interface{}) {},
+				NativeFunction: func(this interface{}, params []interface{}) {},
 			},
 			{
 				Modifiers: []ast.Node{
@@ -117,8 +117,8 @@ func createListType() *ClassType {
 						Name: "list",
 					},
 				},
-				NativeFunction: func(params []interface{}) {
-					listObj := params[1].(*Object)
+				NativeFunction: func(this interface{}, params []interface{}) {
+					listObj := params[0].(*Object)
 					listParams := listObj.Extra["records"].([]*Object)
 					newListParams := make([]*Object, len(listParams))
 					for i, listParam := range listParams {
@@ -126,8 +126,8 @@ func createListType() *ClassType {
 							ClassType: listParam.ClassType,
 						}
 					}
-					this := params[0].(*Object)
-					this.Extra = map[string]interface{}{
+					thisObj := this.(*Object)
+					thisObj.Extra = map[string]interface{}{
 						"records": newListParams,
 					}
 				},

@@ -6,6 +6,11 @@ import (
 	"github.com/tzmfreedom/goland/ast"
 )
 
+var stringTypeRef = &ast.TypeRef{
+	Name:       []string{"String"},
+	Parameters: []ast.Node{},
+}
+
 var StringType *ClassType
 
 func createStringType() *ClassType {
@@ -14,7 +19,7 @@ func createStringType() *ClassType {
 		"split",
 		[]string{"List"},
 		[]ast.Node{stringTypeParameter},
-		func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+		func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 			split := params[0].(*Object).StringValue()
 			src := this.(*Object).StringValue()
 			parts := strings.Split(src, split)
@@ -38,7 +43,7 @@ func createStringType() *ClassType {
 			"valueOf",
 			[]string{"String"},
 			[]ast.Node{objectTypeParameter},
-			func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+			func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 				toConvert := params[0].(*Object)
 				return NewString(String(toConvert))
 			},

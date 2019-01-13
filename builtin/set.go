@@ -13,7 +13,7 @@ func createSetType() *ClassType {
 				"size",
 				[]string{"Integer"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					thisObj := this.(*Object)
 					return NewInteger(len(thisObj.Extra["values"].(map[string]struct{})))
 				},
@@ -27,7 +27,7 @@ func createSetType() *ClassType {
 				"add",
 				[]string{"T:1"},
 				[]ast.Node{t1Parameter},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					key := params[0].(*Object).StringValue()
 					thisObj := this.(*Object)
 					values := thisObj.Extra["values"].(map[string]struct{})
@@ -44,7 +44,7 @@ func createSetType() *ClassType {
 				"clear",
 				nil,
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					thisObj := this.(*Object)
 					thisObj.Extra["values"] = map[string]struct{}{}
 					return nil
@@ -63,7 +63,7 @@ func createSetType() *ClassType {
 					},
 				},
 				Parameters:     []ast.Node{},
-				NativeFunction: func(params []interface{}) {},
+				NativeFunction: func(this interface{}, params []interface{}) {},
 			},
 		},
 		InstanceMethods: instanceMethods,

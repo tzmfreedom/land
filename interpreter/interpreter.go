@@ -12,13 +12,16 @@ type Interpreter struct {
 	Context *Context
 	Stdout  io.Writer
 	Stderr  io.Writer
+	Extra   map[string]interface{}
 }
 
 func NewInterpreter(classTypeMap *builtin.ClassMap) *Interpreter {
 	interpreter := &Interpreter{
 		Context: NewContext(),
-		Stdout:  os.Stdout,
-		Stderr:  os.Stderr,
+		Extra: map[string]interface{}{
+			"stdout": os.Stdout,
+			"stderr": os.Stderr,
+		},
 	}
 	interpreter.Context.ClassTypes = classTypeMap
 	return interpreter
@@ -272,7 +275,7 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		}
 	}
 	if m.NativeFunction != nil {
-		r := m.NativeFunction(receiver, evaluated, v.Stdout, v.Stderr)
+		r := m.NativeFunction(receiver, evaluated, v.Extra)
 		Publish("method_end", v.Context, n)
 		return r, nil
 	} else {
@@ -320,13 +323,14 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 	}
 	for _, f := range classType.InstanceFields.Data {
 		if f.Expression == nil {
-			newObj.InstanceFields.Set(f.Name, nil)
+			newObj.InstanceFields.Set(f.Name, builtin.Null)
 		} else {
 			r, _ := f.Expression.Accept(v)
 			newObj.InstanceFields.Set(f.Name, r.(*builtin.Object))
 		}
 	}
 	if len(classType.Constructors) > 0 {
+		// TODO: implement multiple constructor
 		constructor := classType.Constructors[0]
 		evaluated := make([]interface{}, len(n.Parameters))
 		for i, p := range n.Parameters {
@@ -336,7 +340,7 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 			}
 		}
 		if constructor.NativeFunction != nil {
-			constructor.NativeFunction(evaluated)
+			constructor.NativeFunction(newObj, evaluated)
 		} else {
 			prev := v.Context.Env
 			v.Context.Env = NewEnv(nil)

@@ -21,9 +21,9 @@ func init() {
 							&ast.Modifier{Name: "public"},
 						},
 						Parameters: []ast.Node{objectTypeParameter},
-						NativeFunction: func(this interface{}, parameter []interface{}, options ...interface{}) interface{} {
+						NativeFunction: func(this interface{}, parameter []interface{}, extra map[string]interface{}) interface{} {
 							o := parameter[0].(*Object)
-							stdout := options[0].(io.Writer)
+							stdout := extra["stdout"].(io.Writer)
 							fmt.Fprintln(stdout, String(o))
 							return nil
 						},
@@ -35,7 +35,11 @@ func init() {
 						Modifiers: []ast.Node{
 							&ast.Modifier{Name: "public"},
 						},
-						NativeFunction: func(this interface{}, parameter []interface{}, options ...interface{}) interface{} {
+						Parameters: []ast.Node{
+							objectTypeParameter,
+							objectTypeParameter,
+						},
+						NativeFunction: func(this interface{}, parameter []interface{}, extra map[string]interface{}) interface{} {
 							expected := parameter[0].(*Object)
 							actual := parameter[1].(*Object)
 							if expected.Value() != actual.Value() {

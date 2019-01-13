@@ -14,7 +14,7 @@ func init() {
 				"getErrors",
 				[]string{"List"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					return this.(*Object).Extra["errors"]
 				},
 			),
@@ -27,7 +27,7 @@ func init() {
 				"getId",
 				[]string{"String"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					return this.(*Object).Extra["id"]
 				},
 			),
@@ -40,7 +40,7 @@ func init() {
 				"isSuccess",
 				[]string{"Boolean"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 					return this.(*Object).Extra["isSuccess"]
 				},
 			),
@@ -62,7 +62,7 @@ func init() {
 		"insert",
 		[]string{"Database", "SaveResult"},
 		[]ast.Node{objectTypeParameter}, // TODO: SObject or List<SObject>
-		func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+		func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 			sobj := params[0].(*Object)
 			record := &soapforce.SObject{}
 			for k, v := range sobj.InstanceFields.All() {
@@ -91,7 +91,7 @@ func init() {
 		"setSavePoint",
 		[]string{"Database", "SavePoint"},
 		[]ast.Node{},
-		func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+		func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 			return Null
 		},
 	)
@@ -100,7 +100,7 @@ func init() {
 		"rollback",
 		nil,
 		[]ast.Node{objectTypeParameter}, // TODO: savepoint
-		func(this interface{}, params []interface{}, options ...interface{}) interface{} {
+		func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
 			return Null
 		},
 	)

@@ -127,7 +127,7 @@ func CreateMethod(
 	name string,
 	returnType []string,
 	parameters []ast.Node,
-	nativeFunction func(interface{}, []interface{}, ...interface{}) interface{},
+	nativeFunction func(interface{}, []interface{}, map[string]interface{}) interface{},
 ) *ast.MethodDeclaration {
 	var retType ast.Node
 	if returnType != nil {

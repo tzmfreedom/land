@@ -5,6 +5,8 @@ import (
 	"sort"
 	"testing"
 
+	"strings"
+
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 )
@@ -475,14 +477,11 @@ func TestTypeChecker(t *testing.T) {
 			},
 		},
 	}
-	for _, testCase := range testCases {
+	for i, testCase := range testCases {
 		checker := NewTypeChecker()
 		checker.Context = &Context{}
 		checker.Context.ClassTypes = builtin.NewClassMapWithPrimivie([]*builtin.ClassType{testCase.Input})
-		_, err := checker.VisitClassType(testCase.Input)
-		if err != nil {
-			panic(err)
-		}
+		checker.VisitClassType(testCase.Input) // TODO: test error
 
 		messages := make([]string, len(checker.Errors))
 		for i, err := range checker.Errors {
@@ -493,12 +492,13 @@ func TestTypeChecker(t *testing.T) {
 		})
 
 		if len(messages) != len(testCase.ExpectErrors) {
-			t.Errorf("error size is not match: %d != %d", len(messages), len(testCase.ExpectErrors))
+			t.Errorf("%d: error size is not match: %d != %d", i, len(messages), len(testCase.ExpectErrors))
+			t.Errorf("%s", strings.Join(messages, ", "))
 		} else {
 			for i, message := range messages {
 				expected := testCase.ExpectErrors[i]
 				if expected.Message != message {
-					t.Errorf("expected: %s, actual: %s", expected.Message, message)
+					t.Errorf("%d: expected: %s, actual: %s", i, expected.Message, message)
 				}
 			}
 		}
@@ -637,7 +637,7 @@ func TestModifier(t *testing.T) {
 			nil,
 		},
 	}
-	for _, testCase := range testCases {
+	for i, testCase := range testCases {
 		checker := NewTypeChecker()
 		checker.Context = &Context{}
 		checker.Context.ClassTypes = builtin.NewClassMapWithPrimivie([]*builtin.ClassType{testCase.Input})
@@ -646,17 +646,17 @@ func TestModifier(t *testing.T) {
 		expected := testCase.ExpectError
 		if expected == nil {
 			if err != nil {
-				t.Errorf("unexpected error raised: %s", err.Error())
+				t.Errorf("%d: unexpected error raised: %s", i, err.Error())
 			}
 			continue
 		}
 		if expected != nil && err == nil {
-			t.Errorf("error is expected, but not raised: %s", expected.Error())
+			t.Errorf("%d: error is expected, but not raised: %s", i, expected.Error())
 			continue
 		}
 
 		if expected.Error() != err.Error() {
-			t.Errorf("expected: %s, actual: %s", expected.Error(), err.Error())
+			t.Errorf("%d: expected: %s, actual: %s", i, expected.Error(), err.Error())
 		}
 	}
 }

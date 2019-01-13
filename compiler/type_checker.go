@@ -215,7 +215,22 @@ func (v *TypeChecker) VisitForControl(n *ast.ForControl) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitEnhancedForControl(n *ast.EnhancedForControl) (interface{}, error) {
-	return ast.VisitEnhancedForControl(v, n)
+	t, _ := n.Type.Accept(v)
+	declClassType := t.(*builtin.ClassType)
+	exp, _ := n.Expression.Accept(v)
+	expClassType := exp.(*builtin.ClassType)
+	v.Context.Env.Set(n.VariableDeclaratorId, declClassType)
+
+	if expClassType.Name != "List" && expClassType.Name != "Set" {
+		v.AddError(fmt.Sprintf("expression <%s> must be List or Set expression", expClassType.Name), n)
+		return nil, nil
+	}
+
+	genericsType := expClassType.Extra["generics"].([]*builtin.ClassType)[0]
+	if !declClassType.Equals(genericsType) {
+		v.AddError(fmt.Sprintf("expression <%s> must be <%s> expression", declClassType.Name, expClassType.Name), n)
+	}
+	return nil, nil
 }
 
 func (v *TypeChecker) VisitIf(n *ast.If) (interface{}, error) {

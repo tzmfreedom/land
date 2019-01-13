@@ -146,36 +146,62 @@ func (v *Interpreter) VisitFinally(n *ast.Finally) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
-	control := n.Control.(*ast.ForControl)
-	_, err := control.ForInit.Accept(v)
-	if err != nil {
-		return nil, err
-	}
-	for {
-		res, err := control.Expression.Accept(v)
+	switch control := n.Control.(type) {
+	case *ast.ForControl:
+		_, err := control.ForInit.Accept(v)
 		if err != nil {
 			return nil, err
 		}
-		if res.(*builtin.Object).BoolValue() {
-			res, err = n.Statements.Accept(v)
+		for {
+			res, err := control.Expression.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+			if res.(*builtin.Object).BoolValue() {
+				res, err = n.Statements.Accept(v)
+				if res != nil {
+					switch r := res.(type) {
+					case *Break:
+						return nil, nil
+					case *Continue:
+						for _, stmt := range control.ForUpdate {
+							stmt.Accept(v)
+						}
+						continue
+					case *Return, *Raise:
+						return r, nil
+					}
+				}
+				for _, stmt := range control.ForUpdate {
+					stmt.Accept(v)
+				}
+			} else {
+				break
+			}
+		}
+	case *ast.EnhancedForControl:
+		_, err := control.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+		iterator, _ := control.Expression.Accept(v)
+		records := iterator.(*builtin.Object).Extra["records"].([]*builtin.Object)
+		for _, record := range records {
+			v.Context.Env.Set(control.VariableDeclaratorId, record)
+			res, err := n.Statements.Accept(v)
+			if err != nil {
+				return nil, err
+			}
 			if res != nil {
 				switch r := res.(type) {
 				case *Break:
 					return nil, nil
 				case *Continue:
-					for _, stmt := range control.ForUpdate {
-						stmt.Accept(v)
-					}
 					continue
 				case *Return, *Raise:
 					return r, nil
 				}
 			}
-			for _, stmt := range control.ForUpdate {
-				stmt.Accept(v)
-			}
-		} else {
-			break
 		}
 	}
 	return nil, nil

@@ -4,3 +4,4 @@ example.cls
 *.js
 .env
 sobjects.json
+database.sqlite3

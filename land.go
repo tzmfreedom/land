@@ -120,6 +120,9 @@ func main() {
 				handleError(err)
 			}
 			newTrees[i], err = register(root)
+			if err != nil {
+				handleError(err)
+			}
 		}
 		for _, t := range newTrees {
 			err = semanticAnalysis(t)
@@ -436,6 +439,9 @@ func buildFile(interpreter *interpreter.Interpreter, file string) (*builtin.Clas
 		return nil, fmt.Errorf("Build Error: %s\n", err.Error())
 	}
 	classType, err := register(root)
+	if err != nil {
+		return nil, fmt.Errorf("Build Error: %s\n", err.Error())
+	}
 	if err = semanticAnalysis(classType); err != nil {
 		return nil, fmt.Errorf("Build Error: %s\n", err.Error())
 	}
@@ -451,6 +457,9 @@ func buildAllFile(trees []ast.Node) ([]*builtin.ClassType, error) {
 			return nil, err
 		}
 		classTypes[i], err = register(root)
+		if err != nil {
+			return nil, err
+		}
 	}
 	for _, t := range classTypes {
 		if err := semanticAnalysis(t); err != nil {
@@ -467,6 +476,9 @@ func execFile(code string, env *interpreter.Env) *interpreter.Env {
 		panic(err)
 	}
 	classType, err := register(root)
+	if err != nil {
+		panic(err)
+	}
 	if err = semanticAnalysis(classType); err != nil {
 		panic(err)
 	}
@@ -502,6 +514,9 @@ func reloadAll(interpreter *interpreter.Interpreter, files []string) {
 			handleError(err)
 		}
 		classTypes[i], err = register(root)
+		if err != nil {
+			handleError(err)
+		}
 	}
 	for _, t := range classTypes {
 		if err = semanticAnalysis(t); err != nil {

@@ -524,6 +524,10 @@ func (v *TypeChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (inte
 			return nil, err
 		}
 		decl := d.(*ast.VariableDeclarator)
+		if _, ok := v.Context.Env.Get(decl.Name); ok {
+			v.AddError(fmt.Sprintf("variable declaration is duplicated <%s>", decl.Name), n.Type)
+			continue
+		}
 		v.Context.Env.Set(decl.Name, declType.(*builtin.ClassType))
 		if !declType.(*builtin.ClassType).Equals(t.(*builtin.ClassType)) {
 			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", declType.(*builtin.ClassType).String(), t.(*builtin.ClassType).String()), n.Type)

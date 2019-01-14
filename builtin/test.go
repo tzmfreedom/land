@@ -2,29 +2,35 @@ package builtin
 
 import "github.com/tzmfreedom/goland/ast"
 
-func init() {
+var testType = createTestType()
+
+func createTestType() *ClassType {
 	instanceMethods := NewMethodMap()
 	staticMethods := NewMethodMap()
 	staticMethods.Set(
-		"currentPage",
+		"setCurrentPage",
 		[]ast.Node{
 			CreateMethod(
-				"currentPage",
+				"setCurrentPage",
 				[]string{"PageReference"},
-				[]ast.Node{},
+				[]ast.Node{pageReferenceParameter},
 				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					return extra["current_page"]
+					extra["current_page"] = params[0]
+					return nil
 				},
 			),
 		},
 	)
 
 	classType := CreateClass(
-		"ApexPages",
+		"Test",
 		[]*ast.ConstructorDeclaration{},
 		instanceMethods,
 		staticMethods,
 	)
+	return classType
+}
 
-	primitiveClassMap.Set("ApexPages", classType)
+func init() {
+	primitiveClassMap.Set("Test", testType)
 }

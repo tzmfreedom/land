@@ -7,6 +7,13 @@ import (
 )
 
 var pageReferenceType = createPageReferenceType()
+var pageReferenceParameter = &ast.Parameter{
+	Type: &ast.TypeRef{
+		Name:       []string{"PageReference"},
+		Parameters: []ast.Node{},
+	},
+	Name: "_",
+}
 
 func createPageReferenceType() *ClassType {
 	instanceMethods := NewMethodMap()
@@ -58,8 +65,11 @@ func createPageReferenceType() *ClassType {
 				Parameters: []ast.Node{stringTypeParameter},
 				NativeFunction: func(this interface{}, params []interface{}) {
 					thisObj := this.(*Object)
+					parameters := CreateObject(MapType)
+					parameters.Extra["values"] = map[string]*Object{}
 					thisObj.Extra = map[string]interface{}{
-						"url": params[0].(*Object),
+						"url":        params[0].(*Object),
+						"parameters": parameters,
 					}
 				},
 			},
@@ -69,7 +79,13 @@ func createPageReferenceType() *ClassType {
 	)
 	classType.ToString = func(o *Object) string {
 		url := o.Extra["url"].(*Object)
-		return fmt.Sprintf("<%s> { url => %s }", o.ClassType.Name, url.StringValue())
+		parameters := o.Extra["parameters"].(*Object)
+		return fmt.Sprintf(
+			"<%s> { url => %s, parameters => (%s) }",
+			o.ClassType.Name,
+			url.StringValue(),
+			String(parameters),
+		)
 	}
 	return classType
 }

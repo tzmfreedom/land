@@ -55,36 +55,6 @@ func createListType() *ClassType {
 			),
 		},
 	)
-	instanceMethods.Set(
-		"isNext",
-		[]ast.Node{
-			CreateMethod(
-				"next",
-				[]string{"Boolean"},
-				[]ast.Node{},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					thisObj := this.(*Object)
-					counter := thisObj.Extra["counter"].(int)
-					return thisObj.Extra["records"].([]*Object)[counter]
-				},
-			),
-		},
-	)
-	instanceMethods.Set(
-		"next",
-		[]ast.Node{
-			CreateMethod(
-				"next",
-				[]string{"T:1"},
-				[]ast.Node{},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					thisObj := this.(*Object)
-					counter := thisObj.Extra["counter"].(int)
-					return thisObj.Extra["records"].([]*Object)[counter]
-				},
-			),
-		},
-	)
 
 	classType := CreateClass(
 		"List",

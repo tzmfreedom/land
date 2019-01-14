@@ -267,7 +267,7 @@ func TypeName(v interface{}) string {
 }
 
 var Null = &Object{
-	ClassType:      nil,
+	ClassType:      NullType,
 	InstanceFields: NewObjectMap(),
 	GenericType:    []*ClassType{},
 	Extra:          map[string]interface{}{},

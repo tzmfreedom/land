@@ -1,6 +1,11 @@
 package builtin
 
-import "github.com/tzmfreedom/goland/ast"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/tzmfreedom/goland/ast"
+)
 
 var MapType = createMapType()
 
@@ -17,7 +22,10 @@ func createMapType() *ClassType {
 					key := params[0].(*Object).StringValue()
 					thisObj := this.(*Object)
 					values := thisObj.Extra["values"].(map[string]*Object)
-					return values[key]
+					if v := values[key]; v != nil {
+						return v
+					}
+					return Null
 				},
 			),
 		},
@@ -76,12 +84,23 @@ func createMapType() *ClassType {
 		},
 	)
 
-	return CreateClass(
+	classType := CreateClass(
 		"Map",
 		[]*ast.ConstructorDeclaration{},
 		instanceMethods,
 		nil,
 	)
+	classType.ToString = func(o *Object) string {
+		values := o.Extra["values"].(map[string]*Object)
+		parameters := make([]string, len(values))
+		i := 0
+		for k, v := range values {
+			parameters[i] = fmt.Sprintf("%s => %s", k, String(v))
+			i++
+		}
+		return strings.Join(parameters, ", ")
+	}
+	return classType
 }
 
 func init() {

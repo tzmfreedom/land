@@ -592,8 +592,10 @@ func (v *TypeChecker) VisitBlock(n *ast.Block) (interface{}, error) {
 			return nil, err
 		}
 	}
-	if _, ok := n.Statements[len(n.Statements)-1].(*ast.Return); ok {
-		return r, nil
+	if len(n.Statements) > 0 {
+		if _, ok := n.Statements[len(n.Statements)-1].(*ast.Return); ok {
+			return r, nil
+		}
 	}
 	return nil, nil
 }

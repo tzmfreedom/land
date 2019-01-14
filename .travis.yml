@@ -3,10 +3,13 @@ go:
 - '1.11'
 before_install:
 - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+- mv sobjects.json.test sobjects.json
 install:
 - make deps
+before_script:
+- make db/setup
+- make db/seed
 script:
-- mv sobjects.json.test sobjects.json
 - make test
 before_deploy:
 - make cross-build

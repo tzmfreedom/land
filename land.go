@@ -51,6 +51,12 @@ func main() {
 	}
 
 	switch option.SubCommand {
+	case "db:setup":
+		builtin.Setup()
+		return
+	case "db:seed":
+		builtin.Seed()
+		return
 	case "setup":
 		err := builtin.CreateMetadataFile(option.LoaderSource)
 		if err != nil {
@@ -167,6 +173,8 @@ func parseOption(args []string) (*option, error) {
 		cmd != "eval-server" &&
 		cmd != "server" &&
 		cmd != "setup" &&
+		cmd != "db:setup" &&
+		cmd != "db:seed" &&
 		*action == "" &&
 		*interactive == false {
 		return nil, errors.New("-a CLASS#METHOD is required")

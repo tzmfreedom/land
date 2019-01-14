@@ -140,7 +140,7 @@ func (d *databaseDriver) ExecuteRaw(query string) {
 	d.db.Exec(query)
 }
 
-func seed() {
+func Seed() {
 	DatabaseDriver.ExecuteRaw(`
 INSERT INTO Account(id, name) VALUES ('12345', 'hoge');
 INSERT INTO Account(id, name) VALUES ('abcde', 'fuga');
@@ -149,7 +149,7 @@ INSERT INTO Contact(id, lastname, firstname, accountid) VALUES ('b', 'l2', 'r2',
 `)
 }
 
-func init() {
+func Setup() {
 	DatabaseDriver.ExecuteRaw(`
 CREATE TABLE IF NOT EXISTS Account (
 	id VARCHAR NOT NULL PRIMARY KEY,
@@ -163,5 +163,4 @@ CREATE TABLE IF NOT EXISTS Contact (
 	accountid TEXT	
 );
 `)
-	seed()
 }

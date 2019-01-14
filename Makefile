@@ -13,6 +13,14 @@ run: format
 run/format:
 	@go run . format -f example.cls
 
+.PHONY: db/setup
+db/setup:
+	@go run . db:setup
+
+.PHONY: db/seed
+db/seed:
+	@go run . db:seed
+
 .PHONY: test
 test: format
 	@go test ./...

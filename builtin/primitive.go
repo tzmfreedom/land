@@ -120,6 +120,7 @@ func CreateClass(
 		StaticFields:    NewFieldMap(),
 		InstanceMethods: instanceMethods,
 		StaticMethods:   staticMethods,
+		InnerClasses:    NewClassMap(),
 	}
 }
 

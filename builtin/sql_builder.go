@@ -60,7 +60,10 @@ func (b *SqlBuilder) createWhere(n ast.Node, tmpTableMap map[string]string) stri
 		case *ast.SoqlFunction:
 			field = f.Name + "()"
 		}
-		value, _ := val.Expression.Accept(b.interpreter)
+		value, err := val.Expression.Accept(b.interpreter)
+		if err != nil {
+			panic(err)
+		}
 		return fmt.Sprintf("%s %s '%s'", field, val.Op, String(value.(*Object)))
 	case *ast.WhereBinaryOperator:
 		where := ""

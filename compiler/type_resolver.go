@@ -20,6 +20,8 @@ const (
 	MODIFIER_NO_CHECK
 )
 
+// TODO: resolve on static context
+
 func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*builtin.ClassType, error) {
 	if len(names) == 1 {
 		if v, ok := r.Context.Env.Get(names[0]); ok {

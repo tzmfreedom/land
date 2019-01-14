@@ -338,9 +338,15 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 }
 
 func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
-	t, _ := n.Type.Accept(v)
+	t, err := n.Type.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	for _, p := range n.Parameters {
-		p.Accept(v)
+		_, err := p.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return t, nil
 }

@@ -220,6 +220,7 @@ func semanticAnalysis(t *builtin.ClassType) error {
 	for _, class := range classMap.Data {
 		typeChecker.Context.ClassTypes.Set(class.Name, class)
 	}
+	typeChecker.Context.NameSpaces = builtin.GetNameSpaceStore()
 	_, err := typeChecker.VisitClassType(t)
 	if len(typeChecker.Errors) != 0 {
 		for _, e := range typeChecker.Errors {
@@ -241,6 +242,7 @@ func run(action string, classTypes []*builtin.ClassType) error {
 	for _, classType := range classTypes {
 		interpreter.Context.ClassTypes.Set(classType.Name, classType)
 	}
+	interpreter.Context.NameSpaces = builtin.GetNameSpaceStore()
 	invoke := &ast.MethodInvocation{
 		NameOrExpression: &ast.Name{
 			Value: []string{args[0], method},

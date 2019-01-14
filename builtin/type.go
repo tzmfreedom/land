@@ -7,7 +7,10 @@ import (
 	"github.com/tzmfreedom/goland/ast"
 )
 
-var NullType = &ClassType{Name: "null"}
+var NullType = &ClassType{
+	Name:     "null",
+	ToString: func(o *Object) string { return "null" },
+}
 
 type ClassType struct {
 	Annotations      []ast.Node
@@ -15,7 +18,7 @@ type ClassType struct {
 	Name             string
 	SuperClass       ast.Node
 	ImplementClasses []ast.Node
-	Constructors     []*ast.ConstructorDeclaration
+	Constructors     []*Method
 	InstanceFields   *FieldMap
 	StaticFields     *FieldMap
 	InstanceMethods  *MethodMap
@@ -173,40 +176,143 @@ func (m *FieldMap) Get(k string) (*Field, bool) {
 	return n, ok
 }
 
+type Method struct {
+	Name        string
+	Annotations []ast.Node
+	Modifiers   []ast.Node
+	ReturnType  ast.Node
+	Parameters  []ast.Node
+	Throws      []ast.Node
+	Statements  ast.Node
+	// func(receiver, value, options)
+	NativeFunction func(*Object, []*Object, map[string]interface{}) interface{}
+	Location       *ast.Location
+	Parent         ast.Node
+}
+
+func NewMethod(decl *ast.MethodDeclaration) *Method {
+	return &Method{
+		Name:        decl.Name,
+		Annotations: decl.Annotations,
+		Modifiers:   decl.Modifiers,
+		ReturnType:  decl.ReturnType,
+		Parameters:  decl.Parameters,
+		Throws:      decl.Throws,
+		Statements:  decl.Statements,
+		Location:    decl.Location,
+		Parent:      decl.Parent,
+	}
+}
+
+func NewConstructor(decl *ast.ConstructorDeclaration) *Method {
+	return &Method{
+		Modifiers:   decl.Modifiers,
+		Annotations: decl.Annotations,
+		ReturnType:  decl.ReturnType,
+		Parameters:  decl.Parameters,
+		Throws:      decl.Throws,
+		Statements:  decl.Statements,
+		Location:    decl.Location,
+		Parent:      decl.Parent,
+	}
+}
+
+func (m *Method) IsPublic() bool {
+	return m.Is("public")
+}
+
+func (m *Method) IsPrivate() bool {
+	return m.Is("private")
+}
+
+func (m *Method) IsProtected() bool {
+	return m.Is("protected")
+}
+
+func (m *Method) IsTestMethod() bool {
+	return m.Is("testMethod") || m.IsAnnotated("@isTest")
+}
+
+func (m *Method) IsAnnotated(name string) bool {
+	name = strings.ToLower(name)
+	for _, annotation := range m.Annotations {
+		if strings.ToLower(annotation.(*ast.Annotation).Name) == name {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *Method) AccessModifier() string {
+	if m.IsPublic() {
+		return "public"
+	}
+	if m.IsPrivate() {
+		return "private"
+	}
+	if m.IsProtected() {
+		return "protected"
+	}
+	return ""
+}
+
+func (m *Method) IsOverride() bool {
+	return m.Is("override")
+}
+
+func (m *Method) IsAbstract() bool {
+	return m.Is("abstract")
+}
+
+func (m *Method) IsVirtual() bool {
+	return m.Is("virtual")
+}
+
+func (m *Method) Is(name string) bool {
+	name = strings.ToLower(name)
+	for _, modifier := range m.Modifiers {
+		modifierName := strings.ToLower(modifier.(*ast.Modifier).Name)
+		if modifierName == name {
+			return true
+		}
+	}
+	return false
+}
+
 type MethodMap struct {
-	Data map[string][]ast.Node
+	Data map[string][]*Method
 }
 
 func NewMethodMap() *MethodMap {
 	return &MethodMap{
-		Data: map[string][]ast.Node{},
+		Data: map[string][]*Method{},
 	}
 }
 
-func (m *MethodMap) Add(k string, n ast.Node) {
+func (m *MethodMap) Add(k string, n *Method) {
 	if data, ok := m.Get(k); ok {
 		data = append(data, n)
 		m.Set(k, data)
 	} else {
-		m.Set(k, []ast.Node{n})
+		m.Set(k, []*Method{n})
 	}
 }
 
-func (m *MethodMap) Set(k string, n []ast.Node) {
+func (m *MethodMap) Set(k string, n []*Method) {
 	m.Data[strings.ToLower(k)] = n
 }
 
-func (m *MethodMap) Get(k string) ([]ast.Node, bool) {
+func (m *MethodMap) Get(k string) ([]*Method, bool) {
 	n, ok := m.Data[strings.ToLower(k)]
 	return n, ok
 }
 
-func (m *MethodMap) All() [][]ast.Node {
-	fields := make([][]ast.Node, len(m.Data))
+func (m *MethodMap) All() [][]*Method {
+	methods := make([][]*Method, len(m.Data))
 	for _, v := range m.Data {
-		fields = append(fields, v)
+		methods = append(methods, v)
 	}
-	return fields
+	return methods
 }
 
 /**

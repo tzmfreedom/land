@@ -13,16 +13,16 @@ func init() {
 		nil,
 		nil,
 		&MethodMap{
-			Data: map[string][]ast.Node{
+			Data: map[string][]*Method{
 				"debug": {
-					&ast.MethodDeclaration{
+					&Method{
 						Name: "debug",
 						Modifiers: []ast.Node{
 							&ast.Modifier{Name: "public"},
 						},
 						Parameters: []ast.Node{objectTypeParameter},
-						NativeFunction: func(this interface{}, parameter []interface{}, extra map[string]interface{}) interface{} {
-							o := parameter[0].(*Object)
+						NativeFunction: func(this *Object, parameter []*Object, extra map[string]interface{}) interface{} {
+							o := parameter[0]
 							stdout := extra["stdout"].(io.Writer)
 							fmt.Fprintln(stdout, String(o))
 							return nil
@@ -30,7 +30,7 @@ func init() {
 					},
 				},
 				"assertequals": {
-					&ast.MethodDeclaration{
+					&Method{
 						Name: "assertequals",
 						Modifiers: []ast.Node{
 							&ast.Modifier{Name: "public"},
@@ -39,9 +39,9 @@ func init() {
 							objectTypeParameter,
 							objectTypeParameter,
 						},
-						NativeFunction: func(this interface{}, parameter []interface{}, extra map[string]interface{}) interface{} {
-							expected := parameter[0].(*Object)
-							actual := parameter[1].(*Object)
+						NativeFunction: func(this *Object, parameter []*Object, extra map[string]interface{}) interface{} {
+							expected := parameter[0]
+							actual := parameter[1]
 							if expected.Value() != actual.Value() {
 								fmt.Printf("expected: %s, actual: %s\n", String(expected), String(actual))
 							}

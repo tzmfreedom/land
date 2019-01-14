@@ -785,7 +785,7 @@ func TestResolveMethod(t *testing.T) {
 	testCases := []struct {
 		Input    []string
 		Context  *Context
-		Expected *ast.MethodDeclaration
+		Expected *builtin.Method
 		Error    error
 	}{
 		{
@@ -797,9 +797,9 @@ func TestResolveMethod(t *testing.T) {
 							"this": {
 								Name: "class",
 								InstanceMethods: &builtin.MethodMap{
-									Data: map[string][]ast.Node{
+									Data: map[string][]*builtin.Method{
 										"instance": {
-											&ast.MethodDeclaration{
+											{
 												Name: "instance",
 												Modifiers: []ast.Node{
 													&ast.Modifier{
@@ -815,7 +815,7 @@ func TestResolveMethod(t *testing.T) {
 					},
 				},
 			},
-			&ast.MethodDeclaration{
+			&builtin.Method{
 				Name: "instance",
 				Modifiers: []ast.Node{
 					&ast.Modifier{
@@ -834,9 +834,9 @@ func TestResolveMethod(t *testing.T) {
 							"local": {
 								Name: "class",
 								InstanceMethods: &builtin.MethodMap{
-									Data: map[string][]ast.Node{
+									Data: map[string][]*builtin.Method{
 										"instance": {
-											&ast.MethodDeclaration{
+											{
 												Name: "instance",
 												Modifiers: []ast.Node{
 													&ast.Modifier{
@@ -852,7 +852,7 @@ func TestResolveMethod(t *testing.T) {
 					},
 				},
 			},
-			&ast.MethodDeclaration{
+			&builtin.Method{
 				Name: "instance",
 				Modifiers: []ast.Node{
 					&ast.Modifier{
@@ -869,9 +869,9 @@ func TestResolveMethod(t *testing.T) {
 					Data: map[string]*builtin.ClassType{
 						"class": {
 							StaticMethods: &builtin.MethodMap{
-								Data: map[string][]ast.Node{
+								Data: map[string][]*builtin.Method{
 									"static": {
-										&ast.MethodDeclaration{
+										{
 											Name: "static",
 											Modifiers: []ast.Node{
 												&ast.Modifier{
@@ -887,7 +887,7 @@ func TestResolveMethod(t *testing.T) {
 				},
 				Env: newTypeEnv(nil),
 			},
-			&ast.MethodDeclaration{
+			&builtin.Method{
 				Name: "static",
 				Modifiers: []ast.Node{
 					&ast.Modifier{
@@ -921,9 +921,9 @@ func TestResolveMethod(t *testing.T) {
 						},
 						"class2": {
 							InstanceMethods: &builtin.MethodMap{
-								Data: map[string][]ast.Node{
+								Data: map[string][]*builtin.Method{
 									"instance": {
-										&ast.MethodDeclaration{
+										{
 											Name: "instance",
 											Modifiers: []ast.Node{
 												&ast.Modifier{
@@ -939,7 +939,7 @@ func TestResolveMethod(t *testing.T) {
 				},
 				Env: newTypeEnv(nil),
 			},
-			&ast.MethodDeclaration{
+			&builtin.Method{
 				Name: "instance",
 				Modifiers: []ast.Node{
 					&ast.Modifier{
@@ -960,9 +960,9 @@ func TestResolveMethod(t *testing.T) {
 							Data: map[string]*builtin.ClassType{
 								"class": {
 									StaticMethods: &builtin.MethodMap{
-										Data: map[string][]ast.Node{
+										Data: map[string][]*builtin.Method{
 											"static": {
-												&ast.MethodDeclaration{
+												{
 													Name: "static",
 													Modifiers: []ast.Node{
 														&ast.Modifier{
@@ -979,7 +979,7 @@ func TestResolveMethod(t *testing.T) {
 					},
 				},
 			},
-			&ast.MethodDeclaration{
+			&builtin.Method{
 				Name: "static",
 				Modifiers: []ast.Node{
 					&ast.Modifier{
@@ -997,9 +997,9 @@ func TestResolveMethod(t *testing.T) {
 					Data: map[string]*builtin.ClassType{
 						"class2": {
 							InstanceMethods: &builtin.MethodMap{
-								Data: map[string][]ast.Node{
+								Data: map[string][]*builtin.Method{
 									"instance": {
-										&ast.MethodDeclaration{
+										{
 											Name: "instance",
 											Modifiers: []ast.Node{
 												&ast.Modifier{
@@ -1039,7 +1039,7 @@ func TestResolveMethod(t *testing.T) {
 					},
 				},
 			},
-			&ast.MethodDeclaration{
+			&builtin.Method{
 				Name: "instance",
 				Modifiers: []ast.Node{
 					&ast.Modifier{
@@ -1059,9 +1059,9 @@ func TestResolveMethod(t *testing.T) {
 							"local": {
 								Name: "class",
 								InstanceMethods: &builtin.MethodMap{
-									Data: map[string][]ast.Node{
+									Data: map[string][]*builtin.Method{
 										"instance": {
-											&ast.MethodDeclaration{
+											{
 												Name: "instance",
 												Modifiers: []ast.Node{
 													&ast.Modifier{
@@ -1089,9 +1089,9 @@ func TestResolveMethod(t *testing.T) {
 							"local": {
 								Name: "class",
 								InstanceMethods: &builtin.MethodMap{
-									Data: map[string][]ast.Node{
+									Data: map[string][]*builtin.Method{
 										"instance": {
-											&ast.MethodDeclaration{
+											{
 												Name: "instance",
 												Modifiers: []ast.Node{
 													&ast.Modifier{
@@ -1117,9 +1117,9 @@ func TestResolveMethod(t *testing.T) {
 					Data: map[string]*builtin.ClassType{
 						"class": {
 							StaticMethods: &builtin.MethodMap{
-								Data: map[string][]ast.Node{
+								Data: map[string][]*builtin.Method{
 									"static": {
-										&ast.MethodDeclaration{
+										{
 											Name: "static",
 											Modifiers: []ast.Node{
 												&ast.Modifier{
@@ -1145,9 +1145,9 @@ func TestResolveMethod(t *testing.T) {
 					Data: map[string]*builtin.ClassType{
 						"class": {
 							StaticMethods: &builtin.MethodMap{
-								Data: map[string][]ast.Node{
+								Data: map[string][]*builtin.Method{
 									"static": {
-										&ast.MethodDeclaration{
+										{
 											Name: "static",
 											Modifiers: []ast.Node{
 												&ast.Modifier{
@@ -1190,9 +1190,9 @@ func TestResolveMethod(t *testing.T) {
 		//				},
 		//				"class2": {
 		//					InstanceMethods: &builtin.MethodMap{
-		//						Data: map[string][]ast.Node{
+		//						Data: map[string][]*builtin.Method{
 		//							"instance": {
-		//								&ast.MethodDeclaration{
+		//								{
 		//									Name: "instance",
 		//									Modifiers: []ast.Node{
 		//										&ast.Modifier{
@@ -1208,7 +1208,7 @@ func TestResolveMethod(t *testing.T) {
 		//		},
 		//		Env: newTypeEnv(nil),
 		//	},
-		//	&ast.MethodDeclaration{
+		//	{
 		//		Name: "instance",
 		//		Modifiers: []ast.Node{
 		//			&ast.Modifier{
@@ -1242,9 +1242,9 @@ func TestResolveMethod(t *testing.T) {
 		//				},
 		//				"class2": {
 		//					InstanceMethods: &builtin.MethodMap{
-		//						Data: map[string][]ast.Node{
+		//						Data: map[string][]*builtin.Method{
 		//							"instance": {
-		//								&ast.MethodDeclaration{
+		//								{
 		//									Name: "instance",
 		//									Modifiers: []ast.Node{
 		//										&ast.Modifier{
@@ -1260,7 +1260,7 @@ func TestResolveMethod(t *testing.T) {
 		//		},
 		//		Env: newTypeEnv(nil),
 		//	},
-		//	&ast.MethodDeclaration{
+		//	{
 		//		Name: "instance",
 		//		Modifiers: []ast.Node{
 		//			&ast.Modifier{
@@ -1281,9 +1281,9 @@ func TestResolveMethod(t *testing.T) {
 							Data: map[string]*builtin.ClassType{
 								"class": {
 									StaticMethods: &builtin.MethodMap{
-										Data: map[string][]ast.Node{
+										Data: map[string][]*builtin.Method{
 											"static": {
-												&ast.MethodDeclaration{
+												{
 													Name: "static",
 													Modifiers: []ast.Node{
 														&ast.Modifier{
@@ -1314,9 +1314,9 @@ func TestResolveMethod(t *testing.T) {
 							Data: map[string]*builtin.ClassType{
 								"class": {
 									StaticMethods: &builtin.MethodMap{
-										Data: map[string][]ast.Node{
+										Data: map[string][]*builtin.Method{
 											"static": {
-												&ast.MethodDeclaration{
+												{
 													Name: "static",
 													Modifiers: []ast.Node{
 														&ast.Modifier{
@@ -1344,9 +1344,9 @@ func TestResolveMethod(t *testing.T) {
 					Data: map[string]*builtin.ClassType{
 						"class2": {
 							InstanceMethods: &builtin.MethodMap{
-								Data: map[string][]ast.Node{
+								Data: map[string][]*builtin.Method{
 									"instance": {
-										&ast.MethodDeclaration{
+										{
 											Name: "instance",
 											Modifiers: []ast.Node{
 												&ast.Modifier{
@@ -1397,9 +1397,9 @@ func TestResolveMethod(t *testing.T) {
 					Data: map[string]*builtin.ClassType{
 						"class2": {
 							InstanceMethods: &builtin.MethodMap{
-								Data: map[string][]ast.Node{
+								Data: map[string][]*builtin.Method{
 									"instance": {
-										&ast.MethodDeclaration{
+										{
 											Name: "instance",
 											Modifiers: []ast.Node{
 												&ast.Modifier{

@@ -3,7 +3,6 @@ package compiler
 import (
 	"strings"
 
-	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 )
 
@@ -15,7 +14,7 @@ type Context struct {
 	ClassTypes  *builtin.ClassMap       // loaded User Class
 	NameSpaces  *builtin.NameSpaceStore // NameSpaces and Related Classes
 
-	CurrentMethod *ast.MethodDeclaration
+	CurrentMethod *builtin.Method
 	CurrentClass  *builtin.ClassType
 }
 

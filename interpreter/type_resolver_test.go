@@ -7,7 +7,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/k0kubun/pp"
-	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 )
 
@@ -193,9 +192,9 @@ func TestResolveVariable(t *testing.T) {
 
 	ignore := cmpopts.IgnoreTypes(func(*builtin.Object) string { return "" })
 
-	typeResolver := &TypeResolver{}
 	for _, testCase := range testCases {
-		actual, err := typeResolver.ResolveVariable(testCase.Input, testCase.Context)
+		typeResolver := &TypeResolver{Context: testCase.Context}
+		actual, err := typeResolver.ResolveVariable(testCase.Input)
 		if testCase.Error != nil && testCase.Error.Error() != err.Error() {
 			diff := cmp.Diff(testCase.Error.Error(), err.Error())
 			t.Errorf(diff)
@@ -213,7 +212,7 @@ func TestResolveMethod(t *testing.T) {
 	testCases := []struct {
 		Input    []string
 		Context  *Context
-		Expected *ast.MethodDeclaration
+		Expected *builtin.Method
 		Error    error
 	}{
 		{
@@ -225,9 +224,9 @@ func TestResolveMethod(t *testing.T) {
 							"this": {
 								ClassType: &builtin.ClassType{
 									InstanceMethods: &builtin.MethodMap{
-										Data: map[string][]ast.Node{
+										Data: map[string][]*builtin.Method{
 											"foo": {
-												&ast.MethodDeclaration{
+												{
 													Name: "foo",
 												},
 											},
@@ -239,7 +238,7 @@ func TestResolveMethod(t *testing.T) {
 					},
 				},
 			},
-			&ast.MethodDeclaration{Name: "foo"},
+			&builtin.Method{Name: "foo"},
 			nil,
 		},
 		{
@@ -251,9 +250,9 @@ func TestResolveMethod(t *testing.T) {
 							"foo": {
 								ClassType: &builtin.ClassType{
 									InstanceMethods: &builtin.MethodMap{
-										Data: map[string][]ast.Node{
+										Data: map[string][]*builtin.Method{
 											"bar": {
-												&ast.MethodDeclaration{
+												{
 													Name: "bar",
 												},
 											},
@@ -265,7 +264,7 @@ func TestResolveMethod(t *testing.T) {
 					},
 				},
 			},
-			&ast.MethodDeclaration{Name: "bar"},
+			&builtin.Method{Name: "bar"},
 			nil,
 		},
 		{
@@ -275,9 +274,9 @@ func TestResolveMethod(t *testing.T) {
 					Data: map[string]*builtin.ClassType{
 						"klass": {
 							StaticMethods: &builtin.MethodMap{
-								Data: map[string][]ast.Node{
+								Data: map[string][]*builtin.Method{
 									"foo": {
-										&ast.MethodDeclaration{
+										{
 											Name: "foo",
 										},
 									},
@@ -288,7 +287,7 @@ func TestResolveMethod(t *testing.T) {
 				},
 				Env: NewEnv(nil),
 			},
-			&ast.MethodDeclaration{Name: "foo"},
+			&builtin.Method{Name: "foo"},
 			nil,
 		},
 		//{
@@ -310,9 +309,9 @@ func TestResolveMethod(t *testing.T) {
 		//				},
 		//				"klass2": {
 		//					InstanceMethods: &builtin.MethodMap{
-		//						Data: map[string][]ast.Node{
+		//						Data: map[string][]*builtin.Method{
 		//							"bar": {
-		//								&ast.MethodDeclaration{
+		//								&builtin.Method{
 		//									Name: "bar",
 		//								},
 		//							},
@@ -323,7 +322,7 @@ func TestResolveMethod(t *testing.T) {
 		//		},
 		//		Env: newTypeEnv(nil),
 		//	},
-		//	&ast.MethodDeclaration{Name: "bar"},
+		//	&builtin.Method{Name: "bar"},
 		//	nil,
 		//},
 		//{
@@ -337,9 +336,9 @@ func TestResolveMethod(t *testing.T) {
 		//					Data: map[string]*builtin.ClassType{
 		//						"klass": {
 		//							StaticMethods: &builtin.MethodMap{
-		//								Data: map[string][]ast.Node{
+		//								Data: map[string][]*builtin.Method{
 		//									"foo": {
-		//										&ast.MethodDeclaration{
+		//										&builtin.Method{
 		//											Name: "foo",
 		//										},
 		//									},
@@ -351,7 +350,7 @@ func TestResolveMethod(t *testing.T) {
 		//			},
 		//		},
 		//	},
-		//	&ast.MethodDeclaration{Name: "foo"},
+		//	&builtin.Method{Name: "foo"},
 		//	nil,
 		//},
 		//{
@@ -362,9 +361,9 @@ func TestResolveMethod(t *testing.T) {
 		//			Data: map[string]*builtin.ClassType{
 		//				"klass2": {
 		//					InstanceMethods: &builtin.MethodMap{
-		//						Data: map[string][]ast.Node{
+		//						Data: map[string][]*builtin.Method{
 		//							"bar": {
-		//								&ast.MethodDeclaration{
+		//								&builtin.Method{
 		//									Name: "bar",
 		//								},
 		//							},
@@ -394,14 +393,14 @@ func TestResolveMethod(t *testing.T) {
 		//			},
 		//		},
 		//	},
-		//	&ast.MethodDeclaration{Name: "bar"},
+		//	&builtin.Method{Name: "bar"},
 		//	nil,
 		//},
 	}
-	typeResolver := &TypeResolver{}
 	for _, testCase := range testCases {
+		typeResolver := &TypeResolver{Context: testCase.Context}
 		// TODO: test receiver
-		_, actual, err := typeResolver.ResolveMethod(testCase.Input, testCase.Context)
+		_, actual, err := typeResolver.ResolveMethod(testCase.Input)
 		if testCase.Error != nil && testCase.Error.Error() != err.Error() {
 			diff := cmp.Diff(testCase.Error.Error(), err.Error())
 			t.Errorf(diff)

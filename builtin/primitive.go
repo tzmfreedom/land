@@ -108,7 +108,7 @@ func PublicModifier() *ast.Modifier {
 
 func CreateClass(
 	name string,
-	constructors []*ast.ConstructorDeclaration,
+	constructors []*Method,
 	instanceMethods *MethodMap,
 	staticMethods *MethodMap,
 ) *ClassType {
@@ -128,13 +128,13 @@ func CreateMethod(
 	name string,
 	returnType []string,
 	parameters []ast.Node,
-	nativeFunction func(interface{}, []interface{}, map[string]interface{}) interface{},
-) *ast.MethodDeclaration {
+	nativeFunction func(*Object, []*Object, map[string]interface{}) interface{},
+) *Method {
 	var retType ast.Node
 	if returnType != nil {
 		retType = &ast.TypeRef{Name: returnType}
 	}
-	return &ast.MethodDeclaration{
+	return &Method{
 		Name:           name,
 		Modifiers:      []ast.Node{PublicModifier()},
 		ReturnType:     retType,

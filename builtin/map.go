@@ -13,15 +13,14 @@ func createMapType() *ClassType {
 	instanceMethods := NewMethodMap()
 	instanceMethods.Set(
 		"get",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"get",
 				[]string{"T:2"},
 				[]ast.Node{t1Parameter},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					key := params[0].(*Object).StringValue()
-					thisObj := this.(*Object)
-					values := thisObj.Extra["values"].(map[string]*Object)
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+					key := params[0].StringValue()
+					values := this.Extra["values"].(map[string]*Object)
 					if v := values[key]; v != nil {
 						return v
 					}
@@ -32,16 +31,15 @@ func createMapType() *ClassType {
 	)
 	instanceMethods.Set(
 		"put",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"put",
 				nil,
 				[]ast.Node{t1Parameter, t2Parameter},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					key := params[0].(*Object).StringValue()
-					thisObj := this.(*Object)
-					values := thisObj.Extra["values"].(map[string]*Object)
-					values[key] = params[1].(*Object)
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+					key := params[0].StringValue()
+					values := this.Extra["values"].(map[string]*Object)
+					values[key] = params[1]
 					return nil
 				},
 			),
@@ -49,29 +47,27 @@ func createMapType() *ClassType {
 	)
 	instanceMethods.Set(
 		"size",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"size",
 				[]string{"Integer"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					thisObj := this.(*Object)
-					return NewInteger(len(thisObj.Extra["values"].(map[string]*Object)))
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+					return NewInteger(len(this.Extra["values"].(map[string]*Object)))
 				},
 			),
 		},
 	)
 	instanceMethods.Set(
 		"keySet",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"keySet",
 				[]string{"T:1"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					thisObj := this.(*Object)
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					keySets := map[string]struct{}{}
-					for key, _ := range thisObj.Extra["values"].(map[string]*Object) {
+					for key, _ := range this.Extra["values"].(map[string]*Object) {
 						keySets[key] = struct{}{}
 					}
 					setClass, _ := PrimitiveClassMap().Get("Set")
@@ -86,7 +82,7 @@ func createMapType() *ClassType {
 
 	classType := CreateClass(
 		"Map",
-		[]*ast.ConstructorDeclaration{},
+		[]*Method{},
 		instanceMethods,
 		nil,
 	)

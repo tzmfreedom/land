@@ -9,39 +9,39 @@ func init() {
 	instanceMethods := NewMethodMap()
 	instanceMethods.Set(
 		"getErrors",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"getErrors",
 				[]string{"List"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					return this.(*Object).Extra["errors"]
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+					return this.Extra["errors"]
 				},
 			),
 		},
 	)
 	instanceMethods.Set(
 		"getId",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"getId",
 				[]string{"String"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					return this.(*Object).Extra["id"]
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+					return this.Extra["id"]
 				},
 			),
 		},
 	)
 	instanceMethods.Set(
 		"isSuccess",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"isSuccess",
 				[]string{"Boolean"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					return this.(*Object).Extra["isSuccess"]
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+					return this.Extra["isSuccess"]
 				},
 			),
 		},
@@ -50,7 +50,7 @@ func init() {
 	classMap := NewClassMap()
 	saveResult := CreateClass(
 		"SaveResult",
-		[]*ast.ConstructorDeclaration{},
+		[]*Method{},
 		instanceMethods,
 		NewMethodMap(),
 	)
@@ -62,8 +62,8 @@ func init() {
 		"insert",
 		[]string{"Database", "SaveResult"},
 		[]ast.Node{objectTypeParameter}, // TODO: SObject or List<SObject>
-		func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-			sobj := params[0].(*Object)
+		func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+			sobj := params[0]
 			record := &soapforce.SObject{}
 			for k, v := range sobj.InstanceFields.All() {
 				record.Fields[k] = v.Value()
@@ -86,29 +86,29 @@ func init() {
 			return listObject
 		},
 	)
-	staticMethods.Set("insert", []ast.Node{method})
+	staticMethods.Set("insert", []*Method{method})
 	method = CreateMethod(
 		"setSavePoint",
 		[]string{"Database", "SavePoint"},
 		[]ast.Node{},
-		func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
+		func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 			return Null
 		},
 	)
-	staticMethods.Set("setSavePoint", []ast.Node{method})
+	staticMethods.Set("setSavePoint", []*Method{method})
 	method = CreateMethod(
 		"rollback",
 		nil,
 		[]ast.Node{objectTypeParameter}, // TODO: savepoint
-		func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
+		func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 			return Null
 		},
 	)
-	staticMethods.Set("rollback", []ast.Node{method})
+	staticMethods.Set("rollback", []*Method{method})
 
 	databaseClass := CreateClass(
 		"Database",
-		[]*ast.ConstructorDeclaration{},
+		[]*Method{},
 		nil,
 		staticMethods,
 	)

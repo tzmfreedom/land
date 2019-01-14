@@ -6,7 +6,7 @@ import (
 
 var ObjectType = CreateClass(
 	"Object",
-	[]*ast.ConstructorDeclaration{},
+	[]*Method{},
 	nil,
 	nil,
 )

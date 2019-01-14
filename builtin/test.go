@@ -9,12 +9,12 @@ func createTestType() *ClassType {
 	staticMethods := NewMethodMap()
 	staticMethods.Set(
 		"setCurrentPage",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"setCurrentPage",
 				[]string{"PageReference"},
 				[]ast.Node{pageReferenceParameter},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					extra["current_page"] = params[0]
 					return nil
 				},
@@ -24,7 +24,7 @@ func createTestType() *ClassType {
 
 	classType := CreateClass(
 		"Test",
-		[]*ast.ConstructorDeclaration{},
+		[]*Method{},
 		instanceMethods,
 		staticMethods,
 	)

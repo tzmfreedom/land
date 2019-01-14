@@ -49,7 +49,7 @@ func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) 
 	if n.StaticMethods != nil {
 		for _, methods := range n.StaticMethods.All() {
 			for _, m := range methods {
-				_, err := m.Accept(v)
+				_, err := v.VisitMethod(m)
 				if err != nil {
 					return nil, err
 				}
@@ -60,10 +60,19 @@ func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) 
 	if n.InstanceMethods != nil {
 		for _, methods := range n.InstanceMethods.All() {
 			for _, m := range methods {
-				_, err := m.Accept(v)
+				_, err := v.VisitMethod(m)
 				if err != nil {
 					return nil, err
 				}
+			}
+		}
+	}
+
+	if n.Constructors != nil {
+		for _, m := range n.Constructors {
+			_, err := v.VisitMethod(m)
+			if err != nil {
+				return nil, err
 			}
 		}
 	}
@@ -177,9 +186,15 @@ func (v *TypeChecker) VisitTry(n *ast.Try) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitCatch(n *ast.Catch) (interface{}, error) {
-	t, _ := n.Type.Accept(v)
+	t, err := n.Type.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	v.Context.Env.Set(n.Identifier, t.(*builtin.ClassType)) // TODO: append scope
-	n.Block.Accept(v)
+	_, err = n.Block.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 
@@ -246,7 +261,8 @@ func (v *TypeChecker) VisitIf(n *ast.If) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitMethodDeclaration(n *ast.MethodDeclaration) (interface{}, error) {
-	v.Context.CurrentMethod = n
+	panic(123)
+	// v.Context.CurrentMethod = n
 	env := newTypeEnv(nil)
 	v.Context.Env = env
 	classType, ok := v.Context.ClassTypes.Get(n.Parent.(*ast.ClassDeclaration).Name)
@@ -665,6 +681,34 @@ func (v *TypeChecker) VisitConstructorDeclaration(n *ast.ConstructorDeclaration)
 		env.Set(p.Name, t.(*builtin.ClassType))
 	}
 	n.Statements.Accept(v)
+	return nil, nil
+}
+
+func (v *TypeChecker) VisitMethod(n *builtin.Method) (interface{}, error) {
+	v.Context.CurrentMethod = n
+	env := newTypeEnv(nil)
+	v.Context.Env = env
+	classType, ok := v.Context.ClassTypes.Get(n.Parent.(*ast.ClassDeclaration).Name)
+	if !ok {
+		panic("not found")
+	}
+	v.Context.Env.Set("this", classType)
+	for _, param := range n.Parameters {
+		p := param.(*ast.Parameter)
+		t, _ := p.Type.Accept(v)
+		env.Set(p.Name, t.(*builtin.ClassType))
+	}
+	r, err := n.Statements.Accept(v)
+	if err != nil {
+		v.Context.CurrentMethod = nil
+		return nil, err
+	}
+	if n.ReturnType != nil && r == nil {
+		retType, _ := n.ReturnType.Accept(v)
+		v.AddError(fmt.Sprintf("return type <void> does not match %v", retType.(*builtin.ClassType).String()), n.ReturnType)
+	}
+
+	v.Context.CurrentMethod = nil
 	return nil, nil
 }
 

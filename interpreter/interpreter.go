@@ -6,6 +6,7 @@ import (
 
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
+	"github.com/tzmfreedom/goland/compiler"
 )
 
 type Interpreter struct {
@@ -137,13 +138,25 @@ func (v *Interpreter) VisitTry(n *ast.Try) (interface{}, error) {
 	if res != nil {
 		switch res.(type) {
 		case *Raise:
-			_ = res.(*Raise)
+			raise := res.(*Raise)
 			// TODO: implement
-		default:
-			if n.FinallyBlock != nil {
-				res, err = n.FinallyBlock.Accept(v)
+			var c *ast.Catch
+			for _, catch := range n.CatchClause {
+				c = catch.(*ast.Catch)
+				typeResolver := NewTypeResolver(v.Context)
+				catchType, err := typeResolver.ResolveType(c.Type.(*ast.TypeRef).Name)
+				if err != nil {
+					return nil, err
+				}
+				if catchType.Equals(raise.Value.ClassType) {
+					v.Context.Env.Set(c.Identifier, raise.Value)
+					_, err := catch.Accept(v)
+					if err != nil {
+						return nil, err
+					}
+					// TODO: return, raise impl
+				}
 			}
-			return res, nil
 		}
 	}
 	if n.FinallyBlock != nil {
@@ -155,7 +168,7 @@ func (v *Interpreter) VisitTry(n *ast.Try) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitCatch(n *ast.Catch) (interface{}, error) {
-	return ast.VisitCatch(v, n)
+	return n.Block.Accept(v)
 }
 
 func (v *Interpreter) VisitFinally(n *ast.Finally) (interface{}, error) {
@@ -253,43 +266,50 @@ func (v *Interpreter) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{}, error) {
 	Publish("method_start", v.Context, n)
 	var receiver interface{}
-	var m *ast.MethodDeclaration
+	var m *builtin.Method
 	var err error
 
-	switch exp := n.NameOrExpression.(type) {
-	case *ast.FieldAccess:
-		receiver, err = exp.Expression.Accept(v)
+	evaluated := make([]*builtin.Object, len(n.Parameters))
+	for i, p := range n.Parameters {
+		obj, err := p.Accept(v)
+		evaluated[i] = obj.(*builtin.Object)
 		if err != nil {
 			return nil, err
 		}
-		methods, ok := receiver.(*builtin.Object).ClassType.InstanceMethods.Get(exp.FieldName)
-		if !ok {
+	}
+	switch exp := n.NameOrExpression.(type) {
+	case *ast.FieldAccess:
+		r, err := exp.Expression.Accept(v)
+		receiver := r.(*builtin.Object)
+		if err != nil {
+			return nil, err
+		}
+		// TODO: extend
+		typeResolver := NewTypeResolver(v.Context)
+		_, m, err = typeResolver.FindInstanceMethod(receiver, exp.FieldName, evaluated, compiler.MODIFIER_ALL_OK)
+		if err != nil {
 			panic("not found")
 		}
-		m = methods[0].(*ast.MethodDeclaration)
 	case *ast.Name:
 		// TODO: implement
 		if exp.Value[0] == "Debugger" {
 			Debugger.Debug(v.Context, n)
 			return nil, nil
 		}
-		resolver := &TypeResolver{}
-		var method ast.Node
-		receiver, method, err = resolver.ResolveMethod(exp.Value, v.Context)
-		if err != nil {
-			return nil, err
-		}
-		m = method.(*ast.MethodDeclaration)
-	}
-	evaluated := make([]interface{}, len(n.Parameters))
-	for i, p := range n.Parameters {
-		evaluated[i], err = p.Accept(v)
+		resolver := NewTypeResolver(v.Context)
+		receiver, m, err = resolver.ResolveMethod(exp.Value, evaluated)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if m.NativeFunction != nil {
-		r := m.NativeFunction(receiver, evaluated, v.Extra)
+		var r interface{}
+		switch typedReceiver := receiver.(type) {
+		case *builtin.Object:
+			r = m.NativeFunction(typedReceiver, evaluated, v.Extra)
+		case *builtin.ClassType:
+			r = m.NativeFunction(nil, evaluated, v.Extra)
+		}
 		Publish("method_end", v.Context, n)
 		return r, nil
 	} else {
@@ -297,7 +317,7 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		v.Context.Env = NewEnv(nil)
 		for i, p := range m.Parameters {
 			param := p.(*ast.Parameter)
-			v.Context.Env.Set(param.Name, evaluated[i].(*builtin.Object))
+			v.Context.Env.Set(param.Name, evaluated[i])
 		}
 		switch obj := receiver.(type) {
 		case *builtin.Object:
@@ -322,9 +342,9 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 }
 
 func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
-	resolver := &TypeResolver{}
+	resolver := NewTypeResolver(v.Context)
 	typeRef := n.Type.(*ast.TypeRef)
-	classType, err := resolver.ResolveType(typeRef.Name, v.Context)
+	classType, err := resolver.ResolveType(typeRef.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -346,21 +366,23 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 	if len(classType.Constructors) > 0 {
 		// TODO: implement multiple constructor
 		constructor := classType.Constructors[0]
-		evaluated := make([]interface{}, len(n.Parameters))
+		evaluated := make([]*builtin.Object, len(n.Parameters))
 		for i, p := range n.Parameters {
-			evaluated[i], err = p.Accept(v)
+			r, err := p.Accept(v)
 			if err != nil {
 				return nil, err
 			}
+			evaluated[i] = r.(*builtin.Object)
 		}
+
 		if constructor.NativeFunction != nil {
-			constructor.NativeFunction(newObj, evaluated)
+			constructor.NativeFunction(newObj, evaluated, v.Extra)
 		} else {
 			prev := v.Context.Env
 			v.Context.Env = NewEnv(nil)
 			for i, p := range constructor.Parameters {
 				param := p.(*ast.Parameter)
-				v.Context.Env.Set(param.Name, evaluated[i].(*builtin.Object))
+				v.Context.Env.Set(param.Name, evaluated[i])
 			}
 			v.Context.Env.Set("this", newObj)
 			constructor.Statements.Accept(v)
@@ -689,8 +711,8 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		// TODO: implement
 		switch t := n.Left.(type) {
 		case *ast.Name:
-			resolver := &TypeResolver{}
-			resolver.SetVariable(t.Value, v.Context, rObj)
+			resolver := NewTypeResolver(v.Context)
+			resolver.SetVariable(t.Value, rObj)
 		case *ast.FieldAccess:
 			exp, err := t.Expression.Accept(v)
 			if err != nil {
@@ -730,8 +752,8 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 
 		switch t := n.Left.(type) {
 		case *ast.Name:
-			resolver := &TypeResolver{}
-			resolver.SetVariable(t.Value, v.Context, value)
+			resolver := NewTypeResolver(v.Context)
+			resolver.SetVariable(t.Value, value)
 		case *ast.FieldAccess:
 			exp, err := t.Expression.Accept(v)
 			if err != nil {
@@ -766,8 +788,8 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 
 		switch t := n.Left.(type) {
 		case *ast.Name:
-			resolver := &TypeResolver{}
-			resolver.SetVariable(t.Value, v.Context, value)
+			resolver := NewTypeResolver(v.Context)
+			resolver.SetVariable(t.Value, value)
 		case *ast.FieldAccess:
 			exp, err := t.Expression.Accept(v)
 			if err != nil {
@@ -796,7 +818,7 @@ func (v *Interpreter) VisitThrow(n *ast.Throw) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Raise{res}, nil
+	return &Raise{res.(*builtin.Object)}, nil
 }
 
 func (v *Interpreter) VisitSoql(n *ast.Soql) (interface{}, error) {
@@ -963,8 +985,8 @@ func (v *Interpreter) VisitSetCreator(n *ast.SetCreator) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitName(n *ast.Name) (interface{}, error) {
-	resolver := &TypeResolver{}
-	return resolver.ResolveVariable(n.Value, v.Context)
+	resolver := NewTypeResolver(v.Context)
+	return resolver.ResolveVariable(n.Value)
 }
 
 func (v *Interpreter) VisitConstructorDeclaration(n *ast.ConstructorDeclaration) (interface{}, error) {
@@ -982,5 +1004,5 @@ type Break struct{}
 type Continue struct{}
 
 type Raise struct {
-	Value interface{}
+	Value *builtin.Object
 }

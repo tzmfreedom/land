@@ -35,8 +35,7 @@ func (c *ClassChecker) Check(t *builtin.ClassType) error {
 
 func (c *ClassChecker) checkSameParameterName(m *builtin.MethodMap) error {
 	for _, methods := range m.Data {
-		for _, method := range methods {
-			m := method.(*ast.MethodDeclaration)
+		for _, m := range methods {
 			parameterNames := map[string]struct{}{}
 			for _, p := range m.Parameters {
 				name := p.(*ast.Parameter).Name
@@ -56,17 +55,15 @@ func (c *ClassChecker) checkDuplicated(m *builtin.MethodMap) error {
 		if len(methods) == 1 {
 			continue
 		}
-		for i, method := range methods {
-			m := method.(*ast.MethodDeclaration)
+		for i, m := range methods {
 			l := len(m.Parameters)
 			for _, other := range methods[i+1:] {
-				otherDeclaration := other.(*ast.MethodDeclaration)
-				if len(otherDeclaration.Parameters) != l {
+				if len(other.Parameters) != l {
 					continue
 				}
 				match := true
 				for i, p := range m.Parameters {
-					otherParam := otherDeclaration.Parameters[i].(*ast.Parameter)
+					otherParam := other.Parameters[i].(*ast.Parameter)
 					otherParamType, _ := resolver.ResolveType(otherParam.Type.(*ast.TypeRef).Name)
 					methodParam := p.(*ast.Parameter)
 					methodParamType, _ := resolver.ResolveType(methodParam.Type.(*ast.TypeRef).Name)
@@ -93,8 +90,7 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 		super, _ = resolver.ResolveType(t.SuperClass.(*ast.TypeRef).Name)
 	}
 	for _, methods := range t.InstanceMethods.Data {
-		for _, method := range methods {
-			m := method.(*ast.MethodDeclaration)
+		for _, m := range methods {
 			if m.IsOverride() {
 				if t.SuperClass == nil {
 					return fmt.Errorf("@Override specified for non-overriding method: %s", m.Name)
@@ -124,8 +120,7 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 	}
 
 	for _, methods := range t.StaticMethods.Data {
-		for _, method := range methods {
-			m := method.(*ast.MethodDeclaration)
+		for _, m := range methods {
 			if m.IsOverride() {
 				if t.SuperClass == nil {
 					return fmt.Errorf("override %s is required super class", m.Name)

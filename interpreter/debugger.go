@@ -72,8 +72,8 @@ func (d *debugger) Debug(ctx *Context, n ast.Node) {
 				}
 			} else if cmd != "" {
 				varName := cmd
-				resolver := TypeResolver{}
-				obj, err := resolver.ResolveVariable(strings.Split(varName, "."), ctx)
+				resolver := TypeResolver{Context: ctx}
+				obj, err := resolver.ResolveVariable(strings.Split(varName, "."))
 				if err != nil {
 					fmt.Println(err.Error())
 					continue

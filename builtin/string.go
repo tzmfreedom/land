@@ -19,9 +19,9 @@ func createStringType() *ClassType {
 		"split",
 		[]string{"List"},
 		[]ast.Node{stringTypeParameter},
-		func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-			split := params[0].(*Object).StringValue()
-			src := this.(*Object).StringValue()
+		func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+			split := params[0].StringValue()
+			src := this.StringValue()
 			parts := strings.Split(src, split)
 			records := make([]*Object, len(parts))
 			for i, part := range parts {
@@ -36,15 +36,15 @@ func createStringType() *ClassType {
 		&ast.TypeRef{Name: []string{"String"}},
 	}
 
-	instanceMethods.Set("split", []ast.Node{method})
+	instanceMethods.Set("split", []*Method{method})
 	staticMethods := NewMethodMap()
-	staticMethods.Set("valueOf", []ast.Node{
+	staticMethods.Set("valueOf", []*Method{
 		CreateMethod(
 			"valueOf",
 			[]string{"String"},
 			[]ast.Node{objectTypeParameter},
-			func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-				toConvert := params[0].(*Object)
+			func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				toConvert := params[0]
 				return NewString(String(toConvert))
 			},
 		),

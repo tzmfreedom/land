@@ -8,29 +8,27 @@ func createSetType() *ClassType {
 	instanceMethods := NewMethodMap()
 	instanceMethods.Set(
 		"size",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"size",
 				[]string{"Integer"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					thisObj := this.(*Object)
-					return NewInteger(len(thisObj.Extra["values"].(map[string]struct{})))
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+					return NewInteger(len(this.Extra["values"].(map[string]struct{})))
 				},
 			),
 		},
 	)
 	instanceMethods.Set(
 		"add",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"add",
 				[]string{"T:1"},
 				[]ast.Node{t1Parameter},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					key := params[0].(*Object).StringValue()
-					thisObj := this.(*Object)
-					values := thisObj.Extra["values"].(map[string]struct{})
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+					key := params[0].StringValue()
+					values := this.Extra["values"].(map[string]struct{})
 					values[key] = struct{}{}
 					return nil
 				},
@@ -39,14 +37,13 @@ func createSetType() *ClassType {
 	)
 	instanceMethods.Set(
 		"clear",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"clear",
 				nil,
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					thisObj := this.(*Object)
-					thisObj.Extra["values"] = map[string]struct{}{}
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+					this.Extra["values"] = map[string]struct{}{}
 					return nil
 				},
 			),
@@ -55,15 +52,17 @@ func createSetType() *ClassType {
 
 	return &ClassType{
 		Name: "Set",
-		Constructors: []*ast.ConstructorDeclaration{
+		Constructors: []*Method{
 			{
 				Modifiers: []ast.Node{
 					&ast.Modifier{
 						Name: "public",
 					},
 				},
-				Parameters:     []ast.Node{},
-				NativeFunction: func(this interface{}, params []interface{}) {},
+				Parameters: []ast.Node{},
+				NativeFunction: func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+					return nil
+				},
 			},
 		},
 		InstanceMethods: instanceMethods,

@@ -4,27 +4,40 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
+	"github.com/tzmfreedom/goland/compiler"
 )
 
-type TypeResolver struct{}
+type TypeResolver struct {
+	Context  *Context
+	resolver *compiler.TypeResolver
+}
 
-func (r *TypeResolver) SetVariable(names []string, ctx *Context, setValue *builtin.Object) error {
+func NewTypeResolver(ctx *Context) *TypeResolver {
+	compilerContext := compiler.NewContext()
+	compilerContext.ClassTypes = ctx.ClassTypes
+	compilerContext.NameSpaces = ctx.NameSpaces
+	return &TypeResolver{
+		Context:  ctx,
+		resolver: &compiler.TypeResolver{Context: compilerContext},
+	}
+}
+
+func (r *TypeResolver) SetVariable(names []string, setValue *builtin.Object) error {
 	if len(names) == 1 {
-		if _, ok := ctx.Env.Get(names[0]); ok {
-			ctx.Env.Set(names[0], setValue)
+		if _, ok := r.Context.Env.Get(names[0]); ok {
+			r.Context.Env.Set(names[0], setValue)
 			return nil
 		}
 		// this
-		if val, ok := ctx.Env.Get("this"); ok {
+		if val, ok := r.Context.Env.Get("this"); ok {
 			val.InstanceFields.Set(names[0], setValue)
 			return nil
 		}
 		return errors.Errorf("%s is not found in this scope", names[0])
 	} else {
 		name := names[0]
-		if val, ok := ctx.Env.Get(name); ok {
+		if val, ok := r.Context.Env.Get(name); ok {
 			for _, f := range names[1 : len(names)-1] {
 				val, ok = val.InstanceFields.Get(f)
 				if !ok {
@@ -40,7 +53,7 @@ func (r *TypeResolver) SetVariable(names []string, ctx *Context, setValue *built
 			return nil
 		}
 		// this
-		if val, ok := ctx.Env.Get("this"); ok {
+		if val, ok := r.Context.Env.Get("this"); ok {
 			for _, f := range names[0 : len(names)-1] {
 				val, ok = val.InstanceFields.Get(f)
 				if !ok {
@@ -55,7 +68,7 @@ func (r *TypeResolver) SetVariable(names []string, ctx *Context, setValue *built
 			val.InstanceFields.Set(last, setValue)
 			return nil
 		}
-		if v, ok := ctx.StaticField.Get("_", name); ok {
+		if v, ok := r.Context.StaticField.Get("_", name); ok {
 			if val, ok := v.Get(names[1]); ok {
 				for _, f := range names[2:] {
 					val, ok = val.InstanceFields.Get(f)
@@ -66,7 +79,7 @@ func (r *TypeResolver) SetVariable(names []string, ctx *Context, setValue *built
 				return nil
 			}
 		}
-		//if v, ok := ctx.NameSpaces.Get(name); ok {
+		//if v, ok := r.Context.NameSpaces.Get(name); ok {
 		//	if classType, ok := v.Get(names[1]); ok {
 		//		if field, ok := classType.StaticFields.Get(names[2]); ok {
 		//			t := field.Type.(*ast.TypeRef)
@@ -86,13 +99,13 @@ func (r *TypeResolver) SetVariable(names []string, ctx *Context, setValue *built
 	return nil
 }
 
-func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.Object, error) {
+func (r *TypeResolver) ResolveVariable(names []string) (*builtin.Object, error) {
 	if len(names) == 1 {
-		if v, ok := ctx.Env.Get(names[0]); ok {
+		if v, ok := r.Context.Env.Get(names[0]); ok {
 			return v, nil
 		}
 		// this
-		if val, ok := ctx.Env.Get("this"); ok {
+		if val, ok := r.Context.Env.Get("this"); ok {
 			if val, ok = val.InstanceFields.Get(names[0]); ok {
 				if val == nil {
 					return nil, errors.Errorf("null pointer exception: %s", names[0])
@@ -103,7 +116,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.O
 		return nil, errors.Errorf("%s is not found in this scope", names[0])
 	} else {
 		name := names[0]
-		if val, ok := ctx.Env.Get(name); ok {
+		if val, ok := r.Context.Env.Get(name); ok {
 			for _, f := range names[1:] {
 				if val == builtin.Null {
 					return nil, errors.Errorf("null pointer exception: %s", f)
@@ -116,7 +129,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.O
 			return val, nil
 		}
 		// this
-		if val, ok := ctx.Env.Get("this"); ok {
+		if val, ok := r.Context.Env.Get("this"); ok {
 			for _, f := range names[0:] {
 				val, ok = val.InstanceFields.Get(f)
 				if !ok {
@@ -128,7 +141,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.O
 			}
 			return val, nil
 		}
-		if v, ok := ctx.StaticField.Get("_", name); ok {
+		if v, ok := r.Context.StaticField.Get("_", name); ok {
 			if val, ok := v.Get(names[1]); ok {
 				for _, f := range names[2:] {
 					val, ok = val.InstanceFields.Get(f)
@@ -142,7 +155,7 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.O
 				return val, nil
 			}
 		}
-		if objMap, ok := ctx.StaticField.Get(name, names[1]); ok {
+		if objMap, ok := r.Context.StaticField.Get(name, names[1]); ok {
 			if val, ok := objMap.Get(names[2]); ok {
 				for _, f := range names[3:] {
 					val, ok = val.InstanceFields.Get(f)
@@ -160,77 +173,70 @@ func (r *TypeResolver) ResolveVariable(names []string, ctx *Context) (*builtin.O
 	return nil, nil
 }
 
-func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (interface{}, ast.Node, error) {
+func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Object) (interface{}, *builtin.Method, error) {
 	if len(names) == 1 {
 		methodName := names[0]
-		if v, ok := ctx.Env.Get("this"); ok {
-			if methods, ok := v.ClassType.InstanceMethods.Get(methodName); ok {
-				return v, methods[0], nil
+		if v, ok := r.Context.Env.Get("this"); ok {
+			_, method, err := r.FindInstanceMethod(v, methodName, parameters, compiler.MODIFIER_ALL_OK)
+			if err != nil {
+				return nil, nil, err
 			}
-			return nil, nil, errors.Errorf("%s is not found in this scope", methodName)
+			if method == nil {
+				return nil, nil, errors.Errorf("%s is not found in this scope", methodName)
+			}
+			return v, method, nil
 		}
 	} else {
 		first := names[0]
 		methodName := names[len(names)-1]
 		fields := names[1 : len(names)-1]
-		if val, ok := ctx.Env.Get(first); ok {
+		if val, ok := r.Context.Env.Get(first); ok {
 			for _, f := range fields {
 				val, ok = val.InstanceFields.Get(f)
 				if !ok {
 					return nil, nil, errors.Errorf("%s is not found in this scope", f)
 				}
 			}
-			methods, ok := val.ClassType.InstanceMethods.Get(methodName)
-			if ok {
-				return val, methods[0], nil
-			}
-			return nil, nil, errors.Errorf("%s is not found in this scope", methodName)
+			return r.FindInstanceMethod(val, methodName, parameters, compiler.MODIFIER_PUBLIC_ONLY)
 		}
 		if len(names) == 2 {
-			if v, ok := ctx.ClassTypes.Get(first); ok {
-				if methods, ok := v.StaticMethods.Get(methodName); ok {
-					return v, methods[0], nil
-				}
-				return nil, nil, errors.Errorf("%s is not found in this scope", methodName)
+			if v, ok := r.Context.ClassTypes.Get(first); ok {
+				return r.FindStaticMethod(v, methodName, parameters, compiler.MODIFIER_PUBLIC_ONLY)
 			}
 		}
-		if v, ok := ctx.StaticField.Get("_", first); ok {
-			if val, ok := v.Get(names[1]); ok {
-				for _, f := range names[2 : len(names)-1] {
-					val, ok = val.InstanceFields.Get(f)
-					if !ok {
-						return nil, nil, errors.Errorf("%s is not found in this scope", f)
+		if len(names) >= 3 {
+			// namespace.class.static_method()
+			if len(names) == 3 {
+				if v, ok := r.Context.NameSpaces.Get(first); ok {
+					if classType, ok := v.Get(names[1]); ok {
+						return r.FindStaticMethod(classType, methodName, parameters, compiler.MODIFIER_PUBLIC_ONLY)
 					}
 				}
-				methods, ok := val.ClassType.InstanceMethods.Get(methodName)
-				if ok {
-					return val, methods[0], nil
-				}
-				return nil, nil, errors.Errorf("%s is not found in this scope", methodName)
 			}
-		}
-		if objMap, ok := ctx.StaticField.Get(first, names[1]); ok {
-			if len(names) > 3 {
-				if val, ok := objMap.Get(names[2]); ok {
-					for _, f := range names[3 : len(names)-1] {
+
+			if v, ok := r.Context.StaticField.Get("_", first); ok {
+				if val, ok := v.Get(names[1]); ok {
+					for _, f := range names[2 : len(names)-1] {
 						val, ok = val.InstanceFields.Get(f)
 						if !ok {
 							return nil, nil, errors.Errorf("%s is not found in this scope", f)
 						}
 					}
-					methods, ok := val.ClassType.InstanceMethods.Get(methodName)
-					if ok {
-						return val, methods[0], nil
-					}
-					return nil, nil, errors.Errorf("%s is not found in this scope", methodName)
+					return r.FindInstanceMethod(val, methodName, parameters, compiler.MODIFIER_PUBLIC_ONLY)
 				}
-			} else {
-				if classMap, ok := ctx.NameSpaces.Get(first); ok {
-					if classType, ok := classMap.Get(names[0]); ok {
-						if methods, ok := classType.StaticMethods.Get(methodName); ok {
-							return classType, methods[0], nil
+			}
+
+			// namespace.class.static_field...instance_method()
+			if len(names) > 3 {
+				if objMap, ok := r.Context.StaticField.Get(first, names[1]); ok {
+					if val, ok := objMap.Get(names[2]); ok {
+						for _, f := range names[3 : len(names)-1] {
+							val, ok = val.InstanceFields.Get(f)
+							if !ok {
+								return nil, nil, errors.Errorf("%s is not found in this scope", f)
+							}
 						}
-						return nil, nil, errors.Errorf("%s is not found in this scope", methodName)
+						return r.FindInstanceMethod(val, methodName, parameters, compiler.MODIFIER_PUBLIC_ONLY)
 					}
 				}
 			}
@@ -239,33 +245,33 @@ func (r *TypeResolver) ResolveMethod(names []string, ctx *Context) (interface{},
 	return nil, nil, errors.Errorf("%s is not found in this scope", strings.Join(names, "."))
 }
 
-func (r *TypeResolver) ResolveType(names []string, ctx *Context) (*builtin.ClassType, error) {
+func (r *TypeResolver) ResolveType(names []string) (*builtin.ClassType, error) {
 	if len(names) == 1 {
 		className := names[0]
-		if class, ok := ctx.ClassTypes.Get(className); ok {
+		if class, ok := r.Context.ClassTypes.Get(className); ok {
 			return class, nil
 		}
-		if classTypes, ok := ctx.NameSpaces.Get("System"); ok {
+		if classTypes, ok := r.Context.NameSpaces.Get("System"); ok {
 			if class, ok := classTypes.Get(className); ok {
 				return class, nil
 			}
 		}
 	} else if len(names) == 2 {
 		// search for UserClass.InnerClass
-		if class, ok := ctx.ClassTypes.Get(names[0]); ok {
+		if class, ok := r.Context.ClassTypes.Get(names[0]); ok {
 			if inner, ok := class.InnerClasses.Get(names[1]); ok {
 				return inner, nil
 			}
 		}
 		// search for NameSpace.UserClass
-		if classTypes, ok := ctx.NameSpaces.Get(names[0]); ok {
+		if classTypes, ok := r.Context.NameSpaces.Get(names[0]); ok {
 			if class, ok := classTypes.Get(names[1]); ok {
 				return class, nil
 			}
 		}
 	} else if len(names) == 3 {
 		// search for NameSpace.UserClass.InnerClass
-		if classTypes, ok := ctx.NameSpaces.Get(names[0]); ok {
+		if classTypes, ok := r.Context.NameSpaces.Get(names[0]); ok {
 			if class, ok := classTypes.Get(names[1]); ok {
 				if inner, ok := class.InnerClasses.Get(names[2]); ok {
 					return inner, nil
@@ -274,4 +280,21 @@ func (r *TypeResolver) ResolveType(names []string, ctx *Context) (*builtin.Class
 		}
 	}
 	return nil, nil
+}
+
+func (r *TypeResolver) FindInstanceMethod(object *builtin.Object, methodName string, parameters []*builtin.Object, allowedModifier int) (*builtin.Object, *builtin.Method, error) {
+	inputParameters := make([]*builtin.ClassType, len(parameters))
+	for i, parameter := range parameters {
+		inputParameters[i] = parameter.ClassType
+	}
+	_, method, err := r.resolver.FindInstanceMethod(object.ClassType, methodName, inputParameters, allowedModifier)
+	return object, method, err
+}
+
+func (r *TypeResolver) FindStaticMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.Object, allowedModifier int) (*builtin.ClassType, *builtin.Method, error) {
+	inputParameters := make([]*builtin.ClassType, len(parameters))
+	for i, parameter := range parameters {
+		inputParameters[i] = parameter.ClassType
+	}
+	return r.resolver.FindStaticMethod(classType, methodName, inputParameters, allowedModifier)
 }

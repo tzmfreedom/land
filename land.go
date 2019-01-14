@@ -399,10 +399,9 @@ func watchAndRunTest(classTypes []*builtin.ClassType, option *option) error {
 				} else {
 					for _, methods := range classType.StaticMethods.Data {
 						for _, m := range methods {
-							decl := m.(*ast.MethodDeclaration)
-							fmt.Println(decl.IsTestMethod())
-							if decl.IsTestMethod() {
-								runAction(interpreter, []string{classType.Name, decl.Name})
+							fmt.Println(m.IsTestMethod())
+							if m.IsTestMethod() {
+								runAction(interpreter, []string{classType.Name, m.Name})
 							}
 						}
 					}

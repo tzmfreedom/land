@@ -2,7 +2,6 @@ package ast
 
 import (
 	"fmt"
-	"strings"
 )
 
 type Location struct {
@@ -168,71 +167,8 @@ type MethodDeclaration struct {
 	Parameters  []Node
 	Throws      []Node
 	Statements  Node
-	// func(receiver, value, options)
-	NativeFunction func(interface{}, []interface{}, map[string]interface{}) interface{}
-	Location       *Location
-	Parent         Node
-}
-
-func (m *MethodDeclaration) IsPublic() bool {
-	return m.Is("public")
-}
-
-func (m *MethodDeclaration) IsPrivate() bool {
-	return m.Is("private")
-}
-
-func (m *MethodDeclaration) IsProtected() bool {
-	return m.Is("protected")
-}
-
-func (m *MethodDeclaration) IsTestMethod() bool {
-	return m.Is("testMethod") || m.IsAnnotated("@isTest")
-}
-
-func (m *MethodDeclaration) IsAnnotated(name string) bool {
-	for _, annotation := range m.Annotations {
-		if annotation.(*Annotation).Name == "isTest" {
-			return true
-		}
-	}
-	return false
-}
-
-func (m *MethodDeclaration) AccessModifier() string {
-	if m.IsPublic() {
-		return "public"
-	}
-	if m.IsPrivate() {
-		return "private"
-	}
-	if m.IsProtected() {
-		return "protected"
-	}
-	return ""
-}
-
-func (m *MethodDeclaration) IsOverride() bool {
-	return m.Is("override")
-}
-
-func (m *MethodDeclaration) IsAbstract() bool {
-	return m.Is("abstract")
-}
-
-func (m *MethodDeclaration) IsVirtual() bool {
-	return m.Is("virtual")
-}
-
-func (m *MethodDeclaration) Is(name string) bool {
-	name = strings.ToLower(name)
-	for _, modifier := range m.Modifiers {
-		modifierName := strings.ToLower(modifier.(*Modifier).Name)
-		if modifierName == name {
-			return true
-		}
-	}
-	return false
+	Location    *Location
+	Parent      Node
 }
 
 type MethodInvocation struct {
@@ -527,15 +463,14 @@ type Name struct {
 }
 
 type ConstructorDeclaration struct {
-	Modifiers      []Node
-	Annotations    []Node
-	ReturnType     Node
-	Parameters     []Node
-	Throws         []Node
-	Statements     Node
-	NativeFunction func(interface{}, []interface{})
-	Location       *Location
-	Parent         Node
+	Modifiers   []Node
+	Annotations []Node
+	ReturnType  Node
+	Parameters  []Node
+	Throws      []Node
+	Statements  Node
+	Location    *Location
+	Parent      Node
 }
 
 type Visitor interface {
@@ -842,7 +777,6 @@ func (n *MethodDeclaration) GetChildren() []interface{} {
 		n.ReturnType,
 		n.Throws,
 		n.Parameters,
-		n.NativeFunction,
 		n.Statements,
 	}
 }
@@ -1251,7 +1185,6 @@ func (n *ConstructorDeclaration) GetChildren() []interface{} {
 		n.Parameters,
 		n.ReturnType,
 		n.Modifiers,
-		n.NativeFunction,
 		n.Throws,
 		n.Statements,
 	}

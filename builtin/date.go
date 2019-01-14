@@ -11,21 +11,20 @@ func init() {
 	staticMethods := NewMethodMap()
 	dateType := CreateClass(
 		"Date",
-		[]*ast.ConstructorDeclaration{},
+		[]*Method{},
 		instanceMethods,
 		staticMethods,
 	)
 
 	instanceMethods.Set(
 		"format",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"format",
 				[]string{"String"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					thisObj := this.(*Object)
-					tm := thisObj.Extra["value"].(time.Time)
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+					tm := this.Extra["value"].(time.Time)
 					return NewString(tm.Format("2006/01/02"))
 				},
 			),
@@ -34,12 +33,12 @@ func init() {
 
 	staticMethods.Set(
 		"today",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"today",
 				[]string{"Date"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					obj := CreateObject(dateType)
 					obj.Extra["value"] = time.Now()
 					return obj

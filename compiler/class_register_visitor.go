@@ -31,17 +31,20 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 	t.StaticFields = builtin.NewFieldMap()
 	t.InstanceMethods = builtin.NewMethodMap()
 	t.StaticMethods = builtin.NewMethodMap()
-	t.Constructors = []*ast.ConstructorDeclaration{}
+	t.Constructors = []*builtin.Method{}
 	for _, d := range n.Declarations {
 		switch decl := d.(type) {
 		case *ast.ConstructorDeclaration:
-			t.Constructors = append(t.Constructors, decl)
+			t.Constructors = append(
+				t.Constructors,
+				builtin.NewConstructor(decl),
+			)
 		case *ast.MethodDeclaration:
 			// TODO: check method name and signature to prevent conflict
 			if decl.IsStatic() {
-				t.StaticMethods.Add(decl.Name, decl)
+				t.StaticMethods.Add(decl.Name, builtin.NewMethod(decl))
 			} else {
-				t.InstanceMethods.Add(decl.Name, decl)
+				t.InstanceMethods.Add(decl.Name, builtin.NewMethod(decl))
 			}
 		case *ast.PropertyDeclaration:
 			identifier := decl.Identifier

@@ -19,14 +19,13 @@ func createPageReferenceType() *ClassType {
 	instanceMethods := NewMethodMap()
 	instanceMethods.Set(
 		"getUrl",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"getUrl",
 				[]string{"String"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					thisObj := this.(*Object)
-					return thisObj.Extra["url"]
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+					return this.Extra["url"]
 				},
 			),
 		},
@@ -35,9 +34,8 @@ func createPageReferenceType() *ClassType {
 		"getParameters",
 		nil,
 		[]ast.Node{},
-		func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-			thisObj := this.(*Object)
-			return thisObj.Extra["parameters"]
+		func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+			return this.Extra["parameters"]
 		},
 	)
 	method.ReturnType = &ast.TypeRef{
@@ -50,12 +48,12 @@ func createPageReferenceType() *ClassType {
 
 	instanceMethods.Set(
 		"getParameters",
-		[]ast.Node{method},
+		[]*Method{method},
 	)
 
 	classType := CreateClass(
 		"PageReference",
-		[]*ast.ConstructorDeclaration{
+		[]*Method{
 			{
 				Modifiers: []ast.Node{
 					&ast.Modifier{
@@ -63,14 +61,14 @@ func createPageReferenceType() *ClassType {
 					},
 				},
 				Parameters: []ast.Node{stringTypeParameter},
-				NativeFunction: func(this interface{}, params []interface{}) {
-					thisObj := this.(*Object)
+				NativeFunction: func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					parameters := CreateObject(MapType)
 					parameters.Extra["values"] = map[string]*Object{}
-					thisObj.Extra = map[string]interface{}{
-						"url":        params[0].(*Object),
+					this.Extra = map[string]interface{}{
+						"url":        params[0],
 						"parameters": parameters,
 					}
+					return nil
 				},
 			},
 		},

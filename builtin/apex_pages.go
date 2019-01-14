@@ -7,12 +7,12 @@ func init() {
 	staticMethods := NewMethodMap()
 	staticMethods.Set(
 		"currentPage",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"currentPage",
 				[]string{"PageReference"},
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					return extra["current_page"]
 				},
 			),
@@ -21,7 +21,7 @@ func init() {
 
 	classType := CreateClass(
 		"ApexPages",
-		[]*ast.ConstructorDeclaration{},
+		[]*Method{},
 		instanceMethods,
 		staticMethods,
 	)
@@ -31,28 +31,26 @@ func init() {
 	instanceMethods = NewMethodMap()
 	instanceMethods.Set(
 		"getRecord",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"getRecord",
 				[]string{"Account"}, // TODO: SObject
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					thisObj := this.(*Object)
-					return thisObj.Extra["record"]
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+					return this.Extra["record"]
 				},
 			),
 		},
 	)
 	instanceMethods.Set(
 		"getId",
-		[]ast.Node{
+		[]*Method{
 			CreateMethod(
 				"getId",
 				[]string{"String"}, // TODO: SObject
 				[]ast.Node{},
-				func(this interface{}, params []interface{}, extra map[string]interface{}) interface{} {
-					thisObj := this.(*Object)
-					record := thisObj.Extra["record"].(*Object)
+				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+					record := this.Extra["record"].(*Object)
 					value, _ := record.InstanceFields.Get("Id")
 					return value
 				},
@@ -63,7 +61,7 @@ func init() {
 	staticMethods = NewMethodMap()
 	classType = CreateClass(
 		"StandardController",
-		[]*ast.ConstructorDeclaration{
+		[]*Method{
 			{
 				Modifiers: []ast.Node{
 					&ast.Modifier{
@@ -79,9 +77,9 @@ func init() {
 						Name: "_",
 					},
 				},
-				NativeFunction: func(this interface{}, params []interface{}) {
-					thisObj := this.(*Object)
-					thisObj.Extra["record"] = params[0]
+				NativeFunction: func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+					this.Extra["record"] = params[0]
+					return nil
 				},
 			},
 		},

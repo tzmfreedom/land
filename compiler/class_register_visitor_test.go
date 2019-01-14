@@ -140,7 +140,6 @@ func TestClassRegister(t *testing.T) {
 						Statements: &ast.Block{
 							Statements: []ast.Node{},
 						},
-						NativeFunction: nil,
 					},
 					&ast.MethodDeclaration{
 						Name: "method",
@@ -155,7 +154,6 @@ func TestClassRegister(t *testing.T) {
 						Statements: &ast.Block{
 							Statements: []ast.Node{},
 						},
-						NativeFunction: nil,
 					},
 				},
 			},
@@ -164,7 +162,7 @@ func TestClassRegister(t *testing.T) {
 				Annotations:  []ast.Node{},
 				Name:         "Foo",
 				InnerClasses: builtin.NewClassMap(),
-				Constructors: []*ast.ConstructorDeclaration{},
+				Constructors: []*builtin.Method{},
 				InstanceMethods: &builtin.MethodMap{
 					Data: map[string][]ast.Node{
 						"method": {
@@ -181,7 +179,6 @@ func TestClassRegister(t *testing.T) {
 								Statements: &ast.Block{
 									Statements: []ast.Node{},
 								},
-								NativeFunction: nil,
 							},
 						},
 					},
@@ -221,7 +218,6 @@ func TestClassRegister(t *testing.T) {
 								Statements: &ast.Block{
 									Statements: []ast.Node{},
 								},
-								NativeFunction: nil,
 							},
 						},
 					},

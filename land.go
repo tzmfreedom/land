@@ -209,7 +209,7 @@ func parseOption(args []string) (*option, error) {
 		Action:       *action,
 		Files:        files,
 		Interactive:  *interactive,
-		LoaderSource: *loaderSource,
+		LoaderSource: loaderSource,
 	}, nil
 }
 

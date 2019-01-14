@@ -367,6 +367,7 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 			newObj.InstanceFields.Set(f.Name, r.(*builtin.Object))
 		}
 	}
+	// TODO: extend
 	if len(classType.Constructors) > 0 {
 		evaluated := make([]*builtin.Object, len(n.Parameters))
 		for i, p := range n.Parameters {
@@ -378,6 +379,9 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 		}
 		typeResolver := NewTypeResolver(v.Context)
 		constructor := typeResolver.SearchMethod(classType, classType.Constructors, evaluated)
+		if constructor == nil {
+			panic("constructor is not found")
+		}
 
 		if constructor.NativeFunction != nil {
 			constructor.NativeFunction(newObj, evaluated, v.Extra)

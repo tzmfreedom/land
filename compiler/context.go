@@ -13,6 +13,7 @@ type Context struct {
 	StaticField *TypeMap
 	ClassTypes  *builtin.ClassMap       // loaded User Class
 	NameSpaces  *builtin.NameSpaceStore // NameSpaces and Related Classes
+	IsStatic    bool
 
 	CurrentMethod *builtin.Method
 	CurrentClass  *builtin.ClassType

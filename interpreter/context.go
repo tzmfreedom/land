@@ -37,9 +37,7 @@ type Env struct {
 
 func NewEnv(p *Env) *Env {
 	return &Env{
-		Data: &builtin.ObjectMap{
-			Data: map[string]*builtin.Object{},
-		},
+		Data:   builtin.NewObjectMap(),
 		Parent: p,
 	}
 }
@@ -55,8 +53,27 @@ func (e *Env) Get(k string) (*builtin.Object, bool) {
 	return nil, false
 }
 
-func (e *Env) Set(k string, n *builtin.Object) {
+func (e *Env) Update(k string, n *builtin.Object) {
+	env := e.FindEnv(k)
+	if env == nil {
+		panic("field not found: " + k)
+	}
+	env.Data.Set(k, n)
+}
+
+func (e *Env) Define(k string, n *builtin.Object) {
 	e.Data.Set(k, n)
+}
+
+func (e *Env) FindEnv(k string) *Env {
+	_, ok := e.Data.Get(k)
+	if ok {
+		return e
+	}
+	if e.Parent != nil {
+		return e.Parent.FindEnv(k)
+	}
+	return nil
 }
 
 /**

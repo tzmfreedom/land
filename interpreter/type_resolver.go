@@ -26,7 +26,7 @@ func NewTypeResolver(ctx *Context) *TypeResolver {
 func (r *TypeResolver) SetVariable(names []string, setValue *builtin.Object) error {
 	if len(names) == 1 {
 		if _, ok := r.Context.Env.Get(names[0]); ok {
-			r.Context.Env.Set(names[0], setValue)
+			r.Context.Env.Update(names[0], setValue)
 			return nil
 		}
 		// this

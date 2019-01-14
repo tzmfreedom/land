@@ -149,7 +149,7 @@ func (v *Interpreter) VisitTry(n *ast.Try) (interface{}, error) {
 					return nil, err
 				}
 				if catchType.Equals(raise.Value.ClassType) {
-					v.Context.Env.Set(c.Identifier, raise.Value)
+					v.Context.Env.Define(c.Identifier, raise.Value)
 					_, err := catch.Accept(v)
 					if err != nil {
 						return nil, err
@@ -220,7 +220,7 @@ func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
 			iterator, _ := control.Expression.Accept(v)
 			records := iterator.(*builtin.Object).Extra["records"].([]*builtin.Object)
 			for _, record := range records {
-				v.Context.Env.Set(control.VariableDeclaratorId, record)
+				v.Context.Env.Define(control.VariableDeclaratorId, record)
 				res, err := n.Statements.Accept(v)
 				if err != nil {
 					return nil, err
@@ -321,11 +321,11 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		v.Context.Env = NewEnv(nil)
 		for i, p := range m.Parameters {
 			param := p.(*ast.Parameter)
-			v.Context.Env.Set(param.Name, evaluated[i])
+			v.Context.Env.Define(param.Name, evaluated[i])
 		}
 		switch obj := receiver.(type) {
 		case *builtin.Object:
-			v.Context.Env.Set("this", obj)
+			v.Context.Env.Define("this", obj)
 		}
 		r, err := m.Statements.Accept(v)
 		Publish("method_end", v.Context, n)
@@ -368,7 +368,6 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 		}
 	}
 	if len(classType.Constructors) > 0 {
-		// TODO: implement multiple constructor
 		evaluated := make([]*builtin.Object, len(n.Parameters))
 		for i, p := range n.Parameters {
 			r, err := p.Accept(v)
@@ -387,9 +386,9 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 			v.Context.Env = NewEnv(nil)
 			for i, p := range constructor.Parameters {
 				param := p.(*ast.Parameter)
-				v.Context.Env.Set(param.Name, evaluated[i])
+				v.Context.Env.Define(param.Name, evaluated[i])
 			}
-			v.Context.Env.Set("this", newObj)
+			v.Context.Env.Define("this", newObj)
 			constructor.Statements.Accept(v)
 			v.Context.Env = prev
 		}
@@ -441,7 +440,7 @@ func (v *Interpreter) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, err
 		l, _ := name.Accept(v)
 		exp := builtin.NewInteger(l.(*builtin.Object).IntegerValue() + 1)
 		// TODO: implement
-		v.Context.Env.Set(name.Value[0], exp)
+		v.Context.Env.Update(name.Value[0], exp)
 		return exp, nil
 	}
 	if n.Op == "--" {
@@ -449,7 +448,7 @@ func (v *Interpreter) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, err
 		l, _ := name.Accept(v)
 		exp := builtin.NewInteger(l.(*builtin.Object).IntegerValue() - 1)
 		// TODO: implement
-		v.Context.Env.Set(name.Value[0], exp)
+		v.Context.Env.Update(name.Value[0], exp)
 		return exp, nil
 	}
 	panic("not pass")
@@ -864,9 +863,9 @@ func (v *Interpreter) VisitVariableDeclaration(n *ast.VariableDeclaration) (inte
 			if err != nil {
 				panic(err)
 			}
-			v.Context.Env.Set(d.Name, val.(*builtin.Object))
+			v.Context.Env.Define(d.Name, val.(*builtin.Object))
 		} else {
-			v.Context.Env.Set(d.Name, builtin.Null)
+			v.Context.Env.Define(d.Name, builtin.Null)
 		}
 	}
 	return nil, nil

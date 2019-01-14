@@ -396,9 +396,13 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 
 	if len(classType.Constructors) > 0 {
 		method := typeResolver.SearchMethod(classType, classType.Constructors, params)
-		// TODO: for protected impl
-		if method.IsPrivate() && !(v.Context.IsStatic && v.Context.CurrentClass == classType) {
-			v.AddError("constructor not found", n)
+		if method == nil {
+			v.AddError(fmt.Sprintf("constructor <%s> not found", classType.Name), n)
+		} else {
+			// TODO: for protected impl
+			if method.IsPrivate() && !(v.Context.IsStatic && v.Context.CurrentClass == classType) {
+				v.AddError(fmt.Sprintf("constructor <%s> not found", classType.Name), n)
+			}
 		}
 	}
 	return t, nil

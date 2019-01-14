@@ -164,9 +164,9 @@ func TestClassRegister(t *testing.T) {
 				InnerClasses: builtin.NewClassMap(),
 				Constructors: []*builtin.Method{},
 				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]ast.Node{
+					Data: map[string][]*builtin.Method{
 						"method": {
-							&ast.MethodDeclaration{
+							&builtin.Method{
 								Name: "method",
 								Modifiers: []ast.Node{
 									&ast.Modifier{
@@ -184,9 +184,9 @@ func TestClassRegister(t *testing.T) {
 					},
 				},
 				StaticMethods: &builtin.MethodMap{
-					Data: map[string][]ast.Node{
+					Data: map[string][]*builtin.Method{
 						"static_method": {
-							&ast.MethodDeclaration{
+							&builtin.Method{
 								Name: "static_method",
 								Modifiers: []ast.Node{
 									&ast.Modifier{

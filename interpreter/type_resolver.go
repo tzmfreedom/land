@@ -197,11 +197,11 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Objec
 					return nil, nil, errors.Errorf("%s is not found in this scope", f)
 				}
 			}
-			return r.FindInstanceMethod(val, methodName, parameters, compiler.MODIFIER_PUBLIC_ONLY)
+			return r.FindInstanceMethod(val, methodName, parameters, compiler.MODIFIER_ALL_OK)
 		}
 		if len(names) == 2 {
 			if v, ok := r.Context.ClassTypes.Get(first); ok {
-				return r.FindStaticMethod(v, methodName, parameters, compiler.MODIFIER_PUBLIC_ONLY)
+				return r.FindStaticMethod(v, methodName, parameters, compiler.MODIFIER_ALL_OK)
 			}
 		}
 		if len(names) >= 3 {
@@ -209,7 +209,7 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Objec
 			if len(names) == 3 {
 				if v, ok := r.Context.NameSpaces.Get(first); ok {
 					if classType, ok := v.Get(names[1]); ok {
-						return r.FindStaticMethod(classType, methodName, parameters, compiler.MODIFIER_PUBLIC_ONLY)
+						return r.FindStaticMethod(classType, methodName, parameters, compiler.MODIFIER_ALL_OK)
 					}
 				}
 			}
@@ -222,7 +222,7 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Objec
 							return nil, nil, errors.Errorf("%s is not found in this scope", f)
 						}
 					}
-					return r.FindInstanceMethod(val, methodName, parameters, compiler.MODIFIER_PUBLIC_ONLY)
+					return r.FindInstanceMethod(val, methodName, parameters, compiler.MODIFIER_ALL_OK)
 				}
 			}
 
@@ -236,7 +236,7 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Objec
 								return nil, nil, errors.Errorf("%s is not found in this scope", f)
 							}
 						}
-						return r.FindInstanceMethod(val, methodName, parameters, compiler.MODIFIER_PUBLIC_ONLY)
+						return r.FindInstanceMethod(val, methodName, parameters, compiler.MODIFIER_ALL_OK)
 					}
 				}
 			}

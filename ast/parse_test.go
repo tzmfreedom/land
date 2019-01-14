@@ -178,7 +178,6 @@ public void method(){ }
 						Statements: &Block{
 							Statements: []Node{},
 						},
-						NativeFunction: nil,
 					},
 					&MethodDeclaration{
 						Name: "method",
@@ -193,7 +192,6 @@ public void method(){ }
 						Statements: &Block{
 							Statements: []Node{},
 						},
-						NativeFunction: nil,
 					},
 				},
 			},
@@ -891,7 +889,6 @@ func createExpectedClass(statements []Node) *ClassDeclaration {
 				Statements: &Block{
 					Statements: statements,
 				},
-				NativeFunction: nil,
 			},
 		},
 	}

@@ -24,9 +24,9 @@ func TestClassChecker(t *testing.T) {
 				InstanceFields: builtin.NewFieldMap(),
 				StaticFields:   builtin.NewFieldMap(),
 				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]ast.Node{
+					Data: map[string][]*builtin.Method{
 						"bar": {
-							&ast.MethodDeclaration{
+							&builtin.Method{
 								Name: "bar",
 								ReturnType: &ast.TypeRef{
 									Name: []string{
@@ -46,7 +46,7 @@ func TestClassChecker(t *testing.T) {
 									},
 								},
 							},
-							&ast.MethodDeclaration{
+							&builtin.Method{
 								Name: "bar",
 								ReturnType: &ast.TypeRef{
 									Name: []string{
@@ -83,9 +83,9 @@ func TestClassChecker(t *testing.T) {
 				InstanceFields: builtin.NewFieldMap(),
 				StaticFields:   builtin.NewFieldMap(),
 				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]ast.Node{
+					Data: map[string][]*builtin.Method{
 						"bar": {
-							&ast.MethodDeclaration{
+							&builtin.Method{
 								Name: "bar",
 								ReturnType: &ast.TypeRef{
 									Name: []string{
@@ -105,7 +105,7 @@ func TestClassChecker(t *testing.T) {
 									},
 								},
 							},
-							&ast.MethodDeclaration{
+							&builtin.Method{
 								Name: "bar",
 								ReturnType: &ast.TypeRef{
 									Name: []string{
@@ -142,9 +142,9 @@ func TestClassChecker(t *testing.T) {
 				InstanceFields: builtin.NewFieldMap(),
 				StaticFields:   builtin.NewFieldMap(),
 				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]ast.Node{
+					Data: map[string][]*builtin.Method{
 						"bar": {
-							&ast.MethodDeclaration{
+							&builtin.Method{
 								Name: "bar",
 								ReturnType: &ast.TypeRef{
 									Name: []string{
@@ -164,7 +164,7 @@ func TestClassChecker(t *testing.T) {
 									},
 								},
 							},
-							&ast.MethodDeclaration{
+							&builtin.Method{
 								Name: "bar",
 								ReturnType: &ast.TypeRef{
 									Name: []string{
@@ -205,9 +205,9 @@ func TestClassChecker(t *testing.T) {
 				InstanceFields: builtin.NewFieldMap(),
 				StaticFields:   builtin.NewFieldMap(),
 				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]ast.Node{
+					Data: map[string][]*builtin.Method{
 						"bar": {
-							&ast.MethodDeclaration{
+							&builtin.Method{
 								Name: "bar",
 								ReturnType: &ast.TypeRef{
 									Name: []string{

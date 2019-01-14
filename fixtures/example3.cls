@@ -1,8 +1,8 @@
 public with sharing class Foo {
     public static void action() {
         Integer i = 0;
-        for (Integer j = 0; j < 3; j++) {
-            System.debug(j);
+        for (i = 0; i < 3; i++) {
+            System.debug(i);
         }
         while(i < 5) {
             System.debug(i*10);

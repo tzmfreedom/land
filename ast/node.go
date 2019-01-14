@@ -135,7 +135,7 @@ type For struct {
 }
 
 type ForControl struct {
-	ForInit    Node
+	ForInit    []Node
 	Expression Node
 	ForUpdate  []Node
 	Location   *Location

@@ -806,7 +806,13 @@ func (v *Builder) VisitForControl(ctx *parser.ForControlContext) interface{} {
 	}
 	c := &ForControl{Location: v.newLocation(ctx)}
 	if f := ctx.ForInit(); f != nil {
-		c.ForInit = f.Accept(v).(Node)
+		r := f.Accept(v)
+		switch forInit := r.(type) {
+		case Node:
+			c.ForInit = []Node{forInit}
+		case []Node:
+			c.ForInit = forInit
+		}
 	}
 	if e := ctx.Expression(); e != nil {
 		c.Expression = e.Accept(v).(Node)

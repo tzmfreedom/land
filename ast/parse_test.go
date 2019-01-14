@@ -571,19 +571,21 @@ public void action(){
 			createExpectedClass([]Node{
 				&For{
 					Control: &ForControl{
-						ForInit: &VariableDeclaration{
-							Modifiers: []Node{},
-							Type: &TypeRef{
-								Name: []string{
-									"Integer",
+						ForInit: []Node{
+							&VariableDeclaration{
+								Modifiers: []Node{},
+								Type: &TypeRef{
+									Name: []string{
+										"Integer",
+									},
+									Parameters: []Node{},
 								},
-								Parameters: []Node{},
-							},
-							Declarators: []Node{
-								&VariableDeclarator{
-									Name: "i",
-									Expression: &IntegerLiteral{
-										Value: 0,
+								Declarators: []Node{
+									&VariableDeclarator{
+										Name: "i",
+										Expression: &IntegerLiteral{
+											Value: 0,
+										},
 									},
 								},
 							},

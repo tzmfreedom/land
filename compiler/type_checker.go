@@ -213,15 +213,26 @@ func (v *TypeChecker) VisitFor(n *ast.For) (interface{}, error) {
 
 func (v *TypeChecker) VisitForControl(n *ast.ForControl) (interface{}, error) {
 	if n.ForInit != nil {
-		n.ForInit.Accept(v)
+		for _, forInit := range n.ForInit {
+			_, err := forInit.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 	if n.ForUpdate != nil {
 		for _, u := range n.ForUpdate {
-			u.Accept(v)
+			_, err := u.Accept(v)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	if n.Expression != nil {
-		t, _ := n.Expression.Accept(v)
+		t, err := n.Expression.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		if t != builtin.BooleanType {
 			v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", t.(*builtin.ClassType).String()), n.Expression)
 		}

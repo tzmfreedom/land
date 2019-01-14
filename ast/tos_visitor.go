@@ -259,7 +259,11 @@ func (v *TosVisitor) VisitFor(n *For) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitForControl(n *ForControl) (interface{}, error) {
-	init, _ := n.ForInit.Accept(v)
+	inits := make([]string, len(n.ForInit))
+	for i, forInit := range n.ForInit {
+		exp, _ := forInit.Accept(v)
+		inits[i] = exp.(string)
+	}
 	exp, _ := n.Expression.Accept(v)
 	updates := make([]string, len(n.ForUpdate))
 	for i, u := range n.ForUpdate {
@@ -268,7 +272,7 @@ func (v *TosVisitor) VisitForControl(n *ForControl) (interface{}, error) {
 	}
 	return fmt.Sprintf(
 		`%s %s; %s`,
-		init.(string),
+		strings.Join(inits, ", "),
 		exp.(string),
 		strings.Join(updates, ","),
 	), nil

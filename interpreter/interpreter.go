@@ -178,9 +178,11 @@ func (v *Interpreter) VisitFinally(n *ast.Finally) (interface{}, error) {
 func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
 	switch control := n.Control.(type) {
 	case *ast.ForControl:
-		_, err := control.ForInit.Accept(v)
-		if err != nil {
-			return nil, err
+		for _, forInit := range control.ForInit {
+			_, err := forInit.Accept(v)
+			if err != nil {
+				return nil, err
+			}
 		}
 		for {
 			res, err := control.Expression.Accept(v)

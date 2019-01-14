@@ -157,7 +157,16 @@ func parseOption(args []string) (*option, error) {
 	directory := flg.String("d", "", "directory")
 	action := flg.String("a", "", "action")
 	interactive := flg.Bool("i", false, "interactive")
-	loaderSource := flg.String("l", builtin.DefaultMetafileName, "loader")
+	inputLoaderSource := flg.String("l", "", "loader")
+
+	loaderSource := *inputLoaderSource
+	if loaderSource == "" {
+		if env := os.Getenv("SALESFORCE_METADATA"); env != "" {
+			loaderSource = env
+		} else {
+			loaderSource = builtin.DefaultMetafileName
+		}
+	}
 
 	err := flg.Parse(args[2:])
 	if err != nil {

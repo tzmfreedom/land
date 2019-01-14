@@ -204,11 +204,19 @@ func (v *TypeChecker) VisitFinally(n *ast.Finally) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitFor(n *ast.For) (interface{}, error) {
-	n.Control.Accept(v)
-	if n.Statements != nil {
-		n.Statements.Accept(v)
-	}
-	return nil, nil
+	return v.NewEnv(func() (interface{}, error) {
+		_, err := n.Control.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+		if n.Statements != nil {
+			_, err := n.Statements.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return nil, nil
+	})
 }
 
 func (v *TypeChecker) VisitForControl(n *ast.ForControl) (interface{}, error) {
@@ -264,9 +272,13 @@ func (v *TypeChecker) VisitIf(n *ast.If) (interface{}, error) {
 	if t != builtin.BooleanType {
 		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", t.(*builtin.ClassType).String()), n.Condition)
 	}
-	n.IfStatement.Accept(v)
+	if _, err := n.IfStatement.Accept(v); err != nil {
+		return nil, err
+	}
 	if n.ElseStatement != nil {
-		n.ElseStatement.Accept(v)
+		if _, err := n.ElseStatement.Accept(v); err != nil {
+			return nil, err
+		}
 	}
 	return nil, nil
 }
@@ -567,7 +579,10 @@ func (v *TypeChecker) VisitWhile(n *ast.While) (interface{}, error) {
 	if t != builtin.BooleanType {
 		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", t.(*builtin.ClassType).String()), n.Condition)
 	}
-	n.Statements.Accept(v)
+	_, err := n.Statements.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 
@@ -623,18 +638,20 @@ func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
 func (v *TypeChecker) VisitBlock(n *ast.Block) (interface{}, error) {
 	var r interface{}
 	var err error
-	for _, stmt := range n.Statements {
-		r, err = stmt.Accept(v)
-		if err != nil {
-			return nil, err
+	return v.NewEnv(func() (interface{}, error) {
+		for _, stmt := range n.Statements {
+			r, err = stmt.Accept(v)
+			if err != nil {
+				return nil, err
+			}
 		}
-	}
-	if len(n.Statements) > 0 {
-		if _, ok := n.Statements[len(n.Statements)-1].(*ast.Return); ok {
-			return r, nil
+		if len(n.Statements) > 0 {
+			if _, ok := n.Statements[len(n.Statements)-1].(*ast.Return); ok {
+				return r, nil
+			}
 		}
-	}
-	return nil, nil
+		return nil, nil
+	})
 }
 
 func (v *TypeChecker) VisitGetterSetter(n *ast.GetterSetter) (interface{}, error) {
@@ -734,6 +751,14 @@ func (v *TypeChecker) AddError(msg string, node ast.Node) {
 func (v *TypeChecker) compileError(msg string, n ast.Node) error {
 	v.AddError(msg, n)
 	return errors.New(msg)
+}
+
+func (v *TypeChecker) NewEnv(f func() (interface{}, error)) (interface{}, error) {
+	prevEnv := v.Context.Env
+	v.Context.Env = newTypeEnv(prevEnv)
+	r, err := f()
+	v.Context.Env = prevEnv
+	return r, err
 }
 
 type Error struct {

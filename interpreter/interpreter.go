@@ -176,67 +176,69 @@ func (v *Interpreter) VisitFinally(n *ast.Finally) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
-	switch control := n.Control.(type) {
-	case *ast.ForControl:
-		for _, forInit := range control.ForInit {
-			_, err := forInit.Accept(v)
+	return v.NewEnv(func() (interface{}, error) {
+		switch control := n.Control.(type) {
+		case *ast.ForControl:
+			for _, forInit := range control.ForInit {
+				_, err := forInit.Accept(v)
+				if err != nil {
+					return nil, err
+				}
+			}
+			for {
+				res, err := control.Expression.Accept(v)
+				if err != nil {
+					return nil, err
+				}
+				if res.(*builtin.Object).BoolValue() {
+					res, err = n.Statements.Accept(v)
+					if res != nil {
+						switch r := res.(type) {
+						case *Break:
+							return nil, nil
+						case *Continue:
+							for _, stmt := range control.ForUpdate {
+								stmt.Accept(v)
+							}
+							continue
+						case *Return, *Raise:
+							return r, nil
+						}
+					}
+					for _, stmt := range control.ForUpdate {
+						stmt.Accept(v)
+					}
+				} else {
+					break
+				}
+			}
+		case *ast.EnhancedForControl:
+			_, err := control.Accept(v)
 			if err != nil {
 				return nil, err
 			}
-		}
-		for {
-			res, err := control.Expression.Accept(v)
-			if err != nil {
-				return nil, err
-			}
-			if res.(*builtin.Object).BoolValue() {
-				res, err = n.Statements.Accept(v)
+			iterator, _ := control.Expression.Accept(v)
+			records := iterator.(*builtin.Object).Extra["records"].([]*builtin.Object)
+			for _, record := range records {
+				v.Context.Env.Set(control.VariableDeclaratorId, record)
+				res, err := n.Statements.Accept(v)
+				if err != nil {
+					return nil, err
+				}
 				if res != nil {
 					switch r := res.(type) {
 					case *Break:
 						return nil, nil
 					case *Continue:
-						for _, stmt := range control.ForUpdate {
-							stmt.Accept(v)
-						}
 						continue
 					case *Return, *Raise:
 						return r, nil
 					}
 				}
-				for _, stmt := range control.ForUpdate {
-					stmt.Accept(v)
-				}
-			} else {
-				break
 			}
 		}
-	case *ast.EnhancedForControl:
-		_, err := control.Accept(v)
-		if err != nil {
-			return nil, err
-		}
-		iterator, _ := control.Expression.Accept(v)
-		records := iterator.(*builtin.Object).Extra["records"].([]*builtin.Object)
-		for _, record := range records {
-			v.Context.Env.Set(control.VariableDeclaratorId, record)
-			res, err := n.Statements.Accept(v)
-			if err != nil {
-				return nil, err
-			}
-			if res != nil {
-				switch r := res.(type) {
-				case *Break:
-					return nil, nil
-				case *Continue:
-					continue
-				case *Return, *Raise:
-					return r, nil
-				}
-			}
-		}
-	}
-	return nil, nil
+		return nil, nil
+	})
 }
 
 func (v *Interpreter) VisitForControl(n *ast.ForControl) (interface{}, error) {
@@ -932,20 +934,22 @@ func (v *Interpreter) VisitType(n *ast.TypeRef) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitBlock(n *ast.Block) (interface{}, error) {
-	for _, stmt := range n.Statements {
-		Publish("line", v.Context, stmt)
-		res, err := stmt.Accept(v)
-		if err != nil {
-			return nil, err
-		}
-		if res != nil {
-			switch r := res.(type) {
-			case *Break, *Continue, *Return, *Raise:
-				return r, nil
+	return v.NewEnv(func() (interface{}, error) {
+		for _, stmt := range n.Statements {
+			Publish("line", v.Context, stmt)
+			res, err := stmt.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+			if res != nil {
+				switch r := res.(type) {
+				case *Break, *Continue, *Return, *Raise:
+					return r, nil
+				}
 			}
 		}
-	}
-	return nil, nil
+		return nil, nil
+	})
 }
 
 func (v *Interpreter) VisitGetterSetter(n *ast.GetterSetter) (interface{}, error) {
@@ -994,6 +998,14 @@ func (v *Interpreter) VisitName(n *ast.Name) (interface{}, error) {
 
 func (v *Interpreter) VisitConstructorDeclaration(n *ast.ConstructorDeclaration) (interface{}, error) {
 	return ast.VisitConstructorDeclaration(v, n)
+}
+
+func (v *Interpreter) NewEnv(f func() (interface{}, error)) (interface{}, error) {
+	prevEnv := v.Context.Env
+	v.Context.Env = NewEnv(prevEnv)
+	r, err := f()
+	v.Context.Env = prevEnv
+	return r, err
 }
 
 var createObject = builtin.CreateObject

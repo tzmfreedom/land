@@ -98,6 +98,7 @@ func Load(src string) {
 		}
 		primitiveClassMap.Set(name, &ClassType{
 			Name:           sobj.Name,
+			Constructors:   []*Method{},
 			InstanceFields: fields,
 		})
 	}

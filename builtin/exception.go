@@ -38,7 +38,7 @@ func createExceptionType() *ClassType {
 			{
 				Modifiers: []ast.Node{
 					&ast.Modifier{
-						Name: "public",
+						Name: "private",
 					},
 				},
 				Parameters: []ast.Node{},
@@ -51,7 +51,7 @@ func createExceptionType() *ClassType {
 			{
 				Modifiers: []ast.Node{
 					&ast.Modifier{
-						Name: "public",
+						Name: "private",
 					},
 				},
 				Parameters: []ast.Node{stringTypeParameter},
@@ -64,7 +64,7 @@ func createExceptionType() *ClassType {
 			{
 				Modifiers: []ast.Node{
 					&ast.Modifier{
-						Name: "public",
+						Name: "private",
 					},
 				},
 				Parameters: []ast.Node{exceptionTypeParameter},

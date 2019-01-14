@@ -392,7 +392,9 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 	typeResolver := &TypeResolver{Context: v.Context}
 	classType := t.(*builtin.ClassType)
 
-	if len(classType.Constructors) > 0 {
+	if classType.Constructors == nil {
+		v.AddError(fmt.Sprintf("Type cannot be constructed: %s", classType.Name), n)
+	} else if len(classType.Constructors) > 0 {
 		method := typeResolver.SearchMethod(classType, classType.Constructors, params)
 		if method == nil {
 			v.AddError(fmt.Sprintf("constructor <%s> not found", classType.Name), n)

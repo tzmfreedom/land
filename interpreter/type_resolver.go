@@ -17,6 +17,7 @@ func NewTypeResolver(ctx *Context) *TypeResolver {
 	compilerContext := compiler.NewContext()
 	compilerContext.ClassTypes = ctx.ClassTypes
 	compilerContext.NameSpaces = ctx.NameSpaces
+	compilerContext.CurrentClass = ctx.CurrentClass
 	return &TypeResolver{
 		Context:  ctx,
 		resolver: &compiler.TypeResolver{Context: compilerContext},
@@ -246,40 +247,7 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Objec
 }
 
 func (r *TypeResolver) ResolveType(names []string) (*builtin.ClassType, error) {
-	if len(names) == 1 {
-		className := names[0]
-		if class, ok := r.Context.ClassTypes.Get(className); ok {
-			return class, nil
-		}
-		if classTypes, ok := r.Context.NameSpaces.Get("System"); ok {
-			if class, ok := classTypes.Get(className); ok {
-				return class, nil
-			}
-		}
-	} else if len(names) == 2 {
-		// search for UserClass.InnerClass
-		if class, ok := r.Context.ClassTypes.Get(names[0]); ok {
-			if inner, ok := class.InnerClasses.Get(names[1]); ok {
-				return inner, nil
-			}
-		}
-		// search for NameSpace.UserClass
-		if classTypes, ok := r.Context.NameSpaces.Get(names[0]); ok {
-			if class, ok := classTypes.Get(names[1]); ok {
-				return class, nil
-			}
-		}
-	} else if len(names) == 3 {
-		// search for NameSpace.UserClass.InnerClass
-		if classTypes, ok := r.Context.NameSpaces.Get(names[0]); ok {
-			if class, ok := classTypes.Get(names[1]); ok {
-				if inner, ok := class.InnerClasses.Get(names[2]); ok {
-					return inner, nil
-				}
-			}
-		}
-	}
-	return nil, nil
+	return r.resolver.ResolveType(names)
 }
 
 func (r *TypeResolver) FindInstanceMethod(object *builtin.Object, methodName string, parameters []*builtin.Object, allowedModifier int) (*builtin.Object, *builtin.Method, error) {

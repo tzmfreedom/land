@@ -15,14 +15,6 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 	t.Modifiers = n.Modifiers
 	t.ImplementClasses = n.ImplementClasses
 	t.InnerClasses = builtin.NewClassMap()
-	for _, c := range n.InnerClasses {
-		r, _ := c.Accept(v)
-		class := r.(*builtin.ClassType)
-		if _, ok := t.InnerClasses.Get(class.Name); ok {
-			return nil, fmt.Errorf("Class %s is already defined", class.Name)
-		}
-		t.InnerClasses.Set(class.Name, class)
-	}
 	t.SuperClass = n.SuperClass
 	t.Location = n.Location
 	t.Annotations = n.Annotations
@@ -131,6 +123,13 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 					)
 				}
 			}
+		case *ast.ClassDeclaration:
+			r, _ := decl.Accept(v)
+			class := r.(*builtin.ClassType)
+			if _, ok := t.InnerClasses.Get(class.Name); ok {
+				return nil, fmt.Errorf("Class %s is already defined", class.Name)
+			}
+			t.InnerClasses.Set(class.Name, class)
 		}
 	}
 	return t, nil

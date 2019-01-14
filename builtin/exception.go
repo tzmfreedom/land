@@ -6,7 +6,7 @@ import (
 	"github.com/tzmfreedom/goland/ast"
 )
 
-var exceptionType = createExceptionType()
+var ExceptionType = createExceptionType()
 
 var exceptionTypeParameter = &ast.Parameter{
 	Type: &ast.TypeRef{
@@ -85,5 +85,5 @@ func createExceptionType() *ClassType {
 }
 
 func init() {
-	primitiveClassMap.Set("Exception", exceptionType)
+	primitiveClassMap.Set("Exception", ExceptionType)
 }

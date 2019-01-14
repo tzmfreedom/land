@@ -306,6 +306,17 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 			return nil, err
 		}
 	}
+	prevClass := v.Context.CurrentClass
+	switch typedReceiver := receiver.(type) {
+	case *builtin.Object:
+		v.Context.CurrentClass = typedReceiver.ClassType
+	case *builtin.ClassType:
+		v.Context.CurrentClass = typedReceiver
+	}
+	defer func() {
+		v.Context.CurrentClass = prevClass
+	}()
+
 	if m.NativeFunction != nil {
 		var r interface{}
 		switch typedReceiver := receiver.(type) {
@@ -937,22 +948,25 @@ func (v *Interpreter) VisitType(n *ast.TypeRef) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitBlock(n *ast.Block) (interface{}, error) {
-	return v.NewEnv(func() (interface{}, error) {
-		for _, stmt := range n.Statements {
-			Publish("line", v.Context, stmt)
-			res, err := stmt.Accept(v)
-			if err != nil {
-				return nil, err
-			}
-			if res != nil {
-				switch r := res.(type) {
-				case *Break, *Continue, *Return, *Raise:
-					return r, nil
-				}
+	prevEnv := v.Context.Env
+	v.Context.Env = NewEnv(prevEnv)
+	defer func() {
+		v.Context.Env = prevEnv
+	}()
+	for _, stmt := range n.Statements {
+		Publish("line", v.Context, stmt)
+		res, err := stmt.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+		if res != nil {
+			switch r := res.(type) {
+			case *Break, *Continue, *Return, *Raise:
+				return r, nil
 			}
 		}
-		return nil, nil
-	})
+	}
+	return nil, nil
 }
 
 func (v *Interpreter) VisitGetterSetter(n *ast.GetterSetter) (interface{}, error) {

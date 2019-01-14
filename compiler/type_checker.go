@@ -395,8 +395,11 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 	if classType.Constructors == nil {
 		v.AddError(fmt.Sprintf("Type cannot be constructed: %s", classType.Name), n)
 	} else if len(classType.Constructors) > 0 {
-		method := typeResolver.SearchMethod(classType, classType.Constructors, params)
-		if method == nil {
+		_, method, err := typeResolver.SearchConstructor(classType, params)
+		if err != nil {
+			return nil, err
+		}
+		if method == nil && typeResolver.HasConstructor(classType) {
 			v.AddError(fmt.Sprintf("constructor <%s> not found", classType.Name), n)
 		} else {
 			// TODO: for protected impl
@@ -506,8 +509,24 @@ func (v *TypeChecker) VisitReturn(n *ast.Return) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitThrow(n *ast.Throw) (interface{}, error) {
-	_, _ = n.Expression.Accept(v)
+	r, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	// Check Subclass of Exception
+	baseClass := r.(*builtin.ClassType)
+	super := baseClass.SuperClass
+	if super == nil {
+		v.AddError(fmt.Sprintf("Throw expression must be of type exception: %s", baseClass.Name), n)
+	} else {
+		typeResolver := &TypeResolver{Context: v.Context}
+		t, err := typeResolver.ResolveType(super.(*ast.TypeRef).Name)
+		if err != nil {
+			v.AddError(err.Error(), n)
+		} else if t != builtin.ExceptionType {
+			v.AddError(fmt.Sprintf("Throw expression must be of type exception: %s", baseClass.Name), n)
+		}
+	}
 	return nil, nil
 }
 

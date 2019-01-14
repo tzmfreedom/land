@@ -214,6 +214,10 @@ func (r *TypeResolver) ResolveType(names []string) (*builtin.ClassType, error) {
 				return class, nil
 			}
 		}
+		// search for UserClass.InnerClass
+		if class, ok := r.Context.CurrentClass.InnerClasses.Get(className); ok {
+			return class, nil
+		}
 	} else if len(names) == 2 {
 		// search for UserClass.InnerClass
 		if class, ok := r.Context.ClassTypes.Get(names[0]); ok {
@@ -379,6 +383,35 @@ func (r *TypeResolver) SearchMethod(receiverClass *builtin.ClassType, methods []
 		}
 	}
 	return nil
+}
+
+func (r *TypeResolver) SearchConstructor(classType *builtin.ClassType, parameters []*builtin.ClassType) (*builtin.ClassType, *builtin.Method, error) {
+	method := r.SearchMethod(classType, classType.Constructors, parameters)
+	if method != nil {
+		return classType, method, nil
+	}
+	if classType.SuperClass != nil {
+		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
+		if err != nil {
+			return nil, nil, err
+		}
+		return r.SearchConstructor(super, parameters)
+	}
+	return nil, nil, nil
+}
+
+func (r *TypeResolver) HasConstructor(classType *builtin.ClassType) bool {
+	if len(classType.Constructors) > 0 {
+		return true
+	}
+	if classType.SuperClass != nil {
+		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
+		if err != nil {
+			return false
+		}
+		return r.HasConstructor(super)
+	}
+	return false
 }
 
 func methodNotFoundError(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType) error {

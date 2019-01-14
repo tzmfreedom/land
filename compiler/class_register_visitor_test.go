@@ -324,11 +324,10 @@ func equalNode(t *testing.T, expected *builtin.ClassType, actual *builtin.ClassT
 
 func TestClassRegisterDuplicateClass(t *testing.T) {
 	classNode := &ast.ClassDeclaration{
-		Modifiers:    []ast.Node{},
-		Annotations:  []ast.Node{},
-		Name:         "Foo",
-		Declarations: []ast.Node{},
-		InnerClasses: []ast.Node{
+		Modifiers:   []ast.Node{},
+		Annotations: []ast.Node{},
+		Name:        "Foo",
+		Declarations: []ast.Node{
 			&ast.ClassDeclaration{
 				Modifiers:    []ast.Node{},
 				Annotations:  []ast.Node{},
@@ -342,6 +341,7 @@ func TestClassRegisterDuplicateClass(t *testing.T) {
 				Declarations: []ast.Node{},
 			},
 		},
+		InnerClasses: []ast.Node{},
 	}
 	classRegister := &ClassRegisterVisitor{}
 	classNode.Accept(classRegister)

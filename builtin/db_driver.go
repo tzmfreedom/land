@@ -24,9 +24,9 @@ func NewDatabaseDriver() *databaseDriver {
 
 func (d *databaseDriver) Query(n *ast.Soql, interpreter ast.Visitor) []*Object {
 	builder := SqlBuilder{interpreter: interpreter}
-	sql, fields := builder.Build(n)
+	sql, selectFields, relations := builder.Build(n)
+	// pp.Println(sql)
 
-	//pp.Println(sql)
 	rows, err := d.db.Query(sql)
 	if err != nil {
 		panic(err)
@@ -35,8 +35,8 @@ func (d *databaseDriver) Query(n *ast.Soql, interpreter ast.Visitor) []*Object {
 	classType, _ := PrimitiveClassMap().Get(n.FromObject)
 	records := []*Object{}
 	for rows.Next() {
-		dispatches := make([]interface{}, len(fields))
-		for i, _ := range fields {
+		dispatches := make([]interface{}, len(selectFields))
+		for i, _ := range selectFields {
 			var temp string
 			dispatches[i] = &temp
 		}
@@ -45,23 +45,24 @@ func (d *databaseDriver) Query(n *ast.Soql, interpreter ast.Visitor) []*Object {
 			panic(err)
 		}
 		record := CreateObject(classType)
-		for i, field := range fields {
-			if len(field) == 1 {
-				fieldName := field[0]
-				record.InstanceFields.Set(fieldName, NewString(*dispatches[i].(*string)))
+		for i, field := range selectFields {
+			tmpTable := field[0]
+			fieldName := field[1]
+			value := NewString(*dispatches[i].(*string))
+
+			if tmpTable == "t0" {
+				record.InstanceFields.Set(fieldName, value)
+				continue
+			}
+			relationInfo := relations[tmpTable]
+			relationField, ok := record.InstanceFields.Get(relationInfo.RelationshipName)
+			if ok {
+				relationField.InstanceFields.Set(fieldName, value)
 			} else {
-				fieldName := field[0]
-				relation, ok := record.InstanceFields.Get(fieldName)
-				value := NewString(*dispatches[i].(*string))
-				if ok {
-					relation.InstanceFields.Set(field[1], value)
-				} else {
-					// TODO: duplicate code
-					relationType, _ := PrimitiveClassMap().Get(fieldName)
-					relation = CreateObject(relationType)
-					relation.InstanceFields.Set(field[1], value)
-					record.InstanceFields.Set(fieldName, relation)
-				}
+				relationType, _ := PrimitiveClassMap().Get(relationInfo.ReferenceTo)
+				relationField = CreateObject(relationType)
+				relationField.InstanceFields.Set(fieldName, value)
+				record.InstanceFields.Set(relationInfo.RelationshipName, relationField)
 			}
 		}
 		records = append(records, record)

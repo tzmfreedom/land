@@ -16,7 +16,6 @@ type Context struct {
 
 	CurrentMethod *ast.MethodDeclaration
 	CurrentClass  *builtin.ClassType
-	IsStatic      bool
 
 	Stdout io.Writer
 	Stderr io.Writer

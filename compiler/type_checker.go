@@ -47,7 +47,6 @@ func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) 
 	}
 
 	if n.StaticMethods != nil {
-		v.Context.IsStatic = true
 		for _, methods := range n.StaticMethods.All() {
 			for _, m := range methods {
 				_, err := v.VisitMethod(m)
@@ -56,7 +55,6 @@ func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) 
 				}
 			}
 		}
-		v.Context.IsStatic = false
 	}
 
 	if n.InstanceMethods != nil {
@@ -400,7 +398,7 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 			v.AddError(fmt.Sprintf("constructor <%s> not found", classType.Name), n)
 		} else {
 			// TODO: for protected impl
-			if method.IsPrivate() && !(v.Context.IsStatic && v.Context.CurrentClass == classType) {
+			if method.IsPrivate() && v.Context.CurrentClass != classType {
 				v.AddError(fmt.Sprintf("constructor <%s> not found", classType.Name), n)
 			}
 		}

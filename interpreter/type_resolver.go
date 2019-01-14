@@ -298,3 +298,11 @@ func (r *TypeResolver) FindStaticMethod(classType *builtin.ClassType, methodName
 	}
 	return r.resolver.FindStaticMethod(classType, methodName, inputParameters, allowedModifier)
 }
+
+func (r *TypeResolver) SearchMethod(receiverClass *builtin.ClassType, methods []*builtin.Method, parameters []*builtin.Object) *builtin.Method {
+	inputParameters := make([]*builtin.ClassType, len(parameters))
+	for i, parameter := range parameters {
+		inputParameters[i] = parameter.ClassType
+	}
+	return r.resolver.SearchMethod(receiverClass, methods, inputParameters)
+}

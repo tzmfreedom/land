@@ -243,7 +243,7 @@ func (r *TypeResolver) ResolveType(names []string) (*builtin.ClassType, error) {
 func (r *TypeResolver) FindInstanceMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType, allowedModifier int) (*builtin.ClassType, *builtin.Method, error) {
 	methods, ok := classType.InstanceMethods.Get(methodName)
 	if ok {
-		method := r.searchMethod(classType, methods, parameters)
+		method := r.SearchMethod(classType, methods, parameters)
 		if method != nil {
 			if allowedModifier == MODIFIER_PUBLIC_ONLY && !method.IsPublic() {
 				return nil, nil, fmt.Errorf("Method access modifier must be public but %s", method.AccessModifier())
@@ -270,7 +270,7 @@ func (r *TypeResolver) FindInstanceMethod(classType *builtin.ClassType, methodNa
 func (r *TypeResolver) FindStaticMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType, allowedModifier int) (*builtin.ClassType, *builtin.Method, error) {
 	methods, ok := classType.StaticMethods.Get(methodName)
 	if ok {
-		method := r.searchMethod(classType, methods, parameters)
+		method := r.SearchMethod(classType, methods, parameters)
 		if method != nil {
 			if allowedModifier == MODIFIER_PUBLIC_ONLY && !method.IsPublic() {
 				return nil, nil, fmt.Errorf("Method access modifier must be public but %s", method.AccessModifier())
@@ -342,7 +342,7 @@ func (r *TypeResolver) findStaticField(classType *builtin.ClassType, fieldName s
 	return nil, nil
 }
 
-func (r *TypeResolver) searchMethod(receiverClass *builtin.ClassType, methods []*builtin.Method, parameters []*builtin.ClassType) *builtin.Method {
+func (r *TypeResolver) SearchMethod(receiverClass *builtin.ClassType, methods []*builtin.Method, parameters []*builtin.ClassType) *builtin.Method {
 	l := len(parameters)
 	for _, m := range methods {
 		if len(m.Parameters) != l {

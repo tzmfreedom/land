@@ -365,7 +365,6 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 	}
 	if len(classType.Constructors) > 0 {
 		// TODO: implement multiple constructor
-		constructor := classType.Constructors[0]
 		evaluated := make([]*builtin.Object, len(n.Parameters))
 		for i, p := range n.Parameters {
 			r, err := p.Accept(v)
@@ -374,6 +373,8 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 			}
 			evaluated[i] = r.(*builtin.Object)
 		}
+		typeResolver := NewTypeResolver(v.Context)
+		constructor := typeResolver.SearchMethod(classType, classType.Constructors, evaluated)
 
 		if constructor.NativeFunction != nil {
 			constructor.NativeFunction(newObj, evaluated, v.Extra)

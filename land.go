@@ -141,21 +141,28 @@ func main() {
 		}
 	case "check":
 		trees, err := parse(option.Files)
-		newTrees := make([]*builtin.ClassType, len(trees))
+		classTypes := make([]*builtin.ClassType, len(trees))
 		if err != nil {
 			handleError(err)
 		}
 		for i, t := range trees {
-			classType, err := register(t)
-			if err != nil {
-				handleError(err)
-			}
-			newTrees[i], err = convert(classType)
+			classTypes[i], err = register(t)
 			if err != nil {
 				handleError(err)
 			}
 		}
-		for _, t := range newTrees {
+		classMap := builtin.PrimitiveClassMap()
+		for _, classType := range classTypes {
+			classMap.Set(classType.Name, classType)
+		}
+
+		for i, classType := range classTypes {
+			classTypes[i], err = convert(classType, classMap)
+			if err != nil {
+				handleError(err)
+			}
+		}
+		for _, t := range classTypes {
 			err = semanticAnalysis(t)
 			if err != nil {
 				handleError(err)
@@ -242,7 +249,7 @@ func parseOption(args []string) (*option, error) {
 	}, nil
 }
 
-func convert(n *builtin.ClassType) (*builtin.ClassType, error) {
+func convert(n *builtin.ClassType, classMap *builtin.ClassMap) (*builtin.ClassType, error) {
 	resolver := compiler.NewTypeRefResolver(classMap, builtin.GetNameSpaceStore())
 	return resolver.Resolve(n)
 }
@@ -489,7 +496,12 @@ func buildFile(interpreter *interpreter.Interpreter, file string) (*builtin.Clas
 	if err != nil {
 		return nil, fmt.Errorf("Build Error: %s\n", err.Error())
 	}
-	classType, err = convert(classType)
+	tmpClassMap := builtin.PrimitiveClassMap()
+	for _, classType := range classMap.Data {
+		tmpClassMap.Set(classType.Name, classType)
+	}
+
+	classType, err = convert(classType, tmpClassMap)
 	if err != nil {
 		return nil, fmt.Errorf("Build Error: %s\n", err.Error())
 	}
@@ -502,12 +514,20 @@ func buildFile(interpreter *interpreter.Interpreter, file string) (*builtin.Clas
 
 func buildAllFile(trees []ast.Node) ([]*builtin.ClassType, error) {
 	classTypes := make([]*builtin.ClassType, len(trees))
+	var err error
 	for i, t := range trees {
-		classType, err := register(t)
+		classTypes[i], err = register(t)
 		if err != nil {
 			return nil, err
 		}
-		classTypes[i], err = convert(classType)
+	}
+	tmpClassMap := builtin.PrimitiveClassMap()
+	for _, classType := range classMap.Data {
+		tmpClassMap.Set(classType.Name, classType)
+	}
+
+	for i, classType := range classTypes {
+		classTypes[i], err = convert(classType, tmpClassMap)
 		if err != nil {
 			return nil, err
 		}
@@ -526,7 +546,12 @@ func execFile(code string, env *interpreter.Env) *interpreter.Env {
 	if err != nil {
 		panic(err)
 	}
-	classType, err = convert(classType)
+	classTypes := builtin.PrimitiveClassMap()
+	for _, classType := range classMap.Data {
+		classTypes.Set(classType.Name, classType)
+	}
+
+	classType, err = convert(classType, classTypes)
 	if err != nil {
 		panic(err)
 	}
@@ -560,15 +585,24 @@ func reloadAll(interpreter *interpreter.Interpreter, files []string) {
 	}
 	classTypes := make([]*builtin.ClassType, len(trees))
 	for i, t := range trees {
-		classType, err := register(t)
+		classTypes[i], err = register(t)
 		if err != nil {
 			handleError(err)
 		}
-		classTypes[i], err = convert(classType)
+	}
+
+	classMap := builtin.PrimitiveClassMap()
+	for _, classType := range classTypes {
+		classMap.Set(classType.Name, classType)
+	}
+
+	for i, classType := range classTypes {
+		classTypes[i], err = convert(classType, classMap)
 		if err != nil {
-			panic(err)
+			handleError(err)
 		}
 	}
+
 	for _, t := range classTypes {
 		if err = semanticAnalysis(t); err != nil {
 			handleError(err)

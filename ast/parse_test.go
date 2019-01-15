@@ -35,7 +35,7 @@ func TestParse(t *testing.T) {
 					},
 					Parameters: []Node{},
 				},
-				ImplementClasses: []Node{
+				ImplementClassRefs: []Node{
 					&TypeRef{
 						Name: []string{
 							"Baz",

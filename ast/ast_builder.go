@@ -107,7 +107,7 @@ func (v *Builder) VisitClassDeclaration(ctx *parser.ClassDeclarationContext) int
 		n.SuperClassRef = t.Accept(v).(Node)
 	}
 	if tl := ctx.TypeList(); tl != nil {
-		n.ImplementClasses = tl.Accept(v).([]Node)
+		n.ImplementClassRefs = tl.Accept(v).([]Node)
 	}
 	n.Declarations = make([]Node, len(declarations))
 	for i, d := range declarations {

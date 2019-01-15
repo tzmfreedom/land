@@ -13,22 +13,23 @@ var NullType = &ClassType{
 }
 
 type ClassType struct {
-	Annotations      []ast.Node
-	Modifiers        []ast.Node
-	Name             string
-	SuperClassRef    ast.Node
-	SuperClass       *ClassType
-	ImplementClasses []ast.Node
-	Constructors     []*Method
-	InstanceFields   *FieldMap
-	StaticFields     *FieldMap
-	InstanceMethods  *MethodMap
-	StaticMethods    *MethodMap
-	InnerClasses     *ClassMap
-	ToString         func(*Object) string
-	Extra            map[string]interface{}
-	Location         *ast.Location
-	Parent           ast.Node
+	Annotations        []ast.Node
+	Modifiers          []ast.Node
+	Name               string
+	SuperClassRef      ast.Node
+	SuperClass         *ClassType
+	ImplementClasses   []*ClassType
+	ImplementClassRefs []ast.Node
+	Constructors       []*Method
+	InstanceFields     *FieldMap
+	StaticFields       *FieldMap
+	InstanceMethods    *MethodMap
+	StaticMethods      *MethodMap
+	InnerClasses       *ClassMap
+	ToString           func(*Object) string
+	Extra              map[string]interface{}
+	Location           *ast.Location
+	Parent             ast.Node
 }
 
 func (t *ClassType) IsPrimitive() bool {
@@ -66,8 +67,15 @@ func (t *ClassType) Equals(other *ClassType) bool {
 			return true
 		}
 		if other.SuperClass != nil {
-			if t == other {
-
+			if t.Equals(other.SuperClass) {
+				return true
+			}
+		}
+		if other.ImplementClasses != nil {
+			for _, impl := range other.ImplementClasses {
+				if t == impl {
+					return true
+				}
 			}
 		}
 	}

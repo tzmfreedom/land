@@ -77,8 +77,8 @@ func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) 
 		}
 	}
 
-	if n.ImplementClasses != nil {
-		for _, impl := range n.ImplementClasses {
+	if n.ImplementClassRefs != nil {
+		for _, impl := range n.ImplementClassRefs {
 			_, err := impl.Accept(v)
 			if err != nil {
 				return nil, err

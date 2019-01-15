@@ -13,7 +13,7 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 	t := &builtin.ClassType{}
 	t.Name = n.Name
 	t.Modifiers = n.Modifiers
-	t.ImplementClasses = n.ImplementClasses
+	t.ImplementClassRefs = n.ImplementClassRefs
 	t.InnerClasses = builtin.NewClassMap()
 	t.SuperClassRef = n.SuperClassRef
 	t.Location = n.Location

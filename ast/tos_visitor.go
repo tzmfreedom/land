@@ -47,8 +47,8 @@ func (v *TosVisitor) VisitClassDeclaration(n *ClassDeclaration) (interface{}, er
 		super, _ = r.(string)
 		super = "extends " + super
 	}
-	implements := make([]string, len(n.ImplementClasses))
-	for i, impl := range n.ImplementClasses {
+	implements := make([]string, len(n.ImplementClassRefs))
+	for i, impl := range n.ImplementClassRefs {
 		r, _ := impl.Accept(v)
 		implements[i], _ = r.(string)
 	}

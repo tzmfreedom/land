@@ -11,15 +11,15 @@ type Location struct {
 }
 
 type ClassDeclaration struct {
-	Annotations      []Node
-	Modifiers        []Node
-	Name             string
-	SuperClassRef    Node
-	ImplementClasses []Node
-	Declarations     []Node
-	InnerClasses     []Node
-	Location         *Location
-	Parent           Node
+	Annotations        []Node
+	Modifiers          []Node
+	Name               string
+	SuperClassRef      Node
+	ImplementClassRefs []Node
+	Declarations       []Node
+	InnerClasses       []Node
+	Location           *Location
+	Parent             Node
 }
 
 type Modifier struct {
@@ -547,7 +547,7 @@ func (n *ClassDeclaration) Accept(v Visitor) (interface{}, error) {
 func (n *ClassDeclaration) GetChildren() []interface{} {
 	return []interface{}{
 		n.Name,
-		n.ImplementClasses,
+		n.ImplementClassRefs,
 		n.SuperClassRef,
 		n.Annotations,
 		n.Declarations,

@@ -25,8 +25,10 @@ func (r *TypeRefResolver) ResolveType(names []string) (*ClassType, error) {
 			}
 		}
 		// search for UserClass.InnerClass
-		if class, ok := r.CurrentClass.InnerClasses.Get(className); ok {
-			return class, nil
+		if r.CurrentClass != nil {
+			if class, ok := r.CurrentClass.InnerClasses.Get(className); ok {
+				return class, nil
+			}
 		}
 	} else if len(names) == 2 {
 		// search for UserClass.InnerClass

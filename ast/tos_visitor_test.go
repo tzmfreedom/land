@@ -106,7 +106,7 @@ func TestToString(t *testing.T) {
 			&ClassDeclaration{
 				Name:          "foo",
 				SuperClassRef: &TypeRef{Name: []string{"bar"}},
-				ImplementClasses: []Node{
+				ImplementClassRefs: []Node{
 					&TypeRef{Name: []string{"baz"}},
 				},
 				Modifiers: []Node{

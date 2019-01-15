@@ -104,8 +104,8 @@ func TestToString(t *testing.T) {
 		},
 		{
 			&ClassDeclaration{
-				Name:       "foo",
-				SuperClass: &TypeRef{Name: []string{"bar"}},
+				Name:          "foo",
+				SuperClassRef: &TypeRef{Name: []string{"bar"}},
 				ImplementClasses: []Node{
 					&TypeRef{Name: []string{"baz"}},
 				},

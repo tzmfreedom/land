@@ -42,8 +42,8 @@ func (v *TosVisitor) VisitClassDeclaration(n *ClassDeclaration) (interface{}, er
 		}
 	})
 	super := ""
-	if n.SuperClass != nil {
-		r, _ := n.SuperClass.Accept(v)
+	if n.SuperClassRef != nil {
+		r, _ := n.SuperClassRef.Accept(v)
 		super, _ = r.(string)
 		super = "extends " + super
 	}

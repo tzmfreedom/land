@@ -104,7 +104,7 @@ func (v *Builder) VisitClassDeclaration(ctx *parser.ClassDeclarationContext) int
 		Location: v.newLocation(ctx),
 	}
 	if t := ctx.ApexType(); t != nil {
-		n.SuperClass = t.Accept(v).(Node)
+		n.SuperClassRef = t.Accept(v).(Node)
 	}
 	if tl := ctx.TypeList(); tl != nil {
 		n.ImplementClasses = tl.Accept(v).([]Node)

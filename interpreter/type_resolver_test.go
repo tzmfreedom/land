@@ -193,7 +193,7 @@ func TestResolveVariable(t *testing.T) {
 	ignore := cmpopts.IgnoreTypes(func(*builtin.Object) string { return "" })
 
 	for _, testCase := range testCases {
-		typeResolver := &TypeResolver{Context: testCase.Context}
+		typeResolver := NewTypeResolver(testCase.Context)
 		actual, err := typeResolver.ResolveVariable(testCase.Input)
 		if testCase.Error != nil && testCase.Error.Error() != err.Error() {
 			diff := cmp.Diff(testCase.Error.Error(), err.Error())
@@ -398,7 +398,7 @@ func TestResolveMethod(t *testing.T) {
 		//},
 	}
 	for _, testCase := range testCases {
-		typeResolver := &TypeResolver{Context: testCase.Context}
+		typeResolver := NewTypeResolver(testCase.Context)
 		// TODO: test receiver
 		_, actual, err := typeResolver.ResolveMethod(testCase.Input, []*builtin.Object{})
 		if testCase.Error != nil && testCase.Error.Error() != err.Error() {

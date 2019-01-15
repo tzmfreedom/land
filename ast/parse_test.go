@@ -29,7 +29,7 @@ func TestParse(t *testing.T) {
 					},
 				},
 				Name: "Foo",
-				SuperClass: &TypeRef{
+				SuperClassRef: &TypeRef{
 					Name: []string{
 						"Bar",
 					},

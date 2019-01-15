@@ -11,7 +11,20 @@ import (
 
 type TypeResolver struct {
 	Context        *Context
+	resolver       *builtin.TypeRefResolver
 	IgnoreGenerics bool
+}
+
+func NewTypeResolver(ctx *Context, ignoreGenerics bool) *TypeResolver {
+	return &TypeResolver{
+		Context: ctx,
+		resolver: &builtin.TypeRefResolver{
+			ClassTypes:   ctx.ClassTypes,
+			NameSpaces:   ctx.NameSpaces,
+			CurrentClass: ctx.CurrentClass,
+		},
+		IgnoreGenerics: ignoreGenerics,
+	}
 }
 
 const (
@@ -213,44 +226,7 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Class
 }
 
 func (r *TypeResolver) ResolveType(names []string) (*builtin.ClassType, error) {
-	if len(names) == 1 {
-		className := names[0]
-		if class, ok := r.Context.ClassTypes.Get(className); ok {
-			return class, nil
-		}
-		if classTypes, ok := r.Context.NameSpaces.Get("System"); ok {
-			if class, ok := classTypes.Get(className); ok {
-				return class, nil
-			}
-		}
-		// search for UserClass.InnerClass
-		if class, ok := r.Context.CurrentClass.InnerClasses.Get(className); ok {
-			return class, nil
-		}
-	} else if len(names) == 2 {
-		// search for UserClass.InnerClass
-		if class, ok := r.Context.ClassTypes.Get(names[0]); ok {
-			if inner, ok := class.InnerClasses.Get(names[1]); ok {
-				return inner, nil
-			}
-		}
-		// search for NameSpace.UserClass
-		if classTypes, ok := r.Context.NameSpaces.Get(names[0]); ok {
-			if class, ok := classTypes.Get(names[1]); ok {
-				return class, nil
-			}
-		}
-	} else if len(names) == 3 {
-		// search for NameSpace.UserClass.InnerClass
-		if classTypes, ok := r.Context.NameSpaces.Get(names[0]); ok {
-			if class, ok := classTypes.Get(names[1]); ok {
-				if inner, ok := class.InnerClasses.Get(names[2]); ok {
-					return inner, nil
-				}
-			}
-		}
-	}
-	return nil, fmt.Errorf("%s does not found", strings.Join(names, "."))
+	return r.resolver.ResolveType(names)
 }
 
 func (r *TypeResolver) FindInstanceMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType, allowedModifier int) (*builtin.ClassType, *builtin.Method, error) {
@@ -268,14 +244,10 @@ func (r *TypeResolver) FindInstanceMethod(classType *builtin.ClassType, methodNa
 		}
 	}
 	if classType.SuperClass != nil {
-		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
-		if err != nil {
-			return nil, nil, methodNotFoundError(classType, methodName, parameters)
-		}
 		if allowedModifier == MODIFIER_ALL_OK {
 			allowedModifier = MODIFIER_ALLOW_PROTECTED
 		}
-		return r.FindInstanceMethod(super, methodName, parameters, allowedModifier)
+		return r.FindInstanceMethod(classType.SuperClass, methodName, parameters, allowedModifier)
 	}
 	return nil, nil, methodNotFoundError(classType, methodName, parameters)
 }
@@ -295,14 +267,10 @@ func (r *TypeResolver) FindStaticMethod(classType *builtin.ClassType, methodName
 		}
 	}
 	if classType.SuperClass != nil {
-		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
-		if err != nil {
-			return nil, nil, methodNotFoundError(classType, methodName, parameters)
-		}
 		if allowedModifier == MODIFIER_ALL_OK {
 			allowedModifier = MODIFIER_ALLOW_PROTECTED
 		}
-		return r.FindStaticMethod(super, methodName, parameters, allowedModifier)
+		return r.FindStaticMethod(classType.SuperClass, methodName, parameters, allowedModifier)
 	}
 	return nil, nil, methodNotFoundError(classType, methodName, parameters)
 }
@@ -319,14 +287,10 @@ func (r *TypeResolver) findInstanceField(classType *builtin.ClassType, fieldName
 		return fieldType, nil
 	}
 	if classType.SuperClass != nil {
-		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
-		if err != nil {
-			return nil, err
-		}
 		if allowedModifier == MODIFIER_ALL_OK {
 			allowedModifier = MODIFIER_ALLOW_PROTECTED
 		}
-		return r.findInstanceField(super, fieldName, allowedModifier, checkSetter)
+		return r.findInstanceField(classType.SuperClass, fieldName, allowedModifier, checkSetter)
 	}
 	return nil, nil
 }
@@ -343,14 +307,10 @@ func (r *TypeResolver) findStaticField(classType *builtin.ClassType, fieldName s
 		return fieldType, nil
 	}
 	if classType.SuperClass != nil {
-		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
-		if err != nil {
-			return nil, err
-		}
 		if allowedModifier == MODIFIER_ALL_OK {
 			allowedModifier = MODIFIER_ALLOW_PROTECTED
 		}
-		return r.findStaticField(super, fieldName, allowedModifier, checkSetter)
+		return r.findStaticField(classType.SuperClass, fieldName, allowedModifier, checkSetter)
 	}
 	return nil, nil
 }
@@ -407,11 +367,7 @@ func (r *TypeResolver) SearchConstructor(classType *builtin.ClassType, parameter
 		return classType, method, nil
 	}
 	if classType.SuperClass != nil {
-		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
-		if err != nil {
-			return nil, nil, err
-		}
-		return r.SearchConstructor(super, parameters)
+		return r.SearchConstructor(classType.SuperClass, parameters)
 	}
 	return nil, nil, nil
 }
@@ -421,54 +377,13 @@ func (r *TypeResolver) HasConstructor(classType *builtin.ClassType) bool {
 		return true
 	}
 	if classType.SuperClass != nil {
-		super, err := r.ResolveType(classType.SuperClass.(*ast.TypeRef).Name)
-		if err != nil {
-			return false
-		}
-		return r.HasConstructor(super)
+		return r.HasConstructor(classType.SuperClass)
 	}
 	return false
 }
 
 func (r *TypeResolver) ConvertType(n *ast.TypeRef) (*builtin.ClassType, error) {
-	// convert list from array
-	for n.Dimmension > 0 {
-		name := n.Name
-		params := n.Parameters
-		n.Name = []string{"List"}
-		n.Parameters = []ast.Node{
-			&ast.TypeRef{
-				Name:       name,
-				Parameters: params,
-			},
-		}
-		n.Dimmension--
-	}
-
-	t, err := r.ResolveType(n.Name)
-	if err != nil {
-		return nil, err
-	}
-	if t.IsGeneric() {
-		types := make([]*builtin.ClassType, len(n.Parameters))
-		var err error
-		for i, p := range n.Parameters {
-			types[i], err = r.ConvertType(p.(*ast.TypeRef))
-			if err != nil {
-				return nil, err
-			}
-		}
-		return &builtin.ClassType{
-			Name:            t.Name,
-			Constructors:    t.Constructors,
-			InstanceMethods: t.InstanceMethods,
-			StaticMethods:   t.StaticMethods,
-			Extra: map[string]interface{}{
-				"generics": types,
-			},
-		}, nil
-	}
-	return t, nil
+	return r.resolver.ConvertType(n)
 }
 
 func methodNotFoundError(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType) error {

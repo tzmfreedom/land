@@ -50,7 +50,7 @@ func (c *ClassChecker) checkSameParameterName(m *builtin.MethodMap) error {
 }
 
 func (c *ClassChecker) checkDuplicated(m *builtin.MethodMap) error {
-	resolver := &TypeResolver{Context: c.Context}
+	resolver := NewTypeResolver(c.Context, false)
 	for _, methods := range m.Data {
 		if len(methods) == 1 {
 			continue
@@ -81,14 +81,10 @@ func (c *ClassChecker) checkDuplicated(m *builtin.MethodMap) error {
 	return nil
 }
 
-// if override modifier is specified, check modifier virtual/abstract on superclass
-// if superclass is abstract/virtual, check override method implementation
+// if override modifier is specified, check modifier virtual/abstract on SuperClassRef
+// if SuperClassRef is abstract/virtual, check override method implementation
 func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
-	resolver := &TypeResolver{Context: c.Context}
-	var super *builtin.ClassType
-	if t.SuperClass != nil {
-		super, _ = resolver.ResolveType(t.SuperClass.(*ast.TypeRef).Name)
-	}
+	resolver := NewTypeResolver(c.Context, false)
 	for _, methods := range t.InstanceMethods.Data {
 		for _, m := range methods {
 			if m.IsOverride() {
@@ -100,7 +96,7 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 				for i, p := range m.Parameters {
 					types[i], _ = resolver.ResolveType(p.(*ast.Parameter).Type.(*ast.TypeRef).Name)
 				}
-				_, _, err := resolver.FindInstanceMethod(super, m.Name, types, MODIFIER_NO_CHECK)
+				_, _, err := resolver.FindInstanceMethod(t.SuperClass, m.Name, types, MODIFIER_NO_CHECK)
 				if err != nil {
 					return fmt.Errorf("method %s missing on super class", m.Name)
 				}
@@ -109,10 +105,10 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 				for i, p := range m.Parameters {
 					types[i], _ = resolver.ResolveType(p.(*ast.Parameter).Type.(*ast.TypeRef).Name)
 				}
-				if t.SuperClass == nil {
+				if t.SuperClassRef == nil {
 					continue
 				}
-				_, method, _ := resolver.FindInstanceMethod(super, m.Name, types, MODIFIER_NO_CHECK)
+				_, method, _ := resolver.FindInstanceMethod(t.SuperClass, m.Name, types, MODIFIER_NO_CHECK)
 				if method != nil {
 				}
 			}
@@ -122,7 +118,7 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 	for _, methods := range t.StaticMethods.Data {
 		for _, m := range methods {
 			if m.IsOverride() {
-				if t.SuperClass == nil {
+				if t.SuperClassRef == nil {
 					return fmt.Errorf("override %s is required super class", m.Name)
 				}
 
@@ -130,7 +126,7 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 				for i, p := range m.Parameters {
 					types[i], _ = resolver.ResolveType(p.(*ast.Parameter).Type.(*ast.TypeRef).Name)
 				}
-				_, _, err := resolver.FindStaticMethod(super, m.Name, types, MODIFIER_NO_CHECK)
+				_, _, err := resolver.FindStaticMethod(t.SuperClass, m.Name, types, MODIFIER_NO_CHECK)
 				if err != nil {
 					return fmt.Errorf("method %s missing on super class", m.Name)
 				}
@@ -141,19 +137,13 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 }
 
 func (c *ClassChecker) checkOverrideField(t *builtin.ClassType) error {
-	resolver := &TypeResolver{Context: c.Context}
-	var super *builtin.ClassType
-	if t.SuperClass != nil {
-		super, _ = resolver.ResolveType(t.SuperClass.(*ast.TypeRef).Name)
-	}
-
 	for _, field := range t.InstanceFields.Data {
 		if field.IsOverride() {
-			if t.SuperClass == nil {
+			if t.SuperClassRef == nil {
 				return fmt.Errorf("override %s is required super class", field.Name)
 			}
 
-			f, ok := super.InstanceFields.Get(field.Name)
+			f, ok := t.SuperClass.InstanceFields.Get(field.Name)
 			if !ok {
 				return fmt.Errorf("field %s missing on super class", field.Name)
 			}
@@ -165,22 +155,22 @@ func (c *ClassChecker) checkOverrideField(t *builtin.ClassType) error {
 				continue
 			}
 
-			_, ok := super.InstanceFields.Get(field.Name)
+			_, ok := t.SuperClass.InstanceFields.Get(field.Name)
 			if ok {
 				return fmt.Errorf("field %s is not defined in %s", field.Name, t.Name)
 			}
 		}
 	}
 	if t.SuperClass != nil {
-
+		// TODO: implement
 	}
 	for _, field := range t.StaticFields.Data {
 		if field.IsOverride() {
-			if t.SuperClass == nil {
+			if t.SuperClassRef == nil {
 				return fmt.Errorf("override %s is required super class", field.Name)
 			}
 
-			f, ok := super.StaticFields.Get(field.Name)
+			f, ok := t.SuperClass.StaticFields.Get(field.Name)
 			if !ok {
 				return fmt.Errorf("field %s missing on super class", field.Name)
 			}
@@ -191,7 +181,7 @@ func (c *ClassChecker) checkOverrideField(t *builtin.ClassType) error {
 			if t.SuperClass == nil {
 				continue
 			}
-			_, ok := super.StaticFields.Get(field.Name)
+			_, ok := t.SuperClass.StaticFields.Get(field.Name)
 			if ok {
 				return fmt.Errorf("field %s is not defined in %s", field.Name, t.Name)
 			}

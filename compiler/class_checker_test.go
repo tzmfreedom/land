@@ -20,7 +20,7 @@ func TestClassChecker(t *testing.T) {
 				Modifiers:      []ast.Node{},
 				Annotations:    []ast.Node{},
 				Name:           "Foo",
-				SuperClass:     nil,
+				SuperClassRef:  nil,
 				InstanceFields: builtin.NewFieldMap(),
 				StaticFields:   builtin.NewFieldMap(),
 				InstanceMethods: &builtin.MethodMap{
@@ -79,7 +79,7 @@ func TestClassChecker(t *testing.T) {
 				Modifiers:      []ast.Node{},
 				Annotations:    []ast.Node{},
 				Name:           "Foo",
-				SuperClass:     nil,
+				SuperClassRef:  nil,
 				InstanceFields: builtin.NewFieldMap(),
 				StaticFields:   builtin.NewFieldMap(),
 				InstanceMethods: &builtin.MethodMap{
@@ -138,7 +138,7 @@ func TestClassChecker(t *testing.T) {
 				Modifiers:      []ast.Node{},
 				Annotations:    []ast.Node{},
 				Name:           "Foo",
-				SuperClass:     nil,
+				SuperClassRef:  nil,
 				InstanceFields: builtin.NewFieldMap(),
 				StaticFields:   builtin.NewFieldMap(),
 				InstanceMethods: &builtin.MethodMap{
@@ -201,7 +201,7 @@ func TestClassChecker(t *testing.T) {
 				Modifiers:      []ast.Node{},
 				Annotations:    []ast.Node{},
 				Name:           "Foo",
-				SuperClass:     nil,
+				SuperClassRef:  nil,
 				InstanceFields: builtin.NewFieldMap(),
 				StaticFields:   builtin.NewFieldMap(),
 				InstanceMethods: &builtin.MethodMap{

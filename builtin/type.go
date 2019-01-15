@@ -16,7 +16,8 @@ type ClassType struct {
 	Annotations      []ast.Node
 	Modifiers        []ast.Node
 	Name             string
-	SuperClass       ast.Node
+	SuperClassRef    ast.Node
+	SuperClass       *ClassType
 	ImplementClasses []ast.Node
 	Constructors     []*Method
 	InstanceFields   *FieldMap
@@ -61,7 +62,14 @@ func (t *ClassType) Equals(other *ClassType) bool {
 		return true
 	}
 	if !t.IsGeneric() && !other.IsGeneric() {
-		return t == other
+		if t == other {
+			return true
+		}
+		if other.SuperClass != nil {
+			if t == other {
+
+			}
+		}
 	}
 	return false
 }

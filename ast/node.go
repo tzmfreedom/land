@@ -14,7 +14,7 @@ type ClassDeclaration struct {
 	Annotations      []Node
 	Modifiers        []Node
 	Name             string
-	SuperClass       Node
+	SuperClassRef    Node
 	ImplementClasses []Node
 	Declarations     []Node
 	InnerClasses     []Node
@@ -548,7 +548,7 @@ func (n *ClassDeclaration) GetChildren() []interface{} {
 	return []interface{}{
 		n.Name,
 		n.ImplementClasses,
-		n.SuperClass,
+		n.SuperClassRef,
 		n.Annotations,
 		n.Declarations,
 		n.InnerClasses,

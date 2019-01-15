@@ -146,11 +146,11 @@ func main() {
 			handleError(err)
 		}
 		for i, t := range trees {
-			root, err := convert(t)
+			classType, err := register(t)
 			if err != nil {
 				handleError(err)
 			}
-			newTrees[i], err = register(root)
+			newTrees[i], err = convert(classType)
 			if err != nil {
 				handleError(err)
 			}
@@ -160,6 +160,9 @@ func main() {
 			if err != nil {
 				handleError(err)
 			}
+		}
+		for _, t := range classMap.Data {
+			check(t)
 		}
 	}
 }
@@ -239,13 +242,14 @@ func parseOption(args []string) (*option, error) {
 	}, nil
 }
 
-func convert(n ast.Node) (ast.Node, error) {
-	return n, nil
+func convert(n *builtin.ClassType) (*builtin.ClassType, error) {
+	resolver := compiler.NewTypeRefResolver(classMap, builtin.GetNameSpaceStore())
+	return resolver.Resolve(n)
 }
 
-func check(n ast.Node) error {
+func check(n *builtin.ClassType) error {
 	checker := &visitor.SoqlChecker{}
-	_, err := n.Accept(checker)
+	_, err := checker.VisitClassType(n)
 	return err
 }
 
@@ -481,11 +485,11 @@ func runAction(interpreter *interpreter.Interpreter, expression []string) error 
 
 func buildFile(interpreter *interpreter.Interpreter, file string) (*builtin.ClassType, error) {
 	t, err := ast.ParseFile(file, preprocessors...)
-	root, err := convert(t)
+	classType, err := register(t)
 	if err != nil {
 		return nil, fmt.Errorf("Build Error: %s\n", err.Error())
 	}
-	classType, err := register(root)
+	classType, err = convert(classType)
 	if err != nil {
 		return nil, fmt.Errorf("Build Error: %s\n", err.Error())
 	}
@@ -499,11 +503,11 @@ func buildFile(interpreter *interpreter.Interpreter, file string) (*builtin.Clas
 func buildAllFile(trees []ast.Node) ([]*builtin.ClassType, error) {
 	classTypes := make([]*builtin.ClassType, len(trees))
 	for i, t := range trees {
-		root, err := convert(t)
+		classType, err := register(t)
 		if err != nil {
 			return nil, err
 		}
-		classTypes[i], err = register(root)
+		classTypes[i], err = convert(classType)
 		if err != nil {
 			return nil, err
 		}
@@ -518,11 +522,11 @@ func buildAllFile(trees []ast.Node) ([]*builtin.ClassType, error) {
 
 func execFile(code string, env *interpreter.Env) *interpreter.Env {
 	t, err := ast.ParseString(code, preprocessors...)
-	root, err := convert(t)
+	classType, err := register(t)
 	if err != nil {
 		panic(err)
 	}
-	classType, err := register(root)
+	classType, err = convert(classType)
 	if err != nil {
 		panic(err)
 	}
@@ -556,13 +560,13 @@ func reloadAll(interpreter *interpreter.Interpreter, files []string) {
 	}
 	classTypes := make([]*builtin.ClassType, len(trees))
 	for i, t := range trees {
-		root, err := convert(t)
+		classType, err := register(t)
 		if err != nil {
 			handleError(err)
 		}
-		classTypes[i], err = register(root)
+		classTypes[i], err = convert(classType)
 		if err != nil {
-			handleError(err)
+			panic(err)
 		}
 	}
 	for _, t := range classTypes {

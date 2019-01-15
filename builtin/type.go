@@ -231,7 +231,7 @@ func (m *Method) IsProtected() bool {
 }
 
 func (m *Method) IsTestMethod() bool {
-	return m.Is("testMethod") || m.IsAnnotated("@isTest")
+	return m.Is("testMethod") || m.IsAnnotated("isTest")
 }
 
 func (m *Method) IsAnnotated(name string) bool {

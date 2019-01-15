@@ -63,6 +63,31 @@ func main() {
 			handleError(err)
 			return
 		}
+	case "test":
+		trees, err := parse(option.Files)
+		if err != nil {
+			handleError(err)
+		}
+		classTypes, err := buildAllFile(trees)
+		if err != nil {
+			handleError(err)
+		}
+		for _, classType := range classTypes {
+			for _, methods := range classType.StaticMethods.All() {
+				for _, m := range methods {
+					if m.IsTestMethod() {
+						action := fmt.Sprintf("%s#%s", classType.Name, m.Name)
+						fmt.Printf(">> %s\n", action)
+						fmt.Println("")
+						err = run(action, classTypes)
+						if err != nil {
+							handleError(err)
+						}
+						fmt.Println("")
+					}
+				}
+			}
+		}
 	case "watch":
 		trees, err := parse(option.Files)
 		if err != nil {
@@ -184,6 +209,7 @@ func parseOption(args []string) (*option, error) {
 		cmd != "setup" &&
 		cmd != "db:setup" &&
 		cmd != "db:seed" &&
+		cmd != "test" &&
 		*action == "" &&
 		*interactive == false {
 		return nil, errors.New("-a CLASS#METHOD is required")
@@ -230,6 +256,9 @@ func register(n ast.Node) (*builtin.ClassType, error) {
 		return nil, err
 	}
 	classType := t.(*builtin.ClassType)
+	if _, ok := classMap.Get(classType.Name); ok {
+		return nil, fmt.Errorf("Class %s is already defined", classType.Name)
+	}
 	classMap.Set(classType.Name, classType)
 	return classType, nil
 }
@@ -244,6 +273,7 @@ func semanticAnalysis(t *builtin.ClassType) error {
 	_, err := typeChecker.VisitClassType(t)
 	if len(typeChecker.Errors) != 0 {
 		for _, e := range typeChecker.Errors {
+			//pp.Println(e)
 			loc := e.Node.GetLocation()
 			fmt.Fprintf(os.Stderr, "%s at %d:%d in %s\n", e.Message, loc.Line, loc.Column, loc.FileName)
 		}

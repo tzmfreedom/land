@@ -284,13 +284,13 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 	switch exp := n.NameOrExpression.(type) {
 	case *ast.FieldAccess:
 		r, err := exp.Expression.Accept(v)
-		receiver := r.(*builtin.Object)
 		if err != nil {
 			return nil, err
 		}
+		receiver = r
 		// TODO: extend
 		typeResolver := NewTypeResolver(v.Context)
-		_, m, err = typeResolver.FindInstanceMethod(receiver, exp.FieldName, evaluated, compiler.MODIFIER_ALL_OK)
+		_, m, err = typeResolver.FindInstanceMethod(receiver.(*builtin.Object), exp.FieldName, evaluated, compiler.MODIFIER_ALL_OK)
 		if err != nil {
 			panic("not found")
 		}
@@ -989,8 +989,8 @@ func (v *Interpreter) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) 
 	if err != nil {
 		return nil, err
 	}
-	obj, _ := r.(*builtin.Object).InstanceFields.Get(n.FieldName)
-	return obj, nil
+	f, _ := r.(*builtin.Object).InstanceFields.Get(n.FieldName)
+	return f, nil
 }
 
 func (v *Interpreter) VisitType(n *ast.TypeRef) (interface{}, error) {

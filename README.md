@@ -15,7 +15,7 @@ $ go get -u github.com/tzmfreedom/goland
 
 For Linux
 ```bash
-$ curl -sL https://install.freedom-man.com/land | bash
+$ curl -sL http://install.freedom-man.com/land.sh | bash
 ```
 
 For Windows

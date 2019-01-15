@@ -45,14 +45,14 @@ func (d *debugger) Debug(ctx *Context, n ast.Node) {
 		inputs := strings.Split(line, " ")
 		cmd := inputs[0]
 		switch cmd {
-		case "step":
+		case "s", "step":
 			d.Step = 1
 			return
-		case "next":
+		case "n", "next":
 			d.StepOut = true
 			d.Step = 1
 			return
-		case "finish":
+		case "f", "finish":
 			d.StepOut = true
 			d.Frame = 1
 			d.Step = 1

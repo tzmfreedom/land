@@ -58,3 +58,23 @@ func ExampleRun3() {
 	// true
 	// false
 }
+
+// For, While, Continue, Break, If, Else
+func ExampleInterface() {
+	setup()
+	os.Args = []string{"land", "run", "-a", "Implemented#main", "-d", "fixtures/interface"}
+	main()
+	// Output:
+	// 1.200000
+	// 3.400000
+}
+
+// For, While, Continue, Break, If, Else
+func ExampleAbstract() {
+	setup()
+	os.Args = []string{"land", "run", "-a", "Extended#main", "-d", "fixtures/abstract"}
+	main()
+	// Output:
+	// hello
+	// super
+}

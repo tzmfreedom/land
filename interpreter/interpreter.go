@@ -276,10 +276,10 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 	evaluated := make([]*builtin.Object, len(n.Parameters))
 	for i, p := range n.Parameters {
 		obj, err := p.Accept(v)
-		evaluated[i] = obj.(*builtin.Object)
 		if err != nil {
 			return nil, err
 		}
+		evaluated[i] = obj.(*builtin.Object)
 	}
 	switch exp := n.NameOrExpression.(type) {
 	case *ast.FieldAccess:

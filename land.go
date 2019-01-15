@@ -11,6 +11,8 @@ import (
 
 	"io/ioutil"
 
+	"regexp"
+
 	"github.com/chzyer/readline"
 	"github.com/fsnotify/fsnotify"
 	"github.com/joho/godotenv"
@@ -25,7 +27,10 @@ import (
 var classMap = builtin.NewClassMap()
 var preprocessors = []ast.PreProcessor{
 	func(src string) string {
-		return strings.Replace(src, "// #debugger", "Debugger.debug();", -1)
+		src = strings.Replace(src, "// #debugger", "Debugger.run();", -1)
+		r := regexp.MustCompile(`// #debug\((.+)\)`)
+		src = r.ReplaceAllString(src, "Debugger.debug($1);")
+		return src
 	},
 }
 

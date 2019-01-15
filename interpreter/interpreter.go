@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 	"github.com/tzmfreedom/goland/compiler"
@@ -297,7 +298,14 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 	case *ast.Name:
 		// TODO: implement
 		if exp.Value[0] == "Debugger" {
-			Debugger.Debug(v.Context, n)
+			switch exp.Value[1] {
+			case "run":
+				Debugger.Debug(v.Context, n)
+			case "debug":
+				for _, p := range n.Parameters {
+					pp.Println(p)
+				}
+			}
 			return nil, nil
 		}
 		resolver := NewTypeResolver(v.Context)

@@ -333,7 +333,7 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 	}
 	if name, ok := nameOrExp.(*ast.Name); ok {
 		// TODO: implement
-		if name.Value[0] == "Debugger" {
+		if name.Value[0] == "_Debugger" {
 			return nil, nil
 		}
 		receiverType, method, err := resolver.ResolveMethod(name.Value, types)

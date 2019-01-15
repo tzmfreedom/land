@@ -297,7 +297,7 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		}
 	case *ast.Name:
 		// TODO: implement
-		if exp.Value[0] == "Debugger" {
+		if exp.Value[0] == "_Debugger" {
 			switch exp.Value[1] {
 			case "run":
 				Debugger.Debug(v.Context, n)

@@ -27,9 +27,9 @@ import (
 var classMap = builtin.NewClassMap()
 var preprocessors = []ast.PreProcessor{
 	func(src string) string {
-		src = strings.Replace(src, "// #debugger", "Debugger.run();", -1)
+		src = strings.Replace(src, "// #debugger", "_Debugger.run();", -1)
 		r := regexp.MustCompile(`// #debug\((.+)\)`)
-		src = r.ReplaceAllString(src, "Debugger.debug($1);")
+		src = r.ReplaceAllString(src, "_Debugger.debug($1);")
 		return src
 	},
 }

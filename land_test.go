@@ -1,11 +1,17 @@
 package main
 
 import (
+	"github.com/tzmfreedom/goland/builtin"
 	"os"
 )
 
+func setup() {
+	classMap = builtin.NewClassMap()
+}
+
 // Arithmetic
 func ExampleRun1() {
+	setup()
 	os.Args = []string{"land", "run", "-a", "Foo#action", "-f", "fixtures/example1.cls"}
 	main()
 	// Output:
@@ -19,6 +25,7 @@ func ExampleRun1() {
 
 // Object Creation, FieldAccess
 func ExampleRun2() {
+	setup()
 	os.Args = []string{"land", "run", "-a", "Foo#action", "-f", "fixtures/example2.cls"}
 	main()
 	// Output:
@@ -39,6 +46,7 @@ func ExampleRun2() {
 
 // For, While, Continue, Break, If, Else
 func ExampleRun3() {
+	setup()
 	os.Args = []string{"land", "run", "-a", "Foo#action", "-f", "fixtures/example3.cls"}
 	main()
 	// Output:

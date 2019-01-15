@@ -23,13 +23,13 @@ const (
 
 // TODO: resolve on static context
 
-func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*builtin.ClassType, *ast.TypeRef, error) {
+func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*builtin.ClassType, error) {
 	// TODO: return *ast.TypeRef smart solution
 	if len(names) == 1 {
 		if v, ok := r.Context.Env.Get(names[0]); ok {
-			return v, nil, nil
+			return v, nil
 		}
-		return nil, nil, errors.Errorf("%s is not found in this scope", names[0])
+		return nil, errors.Errorf("%s is not found in this scope", names[0])
 	} else {
 		name := names[0]
 		if fieldType, ok := r.Context.Env.Get(name); ok {
@@ -48,14 +48,14 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*built
 				}
 				instanceField, err = r.findInstanceField(fieldType, f, allowedModifier, check)
 				if err != nil {
-					return nil, nil, err
+					return nil, err
 				}
 				if instanceField == nil {
-					return nil, nil, fmt.Errorf("Field %s is not found", f)
+					return nil, fmt.Errorf("Field %s is not found", f)
 				}
-				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
+				fieldType, _ = r.ConvertType(instanceField.Type.(*ast.TypeRef))
 			}
-			return fieldType, instanceField.Type.(*ast.TypeRef), nil
+			return fieldType, nil
 		}
 		if v, ok := r.Context.ClassTypes.Get(name); ok {
 			check := false
@@ -64,13 +64,13 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*built
 			}
 			n, err := r.findStaticField(v, names[1], MODIFIER_PUBLIC_ONLY, check)
 			if err != nil {
-				return nil, nil, err
+				return nil, err
 			}
 			if n != nil {
 				var instanceField *builtin.Field
 				var err error
 				t := n.Type.(*ast.TypeRef)
-				fieldType, _ := r.ResolveType(t.Name)
+				fieldType, _ := r.ConvertType(t)
 				for i, f := range names[2:] {
 					check := false
 					if len(names)-3 == i {
@@ -78,14 +78,14 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*built
 					}
 					instanceField, err = r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY, check)
 					if err != nil {
-						return nil, nil, err
+						return nil, err
 					}
 					if instanceField == nil {
-						return nil, nil, fmt.Errorf("Field %s is not found", f)
+						return nil, fmt.Errorf("Field %s is not found", f)
 					}
-					fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
+					fieldType, _ = r.ConvertType(instanceField.Type.(*ast.TypeRef))
 				}
-				return fieldType, instanceField.Type.(*ast.TypeRef), nil
+				return fieldType, nil
 			}
 		}
 		if v, ok := r.Context.NameSpaces.Get(name); ok {
@@ -96,14 +96,14 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*built
 				}
 				field, err := r.findStaticField(classType, names[2], MODIFIER_PUBLIC_ONLY, check)
 				if err != nil {
-					return nil, nil, err
+					return nil, err
 				}
 				if field != nil {
 					var instanceField *builtin.Field
 					var err error
 
 					t := field.Type.(*ast.TypeRef)
-					fieldType, _ := r.ResolveType(t.Name)
+					fieldType, _ := r.ConvertType(t)
 					for i, f := range names[3:] {
 						check := false
 						if len(names)-4 == i {
@@ -111,19 +111,19 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*built
 						}
 						instanceField, err = r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY, check)
 						if err != nil {
-							return nil, nil, err
+							return nil, err
 						}
 						if instanceField == nil {
-							return nil, nil, fmt.Errorf("Field %s is not found", f)
+							return nil, fmt.Errorf("Field %s is not found", f)
 						}
-						fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
+						fieldType, _ = r.ConvertType(instanceField.Type.(*ast.TypeRef))
 					}
-					return fieldType, instanceField.Type.(*ast.TypeRef), nil
+					return fieldType, nil
 				}
 			}
 		}
 	}
-	return nil, nil, fmt.Errorf("local variable %s is not found", names[0])
+	return nil, fmt.Errorf("local variable %s is not found", names[0])
 }
 
 func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.ClassType) (*builtin.ClassType, *builtin.Method, error) {

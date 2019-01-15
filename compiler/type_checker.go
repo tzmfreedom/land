@@ -449,19 +449,11 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		resolver := &TypeResolver{Context: v.Context}
 		switch leftNode := n.Left.(type) {
 		case *ast.Name:
-			left, t, err := resolver.ResolveVariable(leftNode.Value, true)
+			left, err := resolver.ResolveVariable(leftNode.Value, true)
 			if err != nil {
 				return nil, v.compileError(err.Error(), n)
 			}
-			if t != nil {
-				c, err := t.Accept(v)
-				if err != nil {
-					return nil, err
-				}
-				l = c.(*builtin.ClassType)
-			} else {
-				l = left
-			}
+			l = left
 		case *ast.FieldAccess:
 			classType, _ := leftNode.Expression.Accept(v)
 			f, _ := resolver.findInstanceField(classType.(*builtin.ClassType), leftNode.FieldName, MODIFIER_PUBLIC_ONLY, true)
@@ -741,14 +733,7 @@ func (v *TypeChecker) VisitSetCreator(n *ast.SetCreator) (interface{}, error) {
 
 func (v *TypeChecker) VisitName(n *ast.Name) (interface{}, error) {
 	resolver := TypeResolver{Context: v.Context}
-	classType, t, err := resolver.ResolveVariable(n.Value, false)
-	if t != nil {
-		c, err := t.Accept(v)
-		if err != nil {
-			return nil, err
-		}
-		classType = c.(*builtin.ClassType)
-	}
+	classType, err := resolver.ResolveVariable(n.Value, false)
 	if err != nil {
 		return nil, v.compileError(err.Error(), n)
 	}

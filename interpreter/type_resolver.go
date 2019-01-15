@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 	"github.com/tzmfreedom/goland/compiler"
 )
@@ -254,26 +255,36 @@ func (r *TypeResolver) ResolveType(names []string) (*builtin.ClassType, error) {
 }
 
 func (r *TypeResolver) FindInstanceMethod(object *builtin.Object, methodName string, parameters []*builtin.Object, allowedModifier int) (*builtin.Object, *builtin.Method, error) {
-	inputParameters := make([]*builtin.ClassType, len(parameters))
-	for i, parameter := range parameters {
-		inputParameters[i] = parameter.ClassType
-	}
-	_, method, err := r.resolver.FindInstanceMethod(object.ClassType, methodName, inputParameters, allowedModifier)
+	_, method, err := r.resolver.FindInstanceMethod(object.ClassType, methodName, convertClassTypes(parameters), allowedModifier)
 	return object, method, err
 }
 
 func (r *TypeResolver) FindStaticMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.Object, allowedModifier int) (*builtin.ClassType, *builtin.Method, error) {
-	inputParameters := make([]*builtin.ClassType, len(parameters))
-	for i, parameter := range parameters {
-		inputParameters[i] = parameter.ClassType
-	}
-	return r.resolver.FindStaticMethod(classType, methodName, inputParameters, allowedModifier)
+	return r.resolver.FindStaticMethod(classType, methodName, convertClassTypes(parameters), allowedModifier)
 }
 
 func (r *TypeResolver) SearchMethod(receiverClass *builtin.ClassType, methods []*builtin.Method, parameters []*builtin.Object) *builtin.Method {
+	return r.resolver.SearchMethod(receiverClass, methods, convertClassTypes(parameters))
+}
+
+func (r *TypeResolver) ConvertType(n *ast.TypeRef) (*builtin.ClassType, error) {
+	return r.resolver.ConvertType(n)
+}
+
+func convertClassTypes(parameters []*builtin.Object) []*builtin.ClassType {
 	inputParameters := make([]*builtin.ClassType, len(parameters))
 	for i, parameter := range parameters {
-		inputParameters[i] = parameter.ClassType
+		classType := parameter.ClassType
+		if classType.IsGeneric() {
+			inputParameters[i] = &builtin.ClassType{
+				Name: classType.Name,
+				Extra: map[string]interface{}{
+					"generics": parameter.GenericType,
+				},
+			}
+		} else {
+			inputParameters[i] = classType
+		}
 	}
-	return r.resolver.SearchMethod(receiverClass, methods, inputParameters)
+	return inputParameters
 }

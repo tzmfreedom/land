@@ -126,18 +126,14 @@ func CreateClass(
 
 func CreateMethod(
 	name string,
-	returnType []string,
+	returnType ast.Node,
 	parameters []ast.Node,
 	nativeFunction func(*Object, []*Object, map[string]interface{}) interface{},
 ) *Method {
-	var retType ast.Node
-	if returnType != nil {
-		retType = &ast.TypeRef{Name: returnType}
-	}
 	return &Method{
 		Name:           name,
 		Modifiers:      []ast.Node{PublicModifier()},
-		ReturnType:     retType,
+		ReturnType:     returnType,
 		Parameters:     parameters,
 		NativeFunction: nativeFunction,
 	}

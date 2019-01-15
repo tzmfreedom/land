@@ -23,7 +23,7 @@ func createExceptionType() *ClassType {
 		[]*Method{
 			CreateMethod(
 				"getMessage",
-				[]string{"String"},
+				stringTypeRef,
 				[]ast.Node{},
 				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					return this.Extra["message"]

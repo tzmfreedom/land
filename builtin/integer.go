@@ -1,12 +1,21 @@
 package builtin
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/tzmfreedom/goland/ast"
+)
 
 var IntegerType = &ClassType{
 	Name: "Integer",
 	ToString: func(o *Object) string {
 		return fmt.Sprintf("%d", o.Value().(int))
 	},
+}
+
+var integerTypeRef = &ast.TypeRef{
+	Name:       []string{"Integer"},
+	Parameters: []ast.Node{},
 }
 
 func init() {

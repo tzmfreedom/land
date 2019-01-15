@@ -446,21 +446,30 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		n.Op == "=/" {
 
 		var l *builtin.ClassType
-		var err error
 		resolver := &TypeResolver{Context: v.Context}
 		switch leftNode := n.Left.(type) {
 		case *ast.Name:
-			l, err = resolver.ResolveVariable(leftNode.Value, true)
+			left, t, err := resolver.ResolveVariable(leftNode.Value, true)
 			if err != nil {
 				return nil, v.compileError(err.Error(), n)
+			}
+			if t != nil {
+				c, err := t.Accept(v)
+				if err != nil {
+					return nil, err
+				}
+				l = c.(*builtin.ClassType)
+			} else {
+				l = left
 			}
 		case *ast.FieldAccess:
 			classType, _ := leftNode.Expression.Accept(v)
 			f, _ := resolver.findInstanceField(classType.(*builtin.ClassType), leftNode.FieldName, MODIFIER_PUBLIC_ONLY, true)
-			l, err = resolver.ResolveType(f.Type.(*ast.TypeRef).Name)
+			left, err := f.Type.Accept(v)
 			if err != nil {
 				return nil, v.compileError(err.Error(), n)
 			}
+			l = left.(*builtin.ClassType)
 		case *ast.ArrayAccess:
 			left, err := leftNode.Accept(v)
 			if err != nil {
@@ -666,45 +675,8 @@ func (v *TypeChecker) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) 
 }
 
 func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
-	// convert list from array
-	for n.Dimmension > 0 {
-		name := n.Name
-		params := n.Parameters
-		n.Name = []string{"List"}
-		n.Parameters = []ast.Node{
-			&ast.TypeRef{
-				Name:       name,
-				Parameters: params,
-			},
-		}
-		n.Dimmension--
-	}
-
 	resolver := &TypeResolver{Context: v.Context}
-	t, err := resolver.ResolveType(n.Name)
-	if err != nil {
-		return nil, v.compileError(err.Error(), n)
-	}
-	if t.IsGeneric() {
-		types := make([]*builtin.ClassType, len(n.Parameters))
-		for i, p := range n.Parameters {
-			classType, err := p.(*ast.TypeRef).Accept(v)
-			if err != nil {
-				return nil, v.compileError(err.Error(), n)
-			}
-			types[i] = classType.(*builtin.ClassType)
-		}
-		return &builtin.ClassType{
-			Name:            t.Name,
-			Constructors:    t.Constructors,
-			InstanceMethods: t.InstanceMethods,
-			StaticMethods:   t.StaticMethods,
-			Extra: map[string]interface{}{
-				"generics": types,
-			},
-		}, nil
-	}
-	return t, nil
+	return resolver.ConvertType(n)
 }
 
 func (v *TypeChecker) VisitBlock(n *ast.Block) (interface{}, error) {
@@ -769,11 +741,18 @@ func (v *TypeChecker) VisitSetCreator(n *ast.SetCreator) (interface{}, error) {
 
 func (v *TypeChecker) VisitName(n *ast.Name) (interface{}, error) {
 	resolver := TypeResolver{Context: v.Context}
-	t, err := resolver.ResolveVariable(n.Value, false)
+	classType, t, err := resolver.ResolveVariable(n.Value, false)
+	if t != nil {
+		c, err := t.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+		classType = c.(*builtin.ClassType)
+	}
 	if err != nil {
 		return nil, v.compileError(err.Error(), n)
 	}
-	return t, nil
+	return classType, nil
 }
 
 func (v *TypeChecker) VisitConstructorDeclaration(n *ast.ConstructorDeclaration) (interface{}, error) {

@@ -1,6 +1,8 @@
 package builtin
 
-import "github.com/tzmfreedom/goland/ast"
+import (
+	"github.com/tzmfreedom/goland/ast"
+)
 
 var ListType = createListType()
 
@@ -9,6 +11,20 @@ func CreateListTypeRef(typeRef *ast.TypeRef) *ast.TypeRef {
 		Name:       []string{"List"},
 		Parameters: []ast.Node{typeRef},
 	}
+}
+
+func CreateListTypeParameter(typeRef *ast.TypeRef) *ast.Parameter {
+	return &ast.Parameter{
+		Type: CreateListTypeRef(typeRef),
+		Name: "_",
+	}
+}
+
+func CreateListObject(classType *ClassType, records []*Object) *Object {
+	listObj := CreateObject(ListType)
+	listObj.GenericType = []*ClassType{classType}
+	listObj.Extra["records"] = records
+	return listObj
 }
 
 var t1Parameter = &ast.Parameter{
@@ -25,6 +41,16 @@ var t2Parameter = &ast.Parameter{
 		Parameters: []ast.Node{},
 	},
 	Name: "_",
+}
+
+var t1TypeRef = &ast.TypeRef{
+	Name:       []string{"T:1"},
+	Parameters: []ast.Node{},
+}
+
+var t2TypeRef = &ast.TypeRef{
+	Name:       []string{"T:2"},
+	Parameters: []ast.Node{},
 }
 
 func createListType() *ClassType {
@@ -50,7 +76,7 @@ func createListType() *ClassType {
 		[]*Method{
 			CreateMethod(
 				"size",
-				[]string{"Integer"},
+				integerTypeRef,
 				[]ast.Node{},
 				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					return NewInteger(len(this.Extra["records"].([]*Object)))

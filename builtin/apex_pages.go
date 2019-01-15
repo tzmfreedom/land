@@ -10,7 +10,7 @@ func init() {
 		[]*Method{
 			CreateMethod(
 				"currentPage",
-				[]string{"PageReference"},
+				pageReferenceTypeRef,
 				[]ast.Node{},
 				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					return extra["current_page"]
@@ -34,7 +34,7 @@ func init() {
 		[]*Method{
 			CreateMethod(
 				"getRecord",
-				[]string{"Account"}, // TODO: SObject
+				&ast.TypeRef{Name: []string{"Account"}}, // TODO: SObject
 				[]ast.Node{},
 				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					return this.Extra["record"]
@@ -47,7 +47,7 @@ func init() {
 		[]*Method{
 			CreateMethod(
 				"getId",
-				[]string{"String"}, // TODO: SObject
+				stringTypeRef, // TODO: SObject
 				[]ast.Node{},
 				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					record := this.Extra["record"].(*Object)

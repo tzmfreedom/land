@@ -11,7 +11,7 @@ func createSetType() *ClassType {
 		[]*Method{
 			CreateMethod(
 				"size",
-				[]string{"Integer"},
+				integerTypeRef,
 				[]ast.Node{},
 				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					return NewInteger(len(this.Extra["values"].(map[string]struct{})))
@@ -24,7 +24,7 @@ func createSetType() *ClassType {
 		[]*Method{
 			CreateMethod(
 				"add",
-				[]string{"T:1"},
+				integerTypeRef,
 				[]ast.Node{t1Parameter},
 				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					key := params[0].StringValue()

@@ -363,7 +363,14 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	genericType := make([]*builtin.ClassType, len(n.Parameters))
+	typeParameters := n.Type.(*ast.TypeRef).Parameters
+	genericType := make([]*builtin.ClassType, len(typeParameters))
+	for i, p := range typeParameters {
+		genericType[i], err = resolver.ConvertType(p.(*ast.TypeRef))
+		if err != nil {
+			return nil, err
+		}
+	}
 	newObj := &builtin.Object{
 		ClassType:      classType,
 		InstanceFields: builtin.NewObjectMap(),
@@ -490,8 +497,14 @@ func (v *Interpreter) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, err
 }
 
 func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, error) {
-	left, _ := n.Left.Accept(v)
-	right, _ := n.Right.Accept(v)
+	left, err := n.Left.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	right, err := n.Right.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 
 	lObj := left.(*builtin.Object)
 	lType := lObj.ClassType

@@ -15,6 +15,11 @@ var pageReferenceParameter = &ast.Parameter{
 	Name: "_",
 }
 
+var pageReferenceTypeRef = &ast.TypeRef{
+	Name:       []string{"PageReference"},
+	Parameters: []ast.Node{},
+}
+
 func createPageReferenceType() *ClassType {
 	instanceMethods := NewMethodMap()
 	instanceMethods.Set(
@@ -22,7 +27,7 @@ func createPageReferenceType() *ClassType {
 		[]*Method{
 			CreateMethod(
 				"getUrl",
-				[]string{"String"},
+				stringTypeRef,
 				[]ast.Node{},
 				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					return this.Extra["url"]

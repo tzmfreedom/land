@@ -16,7 +16,7 @@ func createMapType() *ClassType {
 		[]*Method{
 			CreateMethod(
 				"get",
-				[]string{"T:2"},
+				t2TypeRef,
 				[]ast.Node{t1Parameter},
 				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					key := params[0].StringValue()
@@ -50,7 +50,7 @@ func createMapType() *ClassType {
 		[]*Method{
 			CreateMethod(
 				"size",
-				[]string{"Integer"},
+				integerTypeRef,
 				[]ast.Node{},
 				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					return NewInteger(len(this.Extra["values"].(map[string]*Object)))
@@ -63,7 +63,7 @@ func createMapType() *ClassType {
 		[]*Method{
 			CreateMethod(
 				"keySet",
-				[]string{"T:1"},
+				t1TypeRef,
 				[]ast.Node{},
 				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					keySets := map[string]struct{}{}

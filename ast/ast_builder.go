@@ -1112,12 +1112,15 @@ func (v *Builder) VisitArrayCreatorRest(ctx *parser.ArrayCreatorRestContext) int
 			init.Sizes[i] = exp.Accept(v).(Node)
 		}
 		for range ctx.AllTypedArray() {
-			init.Sizes = append(init.Sizes, nil)
+			init.Sizes = append(init.Sizes, &IntegerLiteral{Value: 0})
 		}
 		return init
 	}
 	init := ctx.ArrayInitializer().Accept(v).(*Init)
 	init.Sizes = make([]Node, len(ctx.AllTypedArray()))
+	for i, _ := range init.Sizes {
+		init.Sizes[i] = &IntegerLiteral{Value: 0}
+	}
 	return init
 }
 

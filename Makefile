@@ -1,6 +1,6 @@
 NAME := land
 SRCS := $(shell find . -type d -name vendor -prune -o -type f -name "*.go" -print)
-VERSION := 0.1.0
+VERSION := 0.1.1
 LDFLAGS := -ldflags="-s -w -X \"main.Version=$(VERSION)\""
 DIST_DIRS := find * -type d -exec
 ANTLR := java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$(CLASSPATH)" org.antlr.v4.Tool

@@ -189,7 +189,7 @@ type New struct {
 type Init struct {
 	Records []Node
 	Values  map[Node]Node
-	Size    Node
+	Sizes   []Node
 }
 
 type NullLiteral struct {
@@ -384,6 +384,7 @@ type FieldAccess struct {
 type TypeRef struct {
 	Name       []string
 	Parameters []Node
+	Dimmension int
 	Location   *Location
 	Parent     Node
 }

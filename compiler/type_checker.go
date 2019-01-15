@@ -131,14 +131,28 @@ func (v *TypeChecker) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) 
 		return nil, err
 	}
 	klass := k.(*builtin.ClassType)
-	t, _ := n.Key.Accept(v)
-	if t != builtin.IntegerType && t != builtin.StringType {
-		v.AddError(fmt.Sprintf("array key <%v> must be Integer or string", t.(*builtin.ClassType).String()), n.Key)
+	if !klass.IsGeneric() {
+		v.AddError("receiver should be list or map", n.Key)
+		return nil, nil
+	}
+	t, err := n.Key.Accept(v)
+	if err != nil {
+		return nil, err
 	}
 	generics := klass.Extra["generics"].([]*builtin.ClassType)
 	if len(generics) == 0 {
 		return nil, v.compileError("generics is not specified", n)
 	}
+	if klass.Name == "Map" {
+		if t != builtin.StringType {
+			v.AddError(fmt.Sprintf("map key <%v> must be String", t.(*builtin.ClassType).String()), n.Key)
+		}
+		return generics[1], nil
+	}
+	if t != builtin.IntegerType {
+		v.AddError(fmt.Sprintf("list key <%v> must be Integer", t.(*builtin.ClassType).String()), n.Key)
+	}
+	// TODO: implement set
 	return generics[0], nil
 }
 
@@ -447,6 +461,12 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			if err != nil {
 				return nil, v.compileError(err.Error(), n)
 			}
+		case *ast.ArrayAccess:
+			left, err := leftNode.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+			l = left.(*builtin.ClassType)
 		}
 		if r != nil && !l.Equals(r.(*builtin.ClassType)) {
 			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", l.String(), r.(*builtin.ClassType).String()), n.Left)
@@ -646,6 +666,20 @@ func (v *TypeChecker) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) 
 }
 
 func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
+	// convert list from array
+	for n.Dimmension > 0 {
+		name := n.Name
+		params := n.Parameters
+		n.Name = []string{"List"}
+		n.Parameters = []ast.Node{
+			&ast.TypeRef{
+				Name:       name,
+				Parameters: params,
+			},
+		}
+		n.Dimmension--
+	}
+
 	resolver := &TypeResolver{Context: v.Context}
 	t, err := resolver.ResolveType(n.Name)
 	if err != nil {
@@ -662,6 +696,7 @@ func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
 		}
 		return &builtin.ClassType{
 			Name:            t.Name,
+			Constructors:    t.Constructors,
 			InstanceMethods: t.InstanceMethods,
 			StaticMethods:   t.StaticMethods,
 			Extra: map[string]interface{}{

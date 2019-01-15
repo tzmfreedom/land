@@ -10,7 +10,8 @@ import (
 )
 
 type TypeResolver struct {
-	Context *Context
+	Context        *Context
+	IgnoreGenerics bool
 }
 
 const (
@@ -359,6 +360,10 @@ func (r *TypeResolver) SearchMethod(receiverClass *builtin.ClassType, methods []
 
 			var methodParam *builtin.ClassType
 			if typeRef.IsGenerics() {
+				// TODO: implement better solution
+				if r.IgnoreGenerics {
+					continue
+				}
 				generics := receiverClass.Extra["generics"].([]*builtin.ClassType)
 				if typeRef.IsGenericsNumber(1) {
 					methodParam = generics[0]

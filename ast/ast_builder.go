@@ -428,12 +428,12 @@ func (v *Builder) VisitEnumConstantName(ctx *parser.EnumConstantNameContext) int
 
 func (v *Builder) VisitApexType(ctx *parser.ApexTypeContext) interface{} {
 	if interfaceType := ctx.ClassOrInterfaceType(); interfaceType != nil {
-		t := interfaceType.Accept(v).(Node)
-		// TODO: implement Array
+		t := interfaceType.Accept(v).(*TypeRef)
+		t.Dimmension = len(ctx.AllTypedArray())
 		return t
 	} else if primitiveType := ctx.PrimitiveType(); primitiveType != nil {
-		t := primitiveType.Accept(v).(Node)
-		// TODO: implement Array
+		t := primitiveType.Accept(v).(*TypeRef)
+		t.Dimmension = len(ctx.AllTypedArray())
 		return t
 	}
 	return nil
@@ -1106,18 +1106,19 @@ func (v *Builder) VisitInnerCreator(ctx *parser.InnerCreatorContext) interface{}
 
 func (v *Builder) VisitArrayCreatorRest(ctx *parser.ArrayCreatorRestContext) interface{} {
 	if expressions := ctx.AllExpression(); len(expressions) != 0 {
-		// TODO: implement
 		init := &Init{}
-		init.Size = expressions[0].Accept(v).(Node)
+		init.Sizes = make([]Node, len(expressions))
+		for i, exp := range expressions {
+			init.Sizes[i] = exp.Accept(v).(Node)
+		}
+		for range ctx.AllTypedArray() {
+			init.Sizes = append(init.Sizes, nil)
+		}
 		return init
 	}
-	// TODO: implement
-	if r := ctx.ArrayInitializer(); r != nil {
-		init := r.Accept(v).(*Init)
-		init.Size = &IntegerLiteral{Value: 1}
-		return init
-	}
-	return &Init{Size: &IntegerLiteral{Value: 1}}
+	init := ctx.ArrayInitializer().Accept(v).(*Init)
+	init.Sizes = make([]Node, len(ctx.AllTypedArray()))
+	return init
 }
 
 func (v *Builder) VisitMapCreatorRest(ctx *parser.MapCreatorRestContext) interface{} {

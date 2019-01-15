@@ -1,10 +1,15 @@
 package builtin
 
-import (
-	"github.com/tzmfreedom/goland/ast"
-)
+import "github.com/tzmfreedom/goland/ast"
 
 var ListType = createListType()
+
+func CreateListTypeRef(typeRef *ast.TypeRef) *ast.TypeRef {
+	return &ast.TypeRef{
+		Name:       []string{"List"},
+		Parameters: []ast.Node{typeRef},
+	}
+}
 
 var t1Parameter = &ast.Parameter{
 	Type: &ast.TypeRef{
@@ -34,7 +39,7 @@ func createListType() *ClassType {
 				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					records := this.Extra["records"].([]*Object)
 					listElement := params[0]
-					records = append(records, listElement)
+					this.Extra["records"] = append(records, listElement)
 					return nil
 				},
 			),

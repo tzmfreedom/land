@@ -409,18 +409,37 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 		}
 	}
 	if classType == builtin.ListType {
-		if n.Init != nil && len(n.Init.Records) != 0 {
-			records := make([]*builtin.Object, len(n.Init.Records))
-			for i, r := range n.Init.Records {
-				initRecord, err := r.Accept(v)
+		newObj.Extra["records"] = []*builtin.Object{}
+		if n.Init != nil {
+			if len(n.Init.Records) != 0 {
+				records := make([]*builtin.Object, len(n.Init.Records))
+				for i, r := range n.Init.Records {
+					initRecord, err := r.Accept(v)
+					if err != nil {
+						return nil, err
+					}
+					records[i] = initRecord.(*builtin.Object)
+				}
+				newObj.Extra["records"] = records
+			}
+			// TODO: multi dimmension initialize
+			if len(n.Init.Sizes) > 0 {
+				size, err := n.Init.Sizes[0].Accept(v)
 				if err != nil {
 					return nil, err
 				}
-				records[i] = initRecord.(*builtin.Object)
+				if s, ok := size.(*builtin.Object); ok && s.ClassType == builtin.IntegerType {
+					records := newObj.Extra["records"].([]*builtin.Object)
+					recordSize := len(records)
+					remain := s.IntegerValue() - recordSize
+					if remain > 0 {
+						for i := 0; i < remain; i++ {
+							records = append(records, builtin.Null)
+						}
+						newObj.Extra["records"] = records
+					}
+				}
 			}
-			newObj.Extra["records"] = records
-		} else {
-			newObj.Extra["records"] = []*builtin.Object{}
 		}
 	}
 	if classType == builtin.MapType {
@@ -738,6 +757,24 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 				return nil, err
 			}
 			exp.(*builtin.Object).InstanceFields.Set(t.FieldName, rObj)
+		case *ast.ArrayAccess:
+			k, err := t.Key.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+			key := k.(*builtin.Object)
+			r, err := t.Receiver.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+			receiver := r.(*builtin.Object)
+			if receiver.ClassType == builtin.ListType {
+				receiver.Extra["records"].([]*builtin.Object)[key.IntegerValue()] = rObj
+			}
+			if receiver.ClassType == builtin.MapType {
+				receiver.Extra["values"].(map[string]*builtin.Object)[key.StringValue()] = rObj
+			}
+			// TODO: implment set type
 		}
 		return rObj, nil
 	case "+=":

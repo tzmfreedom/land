@@ -19,8 +19,11 @@ func NewTypeResolver(ctx *Context) *TypeResolver {
 	compilerContext.NameSpaces = ctx.NameSpaces
 	compilerContext.CurrentClass = ctx.CurrentClass
 	return &TypeResolver{
-		Context:  ctx,
-		resolver: &compiler.TypeResolver{Context: compilerContext},
+		Context: ctx,
+		resolver: &compiler.TypeResolver{
+			Context:        compilerContext,
+			IgnoreGenerics: true,
+		},
 	}
 }
 

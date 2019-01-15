@@ -55,7 +55,10 @@ func TestTypeChecker(t *testing.T) {
 			}),
 			[]*Error{
 				{
-					Message: "array key <Boolean> must be Integer or string",
+					Message: "list key <Boolean> must be Integer",
+				},
+				{
+					Message: "list key <String> must be Integer",
 				},
 			},
 		},

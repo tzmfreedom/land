@@ -142,3 +142,14 @@ func CreateMethod(
 		NativeFunction: nativeFunction,
 	}
 }
+
+func CreateField(
+	name string,
+	fieldType *ast.TypeRef,
+) *Field {
+	return &Field{
+		Name:      name,
+		Modifiers: []ast.Node{PublicModifier()},
+		Type:      fieldType,
+	}
+}

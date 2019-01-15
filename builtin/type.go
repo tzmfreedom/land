@@ -28,8 +28,13 @@ type ClassType struct {
 	InnerClasses       *ClassMap
 	ToString           func(*Object) string
 	Extra              map[string]interface{}
+	Interface          bool
 	Location           *ast.Location
 	Parent             ast.Node
+}
+
+func (t *ClassType) IsInterface() bool {
+	return t.Interface
 }
 
 func (t *ClassType) IsPrimitive() bool {

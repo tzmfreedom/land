@@ -19,118 +19,10 @@ func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (i
 	t.Location = n.Location
 	t.Annotations = n.Annotations
 	t.Parent = n.Parent
-	t.InstanceFields = builtin.NewFieldMap()
-	t.StaticFields = builtin.NewFieldMap()
-	t.InstanceMethods = builtin.NewMethodMap()
-	t.StaticMethods = builtin.NewMethodMap()
-	t.Constructors = []*builtin.Method{}
-	for _, d := range n.Declarations {
-		switch decl := d.(type) {
-		case *ast.ConstructorDeclaration:
-			t.Constructors = append(
-				t.Constructors,
-				builtin.NewConstructor(decl),
-			)
-		case *ast.MethodDeclaration:
-			// TODO: check method name and signature to prevent conflict
-			if decl.IsStatic() {
-				t.StaticMethods.Add(decl.Name, builtin.NewMethod(decl))
-			} else {
-				t.InstanceMethods.Add(decl.Name, builtin.NewMethod(decl))
-			}
-		case *ast.PropertyDeclaration:
-			identifier := decl.Identifier
-			if decl.IsStatic() {
-				if _, ok := t.StaticFields.Get(identifier); ok {
-					return nil, fmt.Errorf("Field %s is already defined", identifier)
-				}
-				var setter ast.Node
-				var getter ast.Node
-				for _, getterSetter := range decl.GetterSetters {
-					if getterSetter.(*ast.GetterSetter).IsGet() {
-						getter = getterSetter
-					} else {
-						setter = getterSetter
-					}
-				}
-				t.StaticFields.Set(
-					identifier,
-					&builtin.Field{
-						Type:       decl.Type,
-						Modifiers:  decl.Modifiers,
-						Name:       identifier,
-						Expression: &ast.NullLiteral{},
-						Getter:     getter,
-						Setter:     setter,
-					},
-				)
-			} else {
-				if _, ok := t.InstanceFields.Get(identifier); ok {
-					return nil, fmt.Errorf("Field %s is already defined", identifier)
-				}
-				var setter ast.Node
-				var getter ast.Node
-				for _, getterSetter := range decl.GetterSetters {
-					if getterSetter.(*ast.GetterSetter).IsGet() {
-						getter = getterSetter
-					} else {
-						setter = getterSetter
-					}
-				}
-				t.InstanceFields.Set(
-					identifier,
-					&builtin.Field{
-						Type:       decl.Type,
-						Modifiers:  decl.Modifiers,
-						Name:       identifier,
-						Expression: &ast.NullLiteral{},
-						Getter:     getter,
-						Setter:     setter,
-					},
-				)
-			}
-		case *ast.FieldDeclaration:
-			if decl.IsStatic() {
-				for _, d := range decl.Declarators {
-					varDecl := d.(*ast.VariableDeclarator)
-					if _, ok := t.StaticFields.Get(varDecl.Name); ok {
-						return nil, fmt.Errorf("Field %s is already defined", varDecl.Name)
-					}
-					t.StaticFields.Set(
-						varDecl.Name,
-						&builtin.Field{
-							Type:       decl.Type,
-							Modifiers:  decl.Modifiers,
-							Name:       varDecl.Name,
-							Expression: varDecl.Expression,
-						},
-					)
-				}
-			} else {
-				for _, d := range decl.Declarators {
-					varDecl := d.(*ast.VariableDeclarator)
-					if _, ok := t.InstanceFields.Get(varDecl.Name); ok {
-						return nil, fmt.Errorf("Field %s is already defined", varDecl.Name)
-					}
-					t.InstanceFields.Set(
-						varDecl.Name,
-						&builtin.Field{
-							Type:       decl.Type,
-							Modifiers:  decl.Modifiers,
-							Name:       varDecl.Name,
-							Expression: varDecl.Expression,
-						},
-					)
-				}
-			}
-		case *ast.ClassDeclaration:
-			r, _ := decl.Accept(v)
-			class := r.(*builtin.ClassType)
-			if _, ok := t.InnerClasses.Get(class.Name); ok {
-				return nil, fmt.Errorf("Class %s is already defined", class.Name)
-			}
-			t.InnerClasses.Set(class.Name, class)
-		}
+
+	err := v.setDeclaration(n.Declarations, t)
+	if err != nil {
+		return nil, err
 	}
 	return t, nil
 }
@@ -144,7 +36,26 @@ func (v *ClassRegisterVisitor) VisitAnnotation(n *ast.Annotation) (interface{}, 
 }
 
 func (v *ClassRegisterVisitor) VisitInterfaceDeclaration(n *ast.InterfaceDeclaration) (interface{}, error) {
-	return ast.VisitInterfaceDeclaration(v, n)
+	t := &builtin.ClassType{}
+	t.Name = n.Name
+	t.Modifiers = n.Modifiers
+	t.InnerClasses = builtin.NewClassMap()
+	t.Location = n.Location
+	t.Annotations = n.Annotations
+	t.Parent = n.Parent
+	t.Interface = true
+
+	err := v.setDeclaration(n.Methods, t)
+	for _, methods := range t.InstanceMethods.All() {
+		for _, method := range methods {
+			method.Modifiers = []ast.Node{builtin.PublicModifier()}
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
 }
 
 func (v *ClassRegisterVisitor) VisitIntegerLiteral(n *ast.IntegerLiteral) (interface{}, error) {
@@ -345,4 +256,122 @@ func (v *ClassRegisterVisitor) VisitName(n *ast.Name) (interface{}, error) {
 
 func (v *ClassRegisterVisitor) VisitConstructorDeclaration(n *ast.ConstructorDeclaration) (interface{}, error) {
 	return ast.VisitConstructorDeclaration(v, n)
+}
+
+func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *builtin.ClassType) error {
+	t.InstanceFields = builtin.NewFieldMap()
+	t.StaticFields = builtin.NewFieldMap()
+	t.InstanceMethods = builtin.NewMethodMap()
+	t.StaticMethods = builtin.NewMethodMap()
+	t.Constructors = []*builtin.Method{}
+
+	for _, d := range declarations {
+		switch decl := d.(type) {
+		case *ast.ConstructorDeclaration:
+			t.Constructors = append(
+				t.Constructors,
+				builtin.NewConstructor(decl),
+			)
+		case *ast.MethodDeclaration:
+			// TODO: check method name and signature to prevent conflict
+			if decl.IsStatic() {
+				t.StaticMethods.Add(decl.Name, builtin.NewMethod(decl))
+			} else {
+				t.InstanceMethods.Add(decl.Name, builtin.NewMethod(decl))
+			}
+		case *ast.PropertyDeclaration:
+			identifier := decl.Identifier
+			if decl.IsStatic() {
+				if _, ok := t.StaticFields.Get(identifier); ok {
+					return fmt.Errorf("Field %s is already defined", identifier)
+				}
+				var setter ast.Node
+				var getter ast.Node
+				for _, getterSetter := range decl.GetterSetters {
+					if getterSetter.(*ast.GetterSetter).IsGet() {
+						getter = getterSetter
+					} else {
+						setter = getterSetter
+					}
+				}
+				t.StaticFields.Set(
+					identifier,
+					&builtin.Field{
+						Type:       decl.Type,
+						Modifiers:  decl.Modifiers,
+						Name:       identifier,
+						Expression: &ast.NullLiteral{},
+						Getter:     getter,
+						Setter:     setter,
+					},
+				)
+			} else {
+				if _, ok := t.InstanceFields.Get(identifier); ok {
+					return fmt.Errorf("Field %s is already defined", identifier)
+				}
+				var setter ast.Node
+				var getter ast.Node
+				for _, getterSetter := range decl.GetterSetters {
+					if getterSetter.(*ast.GetterSetter).IsGet() {
+						getter = getterSetter
+					} else {
+						setter = getterSetter
+					}
+				}
+				t.InstanceFields.Set(
+					identifier,
+					&builtin.Field{
+						Type:       decl.Type,
+						Modifiers:  decl.Modifiers,
+						Name:       identifier,
+						Expression: &ast.NullLiteral{},
+						Getter:     getter,
+						Setter:     setter,
+					},
+				)
+			}
+		case *ast.FieldDeclaration:
+			if decl.IsStatic() {
+				for _, d := range decl.Declarators {
+					varDecl := d.(*ast.VariableDeclarator)
+					if _, ok := t.StaticFields.Get(varDecl.Name); ok {
+						return fmt.Errorf("Field %s is already defined", varDecl.Name)
+					}
+					t.StaticFields.Set(
+						varDecl.Name,
+						&builtin.Field{
+							Type:       decl.Type,
+							Modifiers:  decl.Modifiers,
+							Name:       varDecl.Name,
+							Expression: varDecl.Expression,
+						},
+					)
+				}
+			} else {
+				for _, d := range decl.Declarators {
+					varDecl := d.(*ast.VariableDeclarator)
+					if _, ok := t.InstanceFields.Get(varDecl.Name); ok {
+						return fmt.Errorf("Field %s is already defined", varDecl.Name)
+					}
+					t.InstanceFields.Set(
+						varDecl.Name,
+						&builtin.Field{
+							Type:       decl.Type,
+							Modifiers:  decl.Modifiers,
+							Name:       varDecl.Name,
+							Expression: varDecl.Expression,
+						},
+					)
+				}
+			}
+		case *ast.ClassDeclaration:
+			r, _ := decl.Accept(v)
+			class := r.(*builtin.ClassType)
+			if _, ok := t.InnerClasses.Get(class.Name); ok {
+				return fmt.Errorf("Class %s is already defined", class.Name)
+			}
+			t.InnerClasses.Set(class.Name, class)
+		}
+	}
+	return nil
 }

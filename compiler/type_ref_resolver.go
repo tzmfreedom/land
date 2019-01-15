@@ -28,6 +28,7 @@ func (r *TypeRefResolver) Resolve(n *builtin.ClassType) (*builtin.ClassType, err
 	}
 
 	if n.ImplementClassRefs != nil {
+		n.ImplementClasses = make([]*builtin.ClassType, len(n.ImplementClassRefs))
 		for i, impl := range n.ImplementClassRefs {
 			n.ImplementClasses[i], err = r.resolver.ResolveType(impl.(*ast.TypeRef).Name)
 			if err != nil {

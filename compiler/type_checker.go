@@ -749,6 +749,12 @@ func (v *TypeChecker) VisitMethod(n *builtin.Method) (interface{}, error) {
 	v.Context.CurrentMethod = n
 	env := newTypeEnv(nil)
 	v.Context.Env = env
+	if n.Statements == nil {
+		if _, ok := n.Parent.(*ast.ClassDeclaration); ok {
+			panic("not pass")
+		}
+		return nil, nil
+	}
 	classType, ok := v.Context.ClassTypes.Get(n.Parent.(*ast.ClassDeclaration).Name)
 	if !ok {
 		panic("not found")

@@ -40,8 +40,12 @@ func (v *Builder) VisitTypeDeclaration(ctx *parser.TypeDeclarationContext) inter
 		return decl
 	} else if n := ctx.TriggerDeclaration(); n != nil {
 		return n.Accept(v)
+	} else if n := ctx.InterfaceDeclaration(); n != nil {
+		return n.Accept(v)
+	} else if n := ctx.EnumDeclaration(); n != nil {
+		return n.Accept(v)
 	}
-	return nil
+	panic("not pass")
 }
 
 func (v *Builder) VisitTriggerDeclaration(ctx *parser.TriggerDeclarationContext) interface{} {
@@ -345,7 +349,22 @@ func (v *Builder) VisitInterfaceBodyDeclaration(ctx *parser.InterfaceBodyDeclara
 }
 
 func (v *Builder) VisitInterfaceMemberDeclaration(ctx *parser.InterfaceMemberDeclarationContext) interface{} {
-	return v.VisitChildren(ctx)
+	if decl := ctx.ConstDeclaration(); decl != nil {
+		return decl.Accept(v)
+	}
+	if decl := ctx.InterfaceDeclaration(); decl != nil {
+		return decl.Accept(v)
+	}
+	if decl := ctx.InterfaceMethodDeclaration(); decl != nil {
+		return decl.Accept(v)
+	}
+	if decl := ctx.ClassDeclaration(); decl != nil {
+		return decl.Accept(v)
+	}
+	if decl := ctx.EnumDeclaration(); decl != nil {
+		return decl.Accept(v)
+	}
+	panic("not pass")
 }
 
 func (v *Builder) VisitConstDeclaration(ctx *parser.ConstDeclarationContext) interface{} {

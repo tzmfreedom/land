@@ -262,8 +262,8 @@ func eval(w http.ResponseWriter, r *http.Request) {
 	interpreter := interpreter.NewInterpreter(classMap)
 	interpreter.LoadStaticField()
 	stdout := new(bytes.Buffer)
-	interpreter.Stdout = stdout
-	interpreter.Stderr = new(bytes.Buffer)
+	interpreter.Extra["stdout"] = stdout
+	interpreter.Extra["stderr"] = new(bytes.Buffer)
 	_, err = invoke.Accept(interpreter)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error")

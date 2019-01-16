@@ -3,6 +3,9 @@ package builtin
 import (
 	"strings"
 
+	"fmt"
+
+	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
 )
 
@@ -101,6 +104,7 @@ var publicModifier = &ast.Modifier{Name: "public"}
 var privateModifier = &ast.Modifier{Name: "private"}
 var protectedModifier = &ast.Modifier{Name: "protected"}
 var globalModifier = &ast.Modifier{Name: "global"}
+var abstractModifier = &ast.Modifier{Name: "abstract"}
 
 func PublicModifier() *ast.Modifier {
 	return publicModifier
@@ -147,5 +151,43 @@ func CreateField(
 		Name:      name,
 		Modifiers: []ast.Node{PublicModifier()},
 		Type:      fieldType,
+	}
+}
+
+var ReturnType = &ClassType{Name: "Return"}
+var RaiseType = &ClassType{Name: "Raise"}
+var BreakType = &ClassType{Name: "Break"}
+var Break = &Object{ClassType: BreakType}
+var ContinueType = &ClassType{Name: "Continue"}
+var Continue = &Object{ClassType: ContinueType}
+
+func CreateReturn(value *Object) *Object {
+	return &Object{
+		ClassType: ReturnType,
+		Extra: map[string]interface{}{
+			"value": value,
+		},
+	}
+}
+
+func CreateRaise(value *Object) *Object {
+	return &Object{
+		ClassType: RaiseType,
+		Extra: map[string]interface{}{
+			"value": value,
+		},
+	}
+}
+
+func Debug(obj interface{}) {
+	switch o := obj.(type) {
+	case *Object:
+		fmt.Println(o.ClassType)
+		fmt.Println(o.Extra)
+	case ast.Node:
+		fmt.Println(o.GetLocation())
+		fmt.Println(o.GetType())
+	default:
+		pp.Println(o)
 	}
 }

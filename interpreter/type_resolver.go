@@ -264,6 +264,10 @@ func (r *TypeResolver) SearchMethod(receiverClass *builtin.ClassType, methods []
 	return r.resolver.SearchMethod(receiverClass, methods, convertClassTypes(parameters))
 }
 
+func (r *TypeResolver) SearchConstructor(receiverClass *builtin.ClassType, parameters []*builtin.Object) (*builtin.ClassType, *builtin.Method, error) {
+	return r.resolver.SearchConstructor(receiverClass, convertClassTypes(parameters))
+}
+
 func (r *TypeResolver) ConvertType(n *ast.TypeRef) (*builtin.ClassType, error) {
 	return r.resolver.ConvertType(n)
 }

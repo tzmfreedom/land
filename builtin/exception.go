@@ -36,11 +36,7 @@ func createExceptionType() *ClassType {
 		"Exception",
 		[]*Method{
 			{
-				Modifiers: []ast.Node{
-					&ast.Modifier{
-						Name: "private",
-					},
-				},
+				Modifiers:  []ast.Node{publicModifier},
 				Parameters: []ast.Node{},
 				NativeFunction: func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					this.Extra["message"] = Null
@@ -49,11 +45,7 @@ func createExceptionType() *ClassType {
 				},
 			},
 			{
-				Modifiers: []ast.Node{
-					&ast.Modifier{
-						Name: "private",
-					},
-				},
+				Modifiers:  []ast.Node{publicModifier},
 				Parameters: []ast.Node{stringTypeParameter},
 				NativeFunction: func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					this.Extra["message"] = params[0]
@@ -62,11 +54,7 @@ func createExceptionType() *ClassType {
 				},
 			},
 			{
-				Modifiers: []ast.Node{
-					&ast.Modifier{
-						Name: "private",
-					},
-				},
+				Modifiers:  []ast.Node{publicModifier},
 				Parameters: []ast.Node{exceptionTypeParameter},
 				NativeFunction: func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
 					this.Extra["message"] = Null

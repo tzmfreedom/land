@@ -47,6 +47,10 @@ func (t *ClassType) IsPrimitive() bool {
 	return false
 }
 
+func (t *ClassType) IsAbstract() bool {
+	return t.Is("abstract")
+}
+
 func (t *ClassType) Equals(other *ClassType) bool {
 	if other == NullType {
 		return true
@@ -103,6 +107,27 @@ func (t *ClassType) String() string {
 		return fmt.Sprintf("%s<%s>", t.Name, strings.Join(generics, ", "))
 	}
 	return t.Name
+}
+
+func (t *ClassType) HasConstructor() bool {
+	if len(t.Constructors) > 0 {
+		return true
+	}
+	if t.SuperClass != nil {
+		return t.SuperClass.HasConstructor()
+	}
+	return false
+}
+
+func (t *ClassType) Is(name string) bool {
+	name = strings.ToLower(name)
+	for _, modifier := range t.Modifiers {
+		modifierName := strings.ToLower(modifier.(*ast.Modifier).Name)
+		if modifierName == name {
+			return true
+		}
+	}
+	return false
 }
 
 type Field struct {

@@ -7,6 +7,14 @@ import (
 	"github.com/tzmfreedom/goland/ast"
 )
 
+const (
+	InfoColor    = "\033[1;34m%s\033[0m"
+	NoticeColor  = "\033[1;36m%s\033[0m"
+	WarningColor = "\033[1;33m%s\033[0m"
+	ErrorColor   = "\033[1;31m%s\033[0m"
+	DebugColor   = "\033[0;36m%s\033[0m"
+)
+
 func init() {
 	system := CreateClass(
 		"System",
@@ -43,7 +51,13 @@ func init() {
 							expected := parameter[0]
 							actual := parameter[1]
 							if expected.Value() != actual.Value() {
-								fmt.Printf("expected: %s, actual: %s\n", String(expected), String(actual))
+								node := extra["node"].(ast.Node)
+								errors := extra["errors"].([]*TestError)
+								message := fmt.Sprintf("      expected: %s\n      actual:   %s", expected.Value(), actual.Value())
+								extra["errors"] = append(errors, &TestError{
+									Node:    node,
+									Message: message,
+								})
 							}
 							return nil
 						},
@@ -54,4 +68,9 @@ func init() {
 	)
 
 	primitiveClassMap.Set("system", system)
+}
+
+type TestError struct {
+	Node    ast.Node
+	Message string
 }

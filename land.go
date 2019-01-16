@@ -13,9 +13,12 @@ import (
 
 	"regexp"
 
+	"bytes"
+
 	"github.com/chzyer/readline"
 	"github.com/fsnotify/fsnotify"
 	"github.com/joho/godotenv"
+	"github.com/mattn/go-colorable"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 	"github.com/tzmfreedom/goland/compiler"
@@ -69,7 +72,7 @@ func main() {
 			return
 		}
 	case "test":
-		trees, err := parse(option.Files)
+		trees, err := parseFiles(option.Files)
 		if err != nil {
 			handleError(err)
 		}
@@ -77,24 +80,46 @@ func main() {
 		if err != nil {
 			handleError(err)
 		}
+		var i = 1
 		for _, classType := range classTypes {
 			for _, methods := range classType.StaticMethods.All() {
 				for _, m := range methods {
 					if m.IsTestMethod() {
 						action := fmt.Sprintf("%s#%s", classType.Name, m.Name)
-						fmt.Printf(">> %s\n", action)
-						fmt.Println("")
-						err = run(action, classTypes)
+						fmt.Printf("(%d) %s: ", i, action)
+						var ret *interpreter.Interpreter
+						err = run(action, classTypes, func(i *interpreter.Interpreter) {
+							ret = i
+							i.Extra["stdout"] = new(bytes.Buffer)
+						})
 						if err != nil {
 							handleError(err)
 						}
+						stdout := colorable.NewColorableStdout()
+						errors := ret.Extra["errors"].([]*builtin.TestError)
+						if len(errors) > 0 {
+							fmt.Println("")
+							for _, error := range errors {
+								loc := error.Node.GetLocation()
+								str := fmt.Sprintf("  %s at %d:%d\n", loc.FileName, loc.Line, loc.Column)
+								fmt.Fprintf(stdout, builtin.NoticeColor, str)
+								str = fmt.Sprintf(`    Failure/Error: %s
+
+%s
+`, ast.ToString(error.Node), error.Message)
+								fmt.Fprintf(stdout, builtin.ErrorColor, str)
+							}
+						} else {
+							fmt.Fprintf(stdout, builtin.InfoColor, "  pass\n")
+						}
 						fmt.Println("")
+						i++
 					}
 				}
 			}
 		}
 	case "watch":
-		trees, err := parse(option.Files)
+		trees, err := parseFiles(option.Files)
 		if err != nil {
 			handleError(err)
 		}
@@ -104,7 +129,7 @@ func main() {
 		}
 		watchAndRunTest(classTypes, option)
 	case "server":
-		trees, err := parse(option.Files)
+		trees, err := parseFiles(option.Files)
 		if err != nil {
 			handleError(err)
 		}
@@ -117,7 +142,7 @@ func main() {
 		s := &server.EvalServer{}
 		s.Run()
 	case "format":
-		trees, err := parse(option.Files)
+		trees, err := parseFiles(option.Files)
 		if err != nil {
 			handleError(err)
 		}
@@ -125,7 +150,7 @@ func main() {
 			tos(t)
 		}
 	case "run":
-		trees, err := parse(option.Files)
+		trees, err := parseFiles(option.Files)
 		if err != nil {
 			handleError(err)
 		}
@@ -145,41 +170,21 @@ func main() {
 			}
 		}
 	case "check":
-		trees, err := parse(option.Files)
-		classTypes := make([]*builtin.ClassType, len(trees))
+		trees, err := parseFiles(option.Files)
 		if err != nil {
 			handleError(err)
 		}
-		for i, t := range trees {
-			classTypes[i], err = register(t)
-			if err != nil {
-				handleError(err)
-			}
+		classTypes, err := buildAllFile(trees)
+		if err != nil {
+			handleError(err)
 		}
-		classMap := builtin.PrimitiveClassMap()
 		for _, classType := range classTypes {
-			classMap.Set(classType.Name, classType)
-		}
-
-		for i, classType := range classTypes {
-			classTypes[i], err = convert(classType, classMap)
-			if err != nil {
-				handleError(err)
-			}
-		}
-		for _, t := range classTypes {
-			err = semanticAnalysis(t)
-			if err != nil {
-				handleError(err)
-			}
-		}
-		for _, t := range classMap.Data {
-			check(t)
+			check(classType)
 		}
 	}
 }
 
-func parse(files []string) ([]ast.Node, error) {
+func parseFiles(files []string) ([]ast.Node, error) {
 	trees := make([]ast.Node, len(files))
 	var err error
 	for i, file := range files {
@@ -298,21 +303,20 @@ func semanticAnalysis(t *builtin.ClassType) error {
 	return err
 }
 
-func run(action string, classTypes []*builtin.ClassType) error {
+func run(action string, classTypes []*builtin.ClassType, options ...func(*interpreter.Interpreter)) error {
 	method := "action"
 	args := strings.Split(action, "#")
 	if len(args) > 1 {
 		method = args[1]
 	}
-	interpreter := interpreter.NewInterpreter(builtin.PrimitiveClassMap())
-	for _, classType := range classTypes {
-		interpreter.Context.ClassTypes.Set(classType.Name, classType)
-	}
-	interpreter.Context.NameSpaces = builtin.GetNameSpaceStore()
+	interpreter := interpreter.NewInterpreterWithBuiltin(classTypes)
 	invoke := &ast.MethodInvocation{
 		NameOrExpression: &ast.Name{
 			Value: []string{args[0], method},
 		},
+	}
+	for _, option := range options {
+		option(interpreter)
 	}
 	interpreter.LoadStaticField()
 	_, err := invoke.Accept(interpreter)
@@ -321,11 +325,7 @@ func run(action string, classTypes []*builtin.ClassType) error {
 
 func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
 	lastReloadedAt := time.Now()
-	i := interpreter.NewInterpreter(builtin.PrimitiveClassMap())
-	for _, classType := range classTypes {
-		i.Context.ClassTypes.Set(classType.Name, classType)
-	}
-
+	landInterpreter := interpreter.NewInterpreterWithBuiltin(classTypes)
 	l, _ := readline.NewEx(&readline.Config{
 		Prompt:          "\033[31m>>\033[0m ",
 		HistoryFile:     "/tmp/land.tmp",
@@ -348,9 +348,9 @@ func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
 				}
 				ch <- true
 				if event.Op&fsnotify.Write == fsnotify.Write {
-					buildFile(i, event.Name)
+					buildFile(landInterpreter, event.Name)
 				} else if event.Op&fsnotify.Create == fsnotify.Create {
-					buildFile(i, event.Name)
+					buildFile(landInterpreter, event.Name)
 				}
 				<-ch
 			case err, ok := <-watcher.Errors:
@@ -391,9 +391,9 @@ func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
 		case "reload":
 			ch <- true
 			if len(args) == 0 {
-				reloadAll(i, option.Files)
+				reloadAll(landInterpreter, option.Files)
 			} else {
-				_, err := buildFile(i, args[0])
+				_, err := buildFile(landInterpreter, args[0])
 				if err != nil {
 					fmt.Println(err.Error())
 				}
@@ -418,7 +418,7 @@ func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
 			ch <- true
 			if isReload {
 				lastReloadedAt = time.Now()
-				reloadAll(i, option.Files)
+				reloadAll(landInterpreter, option.Files)
 			}
 			run(args[0], classTypes)
 			<-ch
@@ -439,10 +439,7 @@ public static void action() { %s; }
 }
 
 func watchAndRunTest(classTypes []*builtin.ClassType, option *option) error {
-	interpreter := interpreter.NewInterpreter(builtin.PrimitiveClassMap())
-	for _, classType := range classTypes {
-		interpreter.Context.ClassTypes.Set(classType.Name, classType)
-	}
+	interpreter := interpreter.NewInterpreterWithBuiltin(classTypes)
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -563,8 +560,7 @@ func execFile(code string, env *interpreter.Env) *interpreter.Env {
 	if err = semanticAnalysis(classType); err != nil {
 		panic(err)
 	}
-	interpreter := interpreter.NewInterpreter(builtin.PrimitiveClassMap())
-	interpreter.Context.ClassTypes.Set(classType.Name, classType)
+	interpreter := interpreter.NewInterpreterWithBuiltin([]*builtin.ClassType{classType})
 	interpreter.Context.Env = env
 	invoke := &ast.MethodInvocation{
 		NameOrExpression: &ast.Name{
@@ -628,8 +624,4 @@ func tos(n ast.Node) {
 func handleError(err error) {
 	fmt.Fprintln(os.Stderr, err.Error())
 	os.Exit(1)
-}
-
-func validate() {
-	return
 }

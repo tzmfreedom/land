@@ -1,7 +1,6 @@
 package interpreter
 
 import (
-	"io"
 	"os"
 
 	"github.com/k0kubun/pp"
@@ -12,8 +11,6 @@ import (
 
 type Interpreter struct {
 	Context *Context
-	Stdout  io.Writer
-	Stderr  io.Writer
 	Extra   map[string]interface{}
 }
 
@@ -23,9 +20,19 @@ func NewInterpreter(classTypeMap *builtin.ClassMap) *Interpreter {
 		Extra: map[string]interface{}{
 			"stdout": os.Stdout,
 			"stderr": os.Stderr,
+			"errors": []*builtin.TestError{},
 		},
 	}
 	interpreter.Context.ClassTypes = classTypeMap
+	return interpreter
+}
+
+func NewInterpreterWithBuiltin(classTypes []*builtin.ClassType) *Interpreter {
+	interpreter := NewInterpreter(builtin.PrimitiveClassMap())
+	for _, classType := range classTypes {
+		interpreter.Context.ClassTypes.Set(classType.Name, classType)
+	}
+	interpreter.Context.NameSpaces = builtin.GetNameSpaceStore()
 	return interpreter
 }
 
@@ -97,11 +104,11 @@ func (v *Interpreter) VisitBooleanLiteral(n *ast.BooleanLiteral) (interface{}, e
 }
 
 func (v *Interpreter) VisitBreak(n *ast.Break) (interface{}, error) {
-	return &Break{}, nil
+	return builtin.Break, nil
 }
 
 func (v *Interpreter) VisitContinue(n *ast.Continue) (interface{}, error) {
-	return &Continue{}, nil
+	return builtin.Continue, nil
 }
 
 func (v *Interpreter) VisitDml(n *ast.Dml) (interface{}, error) {
@@ -137,9 +144,10 @@ func (v *Interpreter) VisitTry(n *ast.Try) (interface{}, error) {
 		return nil, err
 	}
 	if res != nil {
-		switch res.(type) {
-		case *Raise:
-			raise := res.(*Raise)
+		switch obj := res.(*builtin.Object); obj.ClassType {
+		case builtin.ReturnType, builtin.BreakType, builtin.ContinueType:
+			return obj, nil
+		case builtin.RaiseType:
 			// TODO: implement
 			var c *ast.Catch
 			for _, catch := range n.CatchClause {
@@ -149,8 +157,9 @@ func (v *Interpreter) VisitTry(n *ast.Try) (interface{}, error) {
 				if err != nil {
 					return nil, err
 				}
-				if catchType.Equals(raise.Value.ClassType) {
-					v.Context.Env.Define(c.Identifier, raise.Value)
+				raiseValue := obj.Value().(*builtin.Object)
+				if catchType.Equals(raiseValue.ClassType) {
+					v.Context.Env.Define(c.Identifier, raiseValue)
 					_, err := catch.Accept(v)
 					if err != nil {
 						return nil, err
@@ -194,16 +203,16 @@ func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
 				if res.(*builtin.Object).BoolValue() {
 					res, err = n.Statements.Accept(v)
 					if res != nil {
-						switch r := res.(type) {
-						case *Break:
+						switch obj := res.(*builtin.Object); obj.ClassType {
+						case builtin.BreakType:
 							return nil, nil
-						case *Continue:
+						case builtin.ContinueType:
 							for _, stmt := range control.ForUpdate {
 								stmt.Accept(v)
 							}
 							continue
-						case *Return, *Raise:
-							return r, nil
+						case builtin.ReturnType, builtin.RaiseType:
+							return obj, nil
 						}
 					}
 					for _, stmt := range control.ForUpdate {
@@ -227,13 +236,13 @@ func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
 					return nil, err
 				}
 				if res != nil {
-					switch r := res.(type) {
-					case *Break:
+					switch obj := res.(*builtin.Object); obj.ClassType {
+					case builtin.BreakType:
 						return nil, nil
-					case *Continue:
+					case builtin.ContinueType:
 						continue
-					case *Return, *Raise:
-						return r, nil
+					case builtin.ReturnType, builtin.RaiseType:
+						return obj, nil
 					}
 				}
 			}
@@ -327,12 +336,14 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 
 	if m.NativeFunction != nil {
 		var r interface{}
+		v.Extra["node"] = n
 		switch typedReceiver := receiver.(type) {
 		case *builtin.Object:
 			r = m.NativeFunction(typedReceiver, evaluated, v.Extra)
 		case *builtin.ClassType:
 			r = m.NativeFunction(nil, evaluated, v.Extra)
 		}
+		v.Extra["node"] = nil
 		Publish("method_end", v.Context, n)
 		return r, nil
 	} else {
@@ -354,11 +365,13 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		v.Context.Env = prev
 
 		if r != nil {
-			switch ret := r.(type) {
-			case *Return:
-				return ret.Value, nil
+			obj := r.(*builtin.Object)
+			switch obj.ClassType {
+			case builtin.ReturnType:
+				return obj.Value(), nil
+			case builtin.RaiseType:
+				return obj, nil
 			}
-			return r, nil
 		}
 	}
 	return nil, nil
@@ -393,8 +406,8 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 			newObj.InstanceFields.Set(f.Name, r.(*builtin.Object))
 		}
 	}
-	// TODO: extend
-	if len(classType.Constructors) > 0 {
+	typeResolver := NewTypeResolver(v.Context)
+	if classType.HasConstructor() {
 		evaluated := make([]*builtin.Object, len(n.Parameters))
 		for i, p := range n.Parameters {
 			r, err := p.Accept(v)
@@ -403,8 +416,10 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 			}
 			evaluated[i] = r.(*builtin.Object)
 		}
-		typeResolver := NewTypeResolver(v.Context)
-		constructor := typeResolver.SearchMethod(classType, classType.Constructors, evaluated)
+		_, constructor, err := typeResolver.SearchConstructor(classType, evaluated)
+		if err != nil {
+			return nil, err
+		}
 		if constructor == nil {
 			panic("constructor is not found")
 		}
@@ -885,9 +900,9 @@ func (v *Interpreter) VisitReturn(n *ast.Return) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		return &Return{res}, nil
+		return builtin.CreateReturn(res.(*builtin.Object)), nil
 	}
-	return &Return{}, nil
+	return builtin.CreateReturn(nil), nil
 }
 
 func (v *Interpreter) VisitThrow(n *ast.Throw) (interface{}, error) {
@@ -895,7 +910,7 @@ func (v *Interpreter) VisitThrow(n *ast.Throw) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Raise{res.(*builtin.Object)}, nil
+	return builtin.CreateRaise(res.(*builtin.Object)), nil
 }
 
 func (v *Interpreter) VisitSoql(n *ast.Soql) (interface{}, error) {
@@ -968,13 +983,14 @@ func (v *Interpreter) VisitWhile(n *ast.While) (interface{}, error) {
 		}
 		res, err := n.Statements.Accept(v)
 		if res != nil {
-			switch r := res.(type) {
-			case *Break:
+			obj := res.(*builtin.Object)
+			switch obj.ClassType {
+			case builtin.ReturnType, builtin.RaiseType:
+				return obj, nil
+			case builtin.BreakType:
 				return nil, nil
-			case *Continue:
+			case builtin.ContinueType:
 				continue
-			case *Return, *Raise:
-				return r, nil
 			}
 		}
 		if err != nil {
@@ -1018,9 +1034,10 @@ func (v *Interpreter) VisitBlock(n *ast.Block) (interface{}, error) {
 			return nil, err
 		}
 		if res != nil {
-			switch r := res.(type) {
-			case *Break, *Continue, *Return, *Raise:
-				return r, nil
+			obj := res.(*builtin.Object)
+			switch obj.ClassType {
+			case builtin.ReturnType, builtin.BreakType, builtin.ContinueType, builtin.RaiseType:
+				return obj, nil
 			}
 		}
 	}
@@ -1081,18 +1098,4 @@ func (v *Interpreter) NewEnv(f func() (interface{}, error)) (interface{}, error)
 	r, err := f()
 	v.Context.Env = prevEnv
 	return r, err
-}
-
-var createObject = builtin.CreateObject
-
-type Return struct {
-	Value interface{}
-}
-
-type Break struct{}
-
-type Continue struct{}
-
-type Raise struct {
-	Value *builtin.Object
 }

@@ -399,21 +399,24 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 	typeResolver := NewTypeResolver(v.Context, false)
 	classType := t.(*builtin.ClassType)
 
-	if classType.Constructors == nil {
+	if classType.IsAbstract() || classType.Constructors == nil {
 		v.AddError(fmt.Sprintf("Type cannot be constructed: %s", classType.Name), n)
-	} else if len(classType.Constructors) > 0 {
-		_, method, err := typeResolver.SearchConstructor(classType, params)
-		if err != nil {
-			return nil, err
-		}
-		if method == nil && typeResolver.HasConstructor(classType) {
-			v.AddError(fmt.Sprintf("constructor <%s> not found", classType.Name), n)
-		} else {
-			// TODO: for protected impl
-			if method.IsPrivate() && v.Context.CurrentClass != classType {
-				v.AddError(fmt.Sprintf("constructor <%s> not found", classType.Name), n)
-			}
-		}
+		return t, nil
+	}
+	if !classType.HasConstructor() {
+		return t, nil
+	}
+	_, method, err := typeResolver.SearchConstructor(classType, params)
+	if err != nil {
+		return nil, err
+	}
+	if method == nil {
+		v.AddError(fmt.Sprintf("constructor <%s> not found", classType.Name), n)
+		return t, nil
+	}
+	// TODO: for protected impl
+	if method.IsPrivate() && v.Context.CurrentClass != classType {
+		v.AddError(fmt.Sprintf("constructor <%s> not found", classType.Name), n)
 	}
 	return t, nil
 }

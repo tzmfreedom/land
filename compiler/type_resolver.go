@@ -348,8 +348,6 @@ func (r *TypeResolver) SearchMethod(receiverClass *builtin.ClassType, methods []
 				continue
 			}
 			if !inputParam.Equals(methodParam) {
-				//pp.Println(inputParam)
-				//pp.Println(methodParam)
 				match = false
 				break
 			}
@@ -370,16 +368,6 @@ func (r *TypeResolver) SearchConstructor(classType *builtin.ClassType, parameter
 		return r.SearchConstructor(classType.SuperClass, parameters)
 	}
 	return nil, nil, nil
-}
-
-func (r *TypeResolver) HasConstructor(classType *builtin.ClassType) bool {
-	if len(classType.Constructors) > 0 {
-		return true
-	}
-	if classType.SuperClass != nil {
-		return r.HasConstructor(classType.SuperClass)
-	}
-	return false
 }
 
 func (r *TypeResolver) ConvertType(n *ast.TypeRef) (*builtin.ClassType, error) {

@@ -39,30 +39,30 @@ func NewSoapClient() *soapforce.Client {
 	return soapClient
 }
 
-var typeMapper = map[string]string{
-	"string":                     "String",
-	"picklist":                   "String",
-	"multipicklist":              "String",
-	"combobox":                   "String",
-	"reference":                  "String",
-	"boolean":                    "Boolean",
-	"currency":                   "double",
-	"textarea":                   "String",
-	"int":                        "Double",
-	"double":                     "Double",
-	"percent":                    "Double",
-	"id":                         "String",
-	"date":                       "Date",
-	"datetime":                   "Date",
-	"time":                       "Time",
-	"url":                        "String",
-	"email":                      "String",
-	"encryptedstring":            "String",
-	"datacategorygroupreference": "String",
-	"location":                   "String",
-	"address":                    "String",
-	"anyType":                    "String",
-	"complexvalue":               "String",
+var typeMapper = map[string]*ClassType{
+	"string":        StringType,
+	"picklist":      StringType,
+	"multipicklist": StringType,
+	"combobox":      StringType,
+	"reference":     StringType,
+	"boolean":       BooleanType,
+	"currency":      DoubleType,
+	"textarea":      StringType,
+	"int":           DoubleType,
+	"double":        DoubleType,
+	"percent":       DoubleType,
+	"id":            StringType,
+	//"date":                       dateType,
+	//"datetime":                   dateType,
+	//"time":                       TimeType,
+	"url":                        StringType,
+	"email":                      StringType,
+	"encryptedstring":            StringType,
+	"datacategorygroupreference": StringType,
+	"location":                   StringType,
+	"address":                    StringType,
+	"anyType":                    StringType,
+	"complexvalue":               StringType,
 }
 
 type Loader interface {
@@ -83,11 +83,7 @@ func Load(src string) {
 		fields := NewFieldMap()
 		for _, f := range sobj.Fields {
 			fields.Set(f.Name, &Field{
-				Type: &ast.TypeRef{
-					Name: []string{
-						typeMapper[f.Type],
-					},
-				},
+				Type: typeMapper[f.Type],
 				Name: f.Name,
 				Modifiers: []ast.Node{
 					&ast.Modifier{

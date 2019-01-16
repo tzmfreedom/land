@@ -18,6 +18,7 @@ type databaseDriver struct {
 var DatabaseDriver = NewDatabaseDriver()
 
 func NewDatabaseDriver() *databaseDriver {
+	// TODO: implment not sqlite3
 	db, _ := sql.Open("sqlite3", "./database.sqlite3")
 	return &databaseDriver{db}
 }

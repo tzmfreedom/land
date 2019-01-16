@@ -66,7 +66,7 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*built
 				if instanceField == nil {
 					return nil, fmt.Errorf("Field %s is not found", f)
 				}
-				fieldType, _ = r.ConvertType(instanceField.Type.(*ast.TypeRef))
+				fieldType = instanceField.Type
 			}
 			return fieldType, nil
 		}
@@ -82,8 +82,7 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*built
 			if n != nil {
 				var instanceField *builtin.Field
 				var err error
-				t := n.Type.(*ast.TypeRef)
-				fieldType, _ := r.ConvertType(t)
+				fieldType := n.Type
 				for i, f := range names[2:] {
 					check := false
 					if len(names)-3 == i {
@@ -96,7 +95,7 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*built
 					if instanceField == nil {
 						return nil, fmt.Errorf("Field %s is not found", f)
 					}
-					fieldType, _ = r.ConvertType(instanceField.Type.(*ast.TypeRef))
+					fieldType = instanceField.Type
 				}
 				return fieldType, nil
 			}
@@ -115,8 +114,7 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*built
 					var instanceField *builtin.Field
 					var err error
 
-					t := field.Type.(*ast.TypeRef)
-					fieldType, _ := r.ConvertType(t)
+					fieldType := field.Type
 					for i, f := range names[3:] {
 						check := false
 						if len(names)-4 == i {
@@ -129,7 +127,7 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*built
 						if instanceField == nil {
 							return nil, fmt.Errorf("Field %s is not found", f)
 						}
-						fieldType, _ = r.ConvertType(instanceField.Type.(*ast.TypeRef))
+						fieldType = instanceField.Type
 					}
 					return fieldType, nil
 				}
@@ -168,7 +166,7 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Class
 				if err != nil {
 					return nil, nil, err
 				}
-				fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
+				fieldType = instanceField.Type
 			}
 			var allowedModifier int
 			if first == "this" && len(fields) == 0 {
@@ -186,14 +184,13 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Class
 		if v, ok := r.Context.ClassTypes.Get(first); ok {
 			n, err := r.findStaticField(v, names[1], MODIFIER_PUBLIC_ONLY, false)
 			if err == nil {
-				t := n.Type.(*ast.TypeRef)
-				fieldType, _ := r.ResolveType(t.Name)
+				fieldType := n.Type
 				for _, f := range names[2 : len(names)-1] {
 					instanceField, err := r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY, false)
 					if err != nil {
 						return nil, nil, err
 					}
-					fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
+					fieldType = instanceField.Type
 				}
 				return r.FindInstanceMethod(fieldType, methodName, parameters, MODIFIER_PUBLIC_ONLY)
 			}
@@ -204,14 +201,13 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Class
 				// namespace.class.static_field.instance_field...instance_method()
 				if len(names) > 3 {
 					if field, err := r.findStaticField(classType, names[2], MODIFIER_PUBLIC_ONLY, false); err == nil {
-						t := field.Type.(*ast.TypeRef)
-						fieldType, _ := r.ResolveType(t.Name)
+						fieldType := field.Type
 						for _, f := range names[3 : len(names)-1] {
 							instanceField, err := r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY, false)
 							if err != nil {
 								return nil, nil, err
 							}
-							fieldType, _ = r.ResolveType(instanceField.Type.(*ast.TypeRef).Name)
+							fieldType = instanceField.Type
 						}
 						return r.FindInstanceMethod(fieldType, methodName, parameters, MODIFIER_PUBLIC_ONLY)
 					}

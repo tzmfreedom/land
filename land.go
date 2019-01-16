@@ -110,7 +110,7 @@ func main() {
 								fmt.Fprintf(stdout, builtin.ErrorColor, str)
 							}
 						} else {
-							fmt.Fprintf(stdout, builtin.InfoColor, "  pass\n")
+							fmt.Fprintf(stdout, builtin.InfoColor, "pass\n")
 						}
 						fmt.Println("")
 						i++

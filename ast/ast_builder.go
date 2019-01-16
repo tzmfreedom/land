@@ -285,7 +285,7 @@ func (v *Builder) VisitConstructorDeclaration(ctx *parser.ConstructorDeclaration
 }
 
 func (v *Builder) VisitFieldDeclaration(ctx *parser.FieldDeclarationContext) interface{} {
-	t := ctx.ApexType().Accept(v).(Node)
+	t := ctx.ApexType().Accept(v).(*TypeRef)
 	d := ctx.VariableDeclarators().Accept(v).([]Node)
 	return &FieldDeclaration{
 		Type:        t,
@@ -294,7 +294,7 @@ func (v *Builder) VisitFieldDeclaration(ctx *parser.FieldDeclarationContext) int
 }
 
 func (v *Builder) VisitPropertyDeclaration(ctx *parser.PropertyDeclarationContext) interface{} {
-	t := ctx.ApexType().Accept(v).(Node)
+	t := ctx.ApexType().Accept(v).(*TypeRef)
 	d := ctx.VariableDeclaratorId().Accept(v).(string)
 	getterSetters := ctx.PropertyBodyDeclaration().Accept(v).([]Node)
 	return &PropertyDeclaration{

@@ -96,7 +96,7 @@ type DoubleLiteral struct {
 }
 
 type FieldDeclaration struct {
-	Type        Node
+	Type        *TypeRef
 	Modifiers   []Node
 	Annotations []Node
 	Declarators []Node
@@ -406,7 +406,7 @@ type GetterSetter struct {
 type PropertyDeclaration struct {
 	Modifiers     []Node
 	Annotations   []Node
-	Type          Node
+	Type          *TypeRef
 	Identifier    string
 	GetterSetters []Node
 	Location      *Location

@@ -131,7 +131,8 @@ func (t *ClassType) Is(name string) bool {
 }
 
 type Field struct {
-	Type       ast.Node
+	TypeRef    *ast.TypeRef
+	Type       *ClassType
 	Modifiers  []ast.Node
 	Name       string
 	Expression ast.Node

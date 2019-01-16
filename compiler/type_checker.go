@@ -25,23 +25,21 @@ func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) 
 	v.Context.CurrentClass = n
 	if n.StaticFields != nil {
 		for _, f := range n.StaticFields.Data {
-			t, _ := f.Type.Accept(v)
 			e, _ := f.Expression.Accept(v)
-			if !t.(*builtin.ClassType).Equals(e.(*builtin.ClassType)) {
-				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", e.(*builtin.ClassType).String(), t.(*builtin.ClassType).String()), f.Expression)
+			if !f.Type.Equals(e.(*builtin.ClassType)) {
+				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", e.(*builtin.ClassType).String(), f.Type.String()), f.Expression)
 			}
 		}
 	}
 
 	if n.InstanceFields != nil {
 		for _, f := range n.InstanceFields.Data {
-			t, _ := f.Type.Accept(v)
 			e, _ := f.Expression.Accept(v)
 			if e == nil {
 				continue
 			}
-			if !t.(*builtin.ClassType).Equals(e.(*builtin.ClassType)) {
-				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", e.(*builtin.ClassType).String(), t.(*builtin.ClassType).String()), f.Expression)
+			if !f.Type.Equals(e.(*builtin.ClassType)) {
+				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", e.(*builtin.ClassType).String(), f.Type.String()), f.Expression)
 			}
 		}
 	}
@@ -453,11 +451,7 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		case *ast.FieldAccess:
 			classType, _ := leftNode.Expression.Accept(v)
 			f, _ := resolver.findInstanceField(classType.(*builtin.ClassType), leftNode.FieldName, MODIFIER_PUBLIC_ONLY, true)
-			left, err := f.Type.Accept(v)
-			if err != nil {
-				return nil, v.compileError(err.Error(), n)
-			}
-			l = left.(*builtin.ClassType)
+			l = f.Type
 		case *ast.ArrayAccess:
 			left, err := leftNode.Accept(v)
 			if err != nil {
@@ -659,7 +653,7 @@ func (v *TypeChecker) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) 
 	if !ok {
 		return nil, v.compileError(fmt.Sprintf("field <%s> does not exist", n.FieldName), n)
 	}
-	return f.Type.(*ast.TypeRef).Accept(v)
+	return f.Type, nil
 }
 
 func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {

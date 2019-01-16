@@ -145,7 +145,7 @@ func CreateMethod(
 
 func CreateField(
 	name string,
-	fieldType *ast.TypeRef,
+	fieldType *ClassType,
 ) *Field {
 	return &Field{
 		Name:      name,

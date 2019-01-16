@@ -6,6 +6,21 @@ import (
 
 var ListType = createListType()
 
+func CreateListType(classType *ClassType) *ClassType {
+	return &ClassType{
+		Name:            "List",
+		Modifiers:       ListType.Modifiers,
+		Constructors:    ListType.Constructors,
+		InstanceFields:  ListType.InstanceFields,
+		InstanceMethods: ListType.InstanceMethods,
+		StaticFields:    ListType.StaticFields,
+		StaticMethods:   ListType.StaticMethods,
+		Extra: map[string]interface{}{
+			"generics": []*ClassType{classType},
+		},
+	}
+}
+
 func CreateListTypeRef(typeRef *ast.TypeRef) *ast.TypeRef {
 	return &ast.TypeRef{
 		Name:       []string{"List"},

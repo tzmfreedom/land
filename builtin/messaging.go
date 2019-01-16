@@ -25,19 +25,19 @@ func init() {
 	)
 	singleEmailMessageType.InstanceFields.Set(
 		"toAddresses",
-		CreateField("toAddresses", CreateListTypeRef(stringTypeRef)),
+		CreateField("toAddresses", CreateListType(StringType)),
 	)
 	singleEmailMessageType.InstanceFields.Set(
 		"subject",
-		CreateField("subject", stringTypeRef),
+		CreateField("subject", StringType),
 	)
 	singleEmailMessageType.InstanceFields.Set(
 		"plainTextBody",
-		CreateField("plainTextBody", stringTypeRef),
+		CreateField("plainTextBody", StringType),
 	)
 	singleEmailMessageType.InstanceFields.Set(
 		"htmlBody",
-		CreateField("htmlBody", stringTypeRef),
+		CreateField("htmlBody", StringType),
 	)
 
 	sendMailResultType := CreateClass(
@@ -60,11 +60,11 @@ func init() {
 	)
 	sendMailResultType.InstanceFields.Set(
 		"success",
-		CreateField("success", booleanTypeRef),
+		CreateField("success", BooleanType),
 	)
 	singleEmailMessageType.InstanceFields.Set(
 		"errors",
-		CreateField("errors", CreateListTypeRef(stringTypeRef)),
+		CreateField("errors", CreateListType(StringType)),
 	)
 
 	classMap := NewClassMap()

@@ -297,7 +297,7 @@ func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *builti
 				t.StaticFields.Set(
 					identifier,
 					&builtin.Field{
-						Type:       decl.Type,
+						TypeRef:    decl.Type,
 						Modifiers:  decl.Modifiers,
 						Name:       identifier,
 						Expression: &ast.NullLiteral{},
@@ -321,7 +321,7 @@ func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *builti
 				t.InstanceFields.Set(
 					identifier,
 					&builtin.Field{
-						Type:       decl.Type,
+						TypeRef:    decl.Type,
 						Modifiers:  decl.Modifiers,
 						Name:       identifier,
 						Expression: &ast.NullLiteral{},
@@ -340,7 +340,7 @@ func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *builti
 					t.StaticFields.Set(
 						varDecl.Name,
 						&builtin.Field{
-							Type:       decl.Type,
+							TypeRef:    decl.Type,
 							Modifiers:  decl.Modifiers,
 							Name:       varDecl.Name,
 							Expression: varDecl.Expression,
@@ -356,7 +356,7 @@ func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *builti
 					t.InstanceFields.Set(
 						varDecl.Name,
 						&builtin.Field{
-							Type:       decl.Type,
+							TypeRef:    decl.Type,
 							Modifiers:  decl.Modifiers,
 							Name:       varDecl.Name,
 							Expression: varDecl.Expression,

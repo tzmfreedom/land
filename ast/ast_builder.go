@@ -516,14 +516,14 @@ func (v *Builder) VisitFormalParameters(ctx *parser.FormalParametersContext) int
 	if p := ctx.FormalParameterList(); p != nil {
 		return p.Accept(v)
 	}
-	return []Node{}
+	return []*Parameter{}
 }
 
 func (v *Builder) VisitFormalParameterList(ctx *parser.FormalParameterListContext) interface{} {
 	formalParameters := ctx.AllFormalParameter()
-	parameters := make([]Node, len(formalParameters))
+	parameters := make([]*Parameter, len(formalParameters))
 	for i, p := range formalParameters {
-		parameters[i] = p.Accept(v).(Node)
+		parameters[i] = p.Accept(v).(*Parameter)
 	}
 	return parameters
 }

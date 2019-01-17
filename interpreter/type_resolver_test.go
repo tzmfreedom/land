@@ -7,6 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/k0kubun/pp"
+	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 )
 
@@ -14,20 +15,20 @@ func TestResolveVariable(t *testing.T) {
 	testCases := []struct {
 		Input    []string
 		Context  *Context
-		Expected *builtin.Object
+		Expected *ast.Object
 		Error    error
 	}{
 		{
 			[]string{"i"},
 			&Context{
 				ClassTypes: &builtin.ClassMap{
-					Data: map[string]*builtin.ClassType{
+					Data: map[string]*ast.ClassType{
 						"integer": builtin.IntegerType,
 					},
 				},
 				Env: &Env{
-					Data: &builtin.ObjectMap{
-						Data: map[string]*builtin.Object{
+					Data: &ast.ObjectMap{
+						Data: map[string]*ast.Object{
 							"i": builtin.NewInteger(1),
 						},
 					},
@@ -40,13 +41,13 @@ func TestResolveVariable(t *testing.T) {
 			[]string{"i"},
 			&Context{
 				ClassTypes: &builtin.ClassMap{
-					Data: map[string]*builtin.ClassType{
+					Data: map[string]*ast.ClassType{
 						"integer": builtin.IntegerType,
 					},
 				},
 				Env: &Env{
-					Data: &builtin.ObjectMap{
-						Data: map[string]*builtin.Object{},
+					Data: &ast.ObjectMap{
+						Data: map[string]*ast.Object{},
 					},
 				},
 			},
@@ -57,11 +58,11 @@ func TestResolveVariable(t *testing.T) {
 			[]string{"i", "j"},
 			&Context{
 				Env: &Env{
-					Data: &builtin.ObjectMap{
-						Data: map[string]*builtin.Object{
+					Data: &ast.ObjectMap{
+						Data: map[string]*ast.Object{
 							"i": {
-								InstanceFields: &builtin.ObjectMap{
-									Data: map[string]*builtin.Object{
+								InstanceFields: &ast.ObjectMap{
+									Data: map[string]*ast.Object{
 										"j": builtin.NewInteger(2),
 									},
 								},
@@ -77,11 +78,11 @@ func TestResolveVariable(t *testing.T) {
 			[]string{"i", "j"},
 			&Context{
 				Env: &Env{
-					Data: &builtin.ObjectMap{
-						Data: map[string]*builtin.Object{
+					Data: &ast.ObjectMap{
+						Data: map[string]*ast.Object{
 							"i": {
-								InstanceFields: &builtin.ObjectMap{
-									Data: map[string]*builtin.Object{},
+								InstanceFields: &ast.ObjectMap{
+									Data: map[string]*ast.Object{},
 								},
 							},
 						},
@@ -95,10 +96,10 @@ func TestResolveVariable(t *testing.T) {
 		//	[]string{"i", "j"},
 		//	&Context{
 		//		Env: &Env{
-		//			Data: &builtin.ObjectMap{},
+		//			Data: &ast.ObjectMap{},
 		//		},
 		//		ClassTypes: &builtin.ClassMap{
-		//			Data: map[string]*builtin.ClassType{
+		//			Data: map[string]*ast.ClassType{
 		//				"integer": builtin.IntegerType,
 		//				"i": {
 		//					StaticFields: &builtin.FieldMap{
@@ -121,10 +122,10 @@ func TestResolveVariable(t *testing.T) {
 		//	[]string{"i", "j", "k"},
 		//	&Context{
 		//		Env: &Env{
-		//			Data: &builtin.ObjectMap{},
+		//			Data: &ast.ObjectMap{},
 		//		},
 		//		ClassTypes: &builtin.ClassMap{
-		//			Data: map[string]*builtin.ClassType{
+		//			Data: map[string]*ast.ClassType{
 		//				"integer": builtin.IntegerType,
 		//				"foo": {
 		//					InstanceFields: &builtin.FieldMap{
@@ -158,17 +159,17 @@ func TestResolveVariable(t *testing.T) {
 		//	[]string{"i", "j", "k"},
 		//	&Context{
 		//		Env: &Env{
-		//			Data: &builtin.ObjectMap{},
+		//			Data: &ast.ObjectMap{},
 		//		},
 		//		ClassTypes: &builtin.ClassMap{
-		//			Data: map[string]*builtin.ClassType{
+		//			Data: map[string]*ast.ClassType{
 		//				"integer": builtin.IntegerType,
 		//			},
 		//		},
 		//		NameSpaces: &builtin.NameSpaceStore{
-		//			Data: map[string]*builtin.ClassMap{
+		//			Data: map[string]*ast.ClassMap{
 		//				"i": {
-		//					Data: map[string]*builtin.ClassType{
+		//					Data: map[string]*ast.ClassType{
 		//						"j": {
 		//							StaticFields: &builtin.FieldMap{
 		//								Data: map[string]*builtin.Field{
@@ -190,7 +191,7 @@ func TestResolveVariable(t *testing.T) {
 		//},
 	}
 
-	ignore := cmpopts.IgnoreTypes(func(*builtin.Object) string { return "" })
+	ignore := cmpopts.IgnoreTypes(func(*ast.Object) string { return "" })
 
 	for _, testCase := range testCases {
 		typeResolver := NewTypeResolver(testCase.Context)
@@ -212,19 +213,19 @@ func TestResolveMethod(t *testing.T) {
 	testCases := []struct {
 		Input    []string
 		Context  *Context
-		Expected *builtin.Method
+		Expected *ast.Method
 		Error    error
 	}{
 		{
 			[]string{"foo"},
 			&Context{
 				Env: &Env{
-					Data: &builtin.ObjectMap{
-						Data: map[string]*builtin.Object{
+					Data: &ast.ObjectMap{
+						Data: map[string]*ast.Object{
 							"this": {
 								ClassType: &builtin.ClassType{
-									InstanceMethods: &builtin.MethodMap{
-										Data: map[string][]*builtin.Method{
+									InstanceMethods: &ast.MethodMap{
+										Data: map[string][]*ast.Method{
 											"foo": {
 												{
 													Name: "foo",
@@ -238,19 +239,19 @@ func TestResolveMethod(t *testing.T) {
 					},
 				},
 			},
-			&builtin.Method{Name: "foo"},
+			&ast.Method{Name: "foo"},
 			nil,
 		},
 		{
 			[]string{"foo", "bar"},
 			&Context{
 				Env: &Env{
-					Data: &builtin.ObjectMap{
-						Data: map[string]*builtin.Object{
+					Data: &ast.ObjectMap{
+						Data: map[string]*ast.Object{
 							"foo": {
 								ClassType: &builtin.ClassType{
-									InstanceMethods: &builtin.MethodMap{
-										Data: map[string][]*builtin.Method{
+									InstanceMethods: &ast.MethodMap{
+										Data: map[string][]*ast.Method{
 											"bar": {
 												{
 													Name: "bar",
@@ -264,17 +265,17 @@ func TestResolveMethod(t *testing.T) {
 					},
 				},
 			},
-			&builtin.Method{Name: "bar"},
+			&ast.Method{Name: "bar"},
 			nil,
 		},
 		{
 			[]string{"klass", "foo"},
 			&Context{
 				ClassTypes: &builtin.ClassMap{
-					Data: map[string]*builtin.ClassType{
+					Data: map[string]*ast.ClassType{
 						"klass": {
-							StaticMethods: &builtin.MethodMap{
-								Data: map[string][]*builtin.Method{
+							StaticMethods: &ast.MethodMap{
+								Data: map[string][]*ast.Method{
 									"foo": {
 										{
 											Name: "foo",
@@ -287,14 +288,14 @@ func TestResolveMethod(t *testing.T) {
 				},
 				Env: NewEnv(nil),
 			},
-			&builtin.Method{Name: "foo"},
+			&ast.Method{Name: "foo"},
 			nil,
 		},
 		//{
 		//	[]string{"klass", "foo", "bar"},
 		//	&Context{
 		//		ClassTypes: &builtin.ClassMap{
-		//			Data: map[string]*builtin.ClassType{
+		//			Data: map[string]*ast.ClassType{
 		//				"klass": {
 		//					StaticFields: &builtin.FieldMap{
 		//						Data: map[string]*builtin.Field{
@@ -308,10 +309,10 @@ func TestResolveMethod(t *testing.T) {
 		//					},
 		//				},
 		//				"klass2": {
-		//					InstanceMethods: &builtin.MethodMap{
-		//						Data: map[string][]*builtin.Method{
+		//					InstanceMethods: &ast.MethodMap{
+		//						Data: map[string][]*ast.Method{
 		//							"bar": {
-		//								&builtin.Method{
+		//								&ast.Method{
 		//									Name: "bar",
 		//								},
 		//							},
@@ -322,23 +323,23 @@ func TestResolveMethod(t *testing.T) {
 		//		},
 		//		Env: newTypeEnv(nil),
 		//	},
-		//	&builtin.Method{Name: "bar"},
+		//	&ast.Method{Name: "bar"},
 		//	nil,
 		//},
 		//{
 		//	[]string{"namespace", "klass", "foo"},
 		//	&Context{
 		//		Env:        newTypeEnv(nil),
-		//		ClassTypes: builtin.NewClassMap(),
+		//		ClassTypes: ast.NewClassMap(),
 		//		NameSpaces: &builtin.NameSpaceStore{
-		//			Data: map[string]*builtin.ClassMap{
+		//			Data: map[string]*ast.ClassMap{
 		//				"namespace": {
-		//					Data: map[string]*builtin.ClassType{
+		//					Data: map[string]*ast.ClassType{
 		//						"klass": {
-		//							StaticMethods: &builtin.MethodMap{
-		//								Data: map[string][]*builtin.Method{
+		//							StaticMethods: &ast.MethodMap{
+		//								Data: map[string][]*ast.Method{
 		//									"foo": {
-		//										&builtin.Method{
+		//										&ast.Method{
 		//											Name: "foo",
 		//										},
 		//									},
@@ -350,7 +351,7 @@ func TestResolveMethod(t *testing.T) {
 		//			},
 		//		},
 		//	},
-		//	&builtin.Method{Name: "foo"},
+		//	&ast.Method{Name: "foo"},
 		//	nil,
 		//},
 		//{
@@ -358,12 +359,12 @@ func TestResolveMethod(t *testing.T) {
 		//	&Context{
 		//		Env: newTypeEnv(nil),
 		//		ClassTypes: &builtin.ClassMap{
-		//			Data: map[string]*builtin.ClassType{
+		//			Data: map[string]*ast.ClassType{
 		//				"klass2": {
-		//					InstanceMethods: &builtin.MethodMap{
-		//						Data: map[string][]*builtin.Method{
+		//					InstanceMethods: &ast.MethodMap{
+		//						Data: map[string][]*ast.Method{
 		//							"bar": {
-		//								&builtin.Method{
+		//								&ast.Method{
 		//									Name: "bar",
 		//								},
 		//							},
@@ -373,9 +374,9 @@ func TestResolveMethod(t *testing.T) {
 		//			},
 		//		},
 		//		NameSpaces: &builtin.NameSpaceStore{
-		//			Data: map[string]*builtin.ClassMap{
+		//			Data: map[string]*ast.ClassMap{
 		//				"namespace": {
-		//					Data: map[string]*builtin.ClassType{
+		//					Data: map[string]*ast.ClassType{
 		//						"klass": {
 		//							StaticFields: &builtin.FieldMap{
 		//								Data: map[string]*builtin.Field{
@@ -393,14 +394,14 @@ func TestResolveMethod(t *testing.T) {
 		//			},
 		//		},
 		//	},
-		//	&builtin.Method{Name: "bar"},
+		//	&ast.Method{Name: "bar"},
 		//	nil,
 		//},
 	}
 	for _, testCase := range testCases {
 		typeResolver := NewTypeResolver(testCase.Context)
 		// TODO: test receiver
-		_, actual, err := typeResolver.ResolveMethod(testCase.Input, []*builtin.Object{})
+		_, actual, err := typeResolver.ResolveMethod(testCase.Input, []*ast.Object{})
 		if testCase.Error != nil && testCase.Error.Error() != err.Error() {
 			diff := cmp.Diff(testCase.Error.Error(), err.Error())
 			t.Errorf(diff)

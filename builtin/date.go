@@ -12,23 +12,23 @@ var dateTypeRef = &ast.TypeRef{
 }
 
 func init() {
-	instanceMethods := NewMethodMap()
-	staticMethods := NewMethodMap()
-	dateType := CreateClass(
+	instanceMethods := ast.NewMethodMap()
+	staticMethods := ast.NewMethodMap()
+	dateType := ast.CreateClass(
 		"Date",
-		[]*Method{},
+		[]*ast.Method{},
 		instanceMethods,
 		staticMethods,
 	)
 
 	instanceMethods.Set(
 		"format",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"format",
 				stringTypeRef,
-				[]ast.Node{},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				[]*ast.Parameter{},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					tm := this.Extra["value"].(time.Time)
 					return NewString(tm.Format("2006/01/02"))
 				},
@@ -38,13 +38,13 @@ func init() {
 
 	staticMethods.Set(
 		"today",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"today",
 				dateTypeRef,
-				[]ast.Node{},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
-					obj := CreateObject(dateType)
+				[]*ast.Parameter{},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					obj := ast.CreateObject(dateType)
 					obj.Extra["value"] = time.Now()
 					return obj
 				},

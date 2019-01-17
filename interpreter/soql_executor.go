@@ -8,18 +8,18 @@ import (
 
 type SoqlExecutor struct{}
 
-func (e *SoqlExecutor) Execute(n *ast.Soql, visitor ast.Visitor) (*builtin.Object, error) {
+func (e *SoqlExecutor) Execute(n *ast.Soql, visitor ast.Visitor) (*ast.Object, error) {
 	records := builtin.DatabaseDriver.Query(n, visitor)
 	return e.getListFromResponse(n, records)
 }
 
-func getRecords(n *ast.Soql, records []*soapforce.SObject) []*builtin.Object {
-	objects := make([]*builtin.Object, len(records))
+func getRecords(n *ast.Soql, records []*soapforce.SObject) []*ast.Object {
+	objects := make([]*ast.Object, len(records))
 	classType, _ := builtin.PrimitiveClassMap().Get(n.FromObject)
 	for i, r := range records {
-		object := &builtin.Object{}
+		object := &ast.Object{}
 		object.ClassType = classType
-		object.InstanceFields = builtin.NewObjectMap()
+		object.InstanceFields = ast.NewObjectMap()
 		object.InstanceFields.Set("id", builtin.NewString(r.Id))
 		for k, v := range r.Fields {
 			switch val := v.(type) {
@@ -32,13 +32,13 @@ func getRecords(n *ast.Soql, records []*soapforce.SObject) []*builtin.Object {
 	return objects
 }
 
-func (e *SoqlExecutor) getListFromResponse(n *ast.Soql, records []*builtin.Object) (*builtin.Object, error) {
+func (e *SoqlExecutor) getListFromResponse(n *ast.Soql, records []*ast.Object) (*ast.Object, error) {
 	// TODO: implement
 	classType, _ := builtin.PrimitiveClassMap().Get(n.FromObject)
-	list := &builtin.Object{
+	list := &ast.Object{
 		ClassType:      builtin.ListType,
-		InstanceFields: builtin.NewObjectMap(),
-		GenericType:    []*builtin.ClassType{classType},
+		InstanceFields: ast.NewObjectMap(),
+		GenericType:    []*ast.ClassType{classType},
 		Extra: map[string]interface{}{
 			"records": records,
 		},

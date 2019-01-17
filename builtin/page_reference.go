@@ -8,7 +8,7 @@ import (
 
 var pageReferenceType = createPageReferenceType()
 var pageReferenceParameter = &ast.Parameter{
-	Type: &ast.TypeRef{
+	TypeRef: &ast.TypeRef{
 		Name:       []string{"PageReference"},
 		Parameters: []ast.Node{},
 	},
@@ -20,30 +20,30 @@ var pageReferenceTypeRef = &ast.TypeRef{
 	Parameters: []ast.Node{},
 }
 
-func createPageReferenceType() *ClassType {
-	instanceMethods := NewMethodMap()
+func createPageReferenceType() *ast.ClassType {
+	instanceMethods := ast.NewMethodMap()
 	instanceMethods.Set(
 		"getUrl",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"getUrl",
 				stringTypeRef,
-				[]ast.Node{},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				[]*ast.Parameter{},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return this.Extra["url"]
 				},
 			),
 		},
 	)
-	method := CreateMethod(
+	method := ast.CreateMethod(
 		"getParameters",
 		nil,
-		[]ast.Node{},
-		func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+		[]*ast.Parameter{},
+		func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 			return this.Extra["parameters"]
 		},
 	)
-	method.ReturnType = &ast.TypeRef{
+	method.ReturnTypeRef = &ast.TypeRef{
 		Name: []string{"Map"},
 		Parameters: []ast.Node{
 			stringTypeRef,
@@ -53,22 +53,18 @@ func createPageReferenceType() *ClassType {
 
 	instanceMethods.Set(
 		"getParameters",
-		[]*Method{method},
+		[]*ast.Method{method},
 	)
 
-	classType := CreateClass(
+	classType := ast.CreateClass(
 		"PageReference",
-		[]*Method{
+		[]*ast.Method{
 			{
-				Modifiers: []ast.Node{
-					&ast.Modifier{
-						Name: "public",
-					},
-				},
-				Parameters: []ast.Node{stringTypeParameter},
-				NativeFunction: func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
-					parameters := CreateObject(MapType)
-					parameters.Extra["values"] = map[string]*Object{}
+				Modifiers:  []*ast.Modifier{ast.PublicModifier()},
+				Parameters: []*ast.Parameter{stringTypeParameter},
+				NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					parameters := ast.CreateObject(MapType)
+					parameters.Extra["values"] = map[string]*ast.Object{}
 					this.Extra = map[string]interface{}{
 						"url":        params[0],
 						"parameters": parameters,
@@ -80,9 +76,9 @@ func createPageReferenceType() *ClassType {
 		instanceMethods,
 		nil,
 	)
-	classType.ToString = func(o *Object) string {
-		url := o.Extra["url"].(*Object)
-		parameters := o.Extra["parameters"].(*Object)
+	classType.ToString = func(o *ast.Object) string {
+		url := o.Extra["url"].(*ast.Object)
+		parameters := o.Extra["parameters"].(*ast.Object)
 		return fmt.Sprintf(
 			"<%s> { url => %s, parameters => (%s) }",
 			o.ClassType.Name,

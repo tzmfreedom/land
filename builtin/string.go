@@ -11,58 +11,56 @@ var stringTypeRef = &ast.TypeRef{
 	Parameters: []ast.Node{},
 }
 
-var StringType *ClassType
+var StringType *ast.ClassType
 
-func createStringType() *ClassType {
-	instanceMethods := NewMethodMap()
-	method := CreateMethod(
+func createStringType() *ast.ClassType {
+	instanceMethods := ast.NewMethodMap()
+	method := ast.CreateMethod(
 		"split",
 		CreateListTypeRef(stringTypeRef),
-		[]ast.Node{stringTypeParameter},
-		func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+		[]*ast.Parameter{stringTypeParameter},
+		func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 			split := params[0].StringValue()
 			src := this.StringValue()
 			parts := strings.Split(src, split)
-			records := make([]*Object, len(parts))
+			records := make([]*ast.Object, len(parts))
 			for i, part := range parts {
 				records[i] = NewString(part)
 			}
-			listType := CreateObject(ListType)
+			listType := ast.CreateObject(ListType)
 			listType.Extra["records"] = records
 			return listType
 		},
 	)
-	method.ReturnType.(*ast.TypeRef).Parameters = []ast.Node{
-		&ast.TypeRef{Name: []string{"String"}},
-	}
+	method.ReturnTypeRef.Parameters = []ast.Node{stringTypeRef}
 
-	instanceMethods.Set("split", []*Method{method})
-	staticMethods := NewMethodMap()
-	staticMethods.Set("valueOf", []*Method{
-		CreateMethod(
+	instanceMethods.Set("split", []*ast.Method{method})
+	staticMethods := ast.NewMethodMap()
+	staticMethods.Set("valueOf", []*ast.Method{
+		ast.CreateMethod(
 			"valueOf",
 			stringTypeRef,
-			[]ast.Node{objectTypeParameter},
-			func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+			[]*ast.Parameter{objectTypeParameter},
+			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 				toConvert := params[0]
 				return NewString(String(toConvert))
 			},
 		),
 	})
-	classType := CreateClass(
+	classType := ast.CreateClass(
 		"String",
 		nil,
 		instanceMethods,
 		staticMethods,
 	)
-	classType.ToString = func(o *Object) string {
+	classType.ToString = func(o *ast.Object) string {
 		return o.Value().(string)
 	}
 	return classType
 }
 
 var stringTypeParameter = &ast.Parameter{
-	Type: &ast.TypeRef{
+	TypeRef: &ast.TypeRef{
 		Name:       []string{"Object"},
 		Parameters: []ast.Node{},
 	},

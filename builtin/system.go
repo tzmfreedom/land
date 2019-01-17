@@ -16,20 +16,18 @@ const (
 )
 
 func init() {
-	system := CreateClass(
+	system := ast.CreateClass(
 		"System",
 		nil,
 		nil,
-		&MethodMap{
-			Data: map[string][]*Method{
+		&ast.MethodMap{
+			Data: map[string][]*ast.Method{
 				"debug": {
-					&Method{
-						Name: "debug",
-						Modifiers: []ast.Node{
-							&ast.Modifier{Name: "public"},
-						},
-						Parameters: []ast.Node{objectTypeParameter},
-						NativeFunction: func(this *Object, parameter []*Object, extra map[string]interface{}) interface{} {
+					&ast.Method{
+						Name:       "debug",
+						Modifiers:  []*ast.Modifier{ast.PublicModifier()},
+						Parameters: []*ast.Parameter{objectTypeParameter},
+						NativeFunction: func(this *ast.Object, parameter []*ast.Object, extra map[string]interface{}) interface{} {
 							o := parameter[0]
 							stdout := extra["stdout"].(io.Writer)
 							fmt.Fprintln(stdout, String(o))
@@ -38,16 +36,14 @@ func init() {
 					},
 				},
 				"assertequals": {
-					&Method{
-						Name: "assertequals",
-						Modifiers: []ast.Node{
-							&ast.Modifier{Name: "public"},
-						},
-						Parameters: []ast.Node{
+					&ast.Method{
+						Name:      "assertequals",
+						Modifiers: []*ast.Modifier{ast.PublicModifier()},
+						Parameters: []*ast.Parameter{
 							objectTypeParameter,
 							objectTypeParameter,
 						},
-						NativeFunction: func(this *Object, parameter []*Object, extra map[string]interface{}) interface{} {
+						NativeFunction: func(this *ast.Object, parameter []*ast.Object, extra map[string]interface{}) interface{} {
 							expected := parameter[0]
 							actual := parameter[1]
 							if expected.Value() != actual.Value() {

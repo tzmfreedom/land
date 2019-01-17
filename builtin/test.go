@@ -4,17 +4,17 @@ import "github.com/tzmfreedom/goland/ast"
 
 var testType = createTestType()
 
-func createTestType() *ClassType {
-	instanceMethods := NewMethodMap()
-	staticMethods := NewMethodMap()
+func createTestType() *ast.ClassType {
+	instanceMethods := ast.NewMethodMap()
+	staticMethods := ast.NewMethodMap()
 	staticMethods.Set(
 		"setCurrentPage",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"setCurrentPage",
 				pageReferenceTypeRef,
-				[]ast.Node{pageReferenceParameter},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				[]*ast.Parameter{pageReferenceParameter},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					extra["current_page"] = params[0]
 					return nil
 				},
@@ -22,9 +22,9 @@ func createTestType() *ClassType {
 		},
 	)
 
-	classType := CreateClass(
+	classType := ast.CreateClass(
 		"Test",
-		[]*Method{},
+		[]*ast.Method{},
 		instanceMethods,
 		staticMethods,
 	)

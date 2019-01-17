@@ -25,7 +25,7 @@ func NewTypeResolver(ctx *Context) *TypeResolver {
 	}
 }
 
-func (r *TypeResolver) SetVariable(names []string, setValue *builtin.Object) error {
+func (r *TypeResolver) SetVariable(names []string, setValue *ast.Object) error {
 	if len(names) == 1 {
 		if _, ok := r.Context.Env.Get(names[0]); ok {
 			r.Context.Env.Update(names[0], setValue)
@@ -101,7 +101,7 @@ func (r *TypeResolver) SetVariable(names []string, setValue *builtin.Object) err
 	return nil
 }
 
-func (r *TypeResolver) ResolveVariable(names []string) (*builtin.Object, error) {
+func (r *TypeResolver) ResolveVariable(names []string) (*ast.Object, error) {
 	if len(names) == 1 {
 		if v, ok := r.Context.Env.Get(names[0]); ok {
 			return v, nil
@@ -175,7 +175,7 @@ func (r *TypeResolver) ResolveVariable(names []string) (*builtin.Object, error) 
 	return nil, nil
 }
 
-func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Object) (interface{}, *builtin.Method, error) {
+func (r *TypeResolver) ResolveMethod(names []string, parameters []*ast.Object) (interface{}, *ast.Method, error) {
 	if len(names) == 1 {
 		methodName := names[0]
 		if v, ok := r.Context.Env.Get("this"); ok {
@@ -247,37 +247,37 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Objec
 	return nil, nil, errors.Errorf("%s is not found in this scope", strings.Join(names, "."))
 }
 
-func (r *TypeResolver) ResolveType(names []string) (*builtin.ClassType, error) {
+func (r *TypeResolver) ResolveType(names []string) (*ast.ClassType, error) {
 	return r.resolver.ResolveType(names)
 }
 
-func (r *TypeResolver) FindInstanceMethod(object *builtin.Object, methodName string, parameters []*builtin.Object, allowedModifier int) (*builtin.Object, *builtin.Method, error) {
+func (r *TypeResolver) FindInstanceMethod(object *ast.Object, methodName string, parameters []*ast.Object, allowedModifier int) (*ast.Object, *ast.Method, error) {
 	_, method, err := r.resolver.FindInstanceMethod(object.ClassType, methodName, convertClassTypes(parameters), allowedModifier)
 	return object, method, err
 }
 
-func (r *TypeResolver) FindStaticMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.Object, allowedModifier int) (*builtin.ClassType, *builtin.Method, error) {
+func (r *TypeResolver) FindStaticMethod(classType *ast.ClassType, methodName string, parameters []*ast.Object, allowedModifier int) (*ast.ClassType, *ast.Method, error) {
 	return r.resolver.FindStaticMethod(classType, methodName, convertClassTypes(parameters), allowedModifier)
 }
 
-func (r *TypeResolver) SearchMethod(receiverClass *builtin.ClassType, methods []*builtin.Method, parameters []*builtin.Object) *builtin.Method {
+func (r *TypeResolver) SearchMethod(receiverClass *ast.ClassType, methods []*ast.Method, parameters []*ast.Object) *ast.Method {
 	return r.resolver.SearchMethod(receiverClass, methods, convertClassTypes(parameters))
 }
 
-func (r *TypeResolver) SearchConstructor(receiverClass *builtin.ClassType, parameters []*builtin.Object) (*builtin.ClassType, *builtin.Method, error) {
+func (r *TypeResolver) SearchConstructor(receiverClass *ast.ClassType, parameters []*ast.Object) (*ast.ClassType, *ast.Method, error) {
 	return r.resolver.SearchConstructor(receiverClass, convertClassTypes(parameters))
 }
 
-func (r *TypeResolver) ConvertType(n *ast.TypeRef) (*builtin.ClassType, error) {
+func (r *TypeResolver) ConvertType(n *ast.TypeRef) (*ast.ClassType, error) {
 	return r.resolver.ConvertType(n)
 }
 
-func convertClassTypes(parameters []*builtin.Object) []*builtin.ClassType {
-	inputParameters := make([]*builtin.ClassType, len(parameters))
+func convertClassTypes(parameters []*ast.Object) []*ast.ClassType {
+	inputParameters := make([]*ast.ClassType, len(parameters))
 	for i, parameter := range parameters {
 		classType := parameter.ClassType
 		if classType.IsGeneric() {
-			inputParameters[i] = &builtin.ClassType{
+			inputParameters[i] = &ast.ClassType{
 				Name: classType.Name,
 				Extra: map[string]interface{}{
 					"generics": parameter.GenericType,

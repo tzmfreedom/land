@@ -36,7 +36,7 @@ const (
 
 // TODO: resolve on static context
 
-func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*builtin.ClassType, error) {
+func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*ast.ClassType, error) {
 	// TODO: return *ast.TypeRef smart solution
 	if len(names) == 1 {
 		if v, ok := r.Context.Env.Get(names[0]); ok {
@@ -46,7 +46,7 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*built
 	} else {
 		name := names[0]
 		if fieldType, ok := r.Context.Env.Get(name); ok {
-			var instanceField *builtin.Field
+			var instanceField *ast.Field
 			var err error
 			for i, f := range names[1:] {
 				var allowedModifier int
@@ -80,7 +80,7 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*built
 				return nil, err
 			}
 			if n != nil {
-				var instanceField *builtin.Field
+				var instanceField *ast.Field
 				var err error
 				fieldType := n.Type
 				for i, f := range names[2:] {
@@ -111,7 +111,7 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*built
 					return nil, err
 				}
 				if field != nil {
-					var instanceField *builtin.Field
+					var instanceField *ast.Field
 					var err error
 
 					fieldType := field.Type
@@ -137,7 +137,7 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*built
 	return nil, fmt.Errorf("local variable %s is not found", names[0])
 }
 
-func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.ClassType) (*builtin.ClassType, *builtin.Method, error) {
+func (r *TypeResolver) ResolveMethod(names []string, parameters []*ast.ClassType) (*ast.ClassType, *ast.Method, error) {
 	if len(names) == 1 {
 		methodName := names[0]
 		if v, ok := r.Context.Env.Get("this"); ok {
@@ -221,11 +221,11 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*builtin.Class
 	return nil, nil, errors.Errorf("%s is not found in this scope", strings.Join(names, "."))
 }
 
-func (r *TypeResolver) ResolveType(names []string) (*builtin.ClassType, error) {
+func (r *TypeResolver) ResolveType(names []string) (*ast.ClassType, error) {
 	return r.resolver.ResolveType(names)
 }
 
-func (r *TypeResolver) FindInstanceMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType, allowedModifier int) (*builtin.ClassType, *builtin.Method, error) {
+func (r *TypeResolver) FindInstanceMethod(classType *ast.ClassType, methodName string, parameters []*ast.ClassType, allowedModifier int) (*ast.ClassType, *ast.Method, error) {
 	methods, ok := classType.InstanceMethods.Get(methodName)
 	if ok {
 		method := r.SearchMethod(classType, methods, parameters)
@@ -248,7 +248,7 @@ func (r *TypeResolver) FindInstanceMethod(classType *builtin.ClassType, methodNa
 	return nil, nil, methodNotFoundError(classType, methodName, parameters)
 }
 
-func (r *TypeResolver) FindStaticMethod(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType, allowedModifier int) (*builtin.ClassType, *builtin.Method, error) {
+func (r *TypeResolver) FindStaticMethod(classType *ast.ClassType, methodName string, parameters []*ast.ClassType, allowedModifier int) (*ast.ClassType, *ast.Method, error) {
 	methods, ok := classType.StaticMethods.Get(methodName)
 	if ok {
 		method := r.SearchMethod(classType, methods, parameters)
@@ -271,7 +271,7 @@ func (r *TypeResolver) FindStaticMethod(classType *builtin.ClassType, methodName
 	return nil, nil, methodNotFoundError(classType, methodName, parameters)
 }
 
-func (r *TypeResolver) findInstanceField(classType *builtin.ClassType, fieldName string, allowedModifier int, checkSetter bool) (*builtin.Field, error) {
+func (r *TypeResolver) findInstanceField(classType *ast.ClassType, fieldName string, allowedModifier int, checkSetter bool) (*ast.Field, error) {
 	fieldType, ok := classType.InstanceFields.Get(fieldName)
 	if ok {
 		if allowedModifier == MODIFIER_PUBLIC_ONLY && !fieldType.IsPublic(checkSetter) {
@@ -291,7 +291,7 @@ func (r *TypeResolver) findInstanceField(classType *builtin.ClassType, fieldName
 	return nil, nil
 }
 
-func (r *TypeResolver) findStaticField(classType *builtin.ClassType, fieldName string, allowedModifier int, checkSetter bool) (*builtin.Field, error) {
+func (r *TypeResolver) findStaticField(classType *ast.ClassType, fieldName string, allowedModifier int, checkSetter bool) (*ast.Field, error) {
 	fieldType, ok := classType.StaticFields.Get(fieldName)
 	if ok {
 		if allowedModifier == MODIFIER_PUBLIC_ONLY && !fieldType.IsPublic(checkSetter) {
@@ -311,7 +311,7 @@ func (r *TypeResolver) findStaticField(classType *builtin.ClassType, fieldName s
 	return nil, nil
 }
 
-func (r *TypeResolver) SearchMethod(receiverClass *builtin.ClassType, methods []*builtin.Method, parameters []*builtin.ClassType) *builtin.Method {
+func (r *TypeResolver) SearchMethod(receiverClass *ast.ClassType, methods []*ast.Method, parameters []*ast.ClassType) *ast.Method {
 	l := len(parameters)
 	for _, m := range methods {
 		if len(m.Parameters) != l {
@@ -321,15 +321,15 @@ func (r *TypeResolver) SearchMethod(receiverClass *builtin.ClassType, methods []
 
 		for i, p := range m.Parameters {
 			inputParam := parameters[i]
-			typeRef := p.(*ast.Parameter).Type.(*ast.TypeRef)
+			typeRef := p.TypeRef
 
-			var methodParam *builtin.ClassType
+			var methodParam *ast.ClassType
 			if typeRef.IsGenerics() {
 				// TODO: implement better solution
 				if r.IgnoreGenerics {
 					continue
 				}
-				generics := receiverClass.Extra["generics"].([]*builtin.ClassType)
+				generics := receiverClass.Extra["generics"].([]*ast.ClassType)
 				if typeRef.IsGenericsNumber(1) {
 					methodParam = generics[0]
 				} else {
@@ -343,7 +343,7 @@ func (r *TypeResolver) SearchMethod(receiverClass *builtin.ClassType, methods []
 			if methodParam == builtin.ObjectType {
 				continue
 			}
-			if !inputParam.Equals(methodParam) {
+			if !builtin.Equals(inputParam, methodParam) {
 				match = false
 				break
 			}
@@ -355,7 +355,7 @@ func (r *TypeResolver) SearchMethod(receiverClass *builtin.ClassType, methods []
 	return nil
 }
 
-func (r *TypeResolver) SearchConstructor(classType *builtin.ClassType, parameters []*builtin.ClassType) (*builtin.ClassType, *builtin.Method, error) {
+func (r *TypeResolver) SearchConstructor(classType *ast.ClassType, parameters []*ast.ClassType) (*ast.ClassType, *ast.Method, error) {
 	method := r.SearchMethod(classType, classType.Constructors, parameters)
 	if method != nil {
 		return classType, method, nil
@@ -366,11 +366,11 @@ func (r *TypeResolver) SearchConstructor(classType *builtin.ClassType, parameter
 	return nil, nil, nil
 }
 
-func (r *TypeResolver) ConvertType(n *ast.TypeRef) (*builtin.ClassType, error) {
+func (r *TypeResolver) ConvertType(n *ast.TypeRef) (*ast.ClassType, error) {
 	return r.resolver.ConvertType(n)
 }
 
-func methodNotFoundError(classType *builtin.ClassType, methodName string, parameters []*builtin.ClassType) error {
+func methodNotFoundError(classType *ast.ClassType, methodName string, parameters []*ast.ClassType) error {
 	parameterStrings := make([]string, len(parameters))
 	for i, parameter := range parameters {
 		parameterStrings[i] = parameter.String()

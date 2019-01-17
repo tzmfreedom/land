@@ -14,7 +14,7 @@ type Interpreter struct {
 	Extra   map[string]interface{}
 }
 
-func NewInterpreter(classTypeMap *builtin.ClassMap) *Interpreter {
+func NewInterpreter(classTypeMap *ast.ClassMap) *Interpreter {
 	interpreter := &Interpreter{
 		Context: NewContext(),
 		Extra: map[string]interface{}{
@@ -27,7 +27,7 @@ func NewInterpreter(classTypeMap *builtin.ClassMap) *Interpreter {
 	return interpreter
 }
 
-func NewInterpreterWithBuiltin(classTypes []*builtin.ClassType) *Interpreter {
+func NewInterpreterWithBuiltin(classTypes []*ast.ClassType) *Interpreter {
 	interpreter := NewInterpreter(builtin.PrimitiveClassMap())
 	for _, classType := range classTypes {
 		interpreter.Context.ClassTypes.Set(classType.Name, classType)
@@ -39,11 +39,11 @@ func NewInterpreterWithBuiltin(classTypes []*builtin.ClassType) *Interpreter {
 func (v *Interpreter) LoadStaticField() {
 	v.Context.StaticField = NewStaticFieldMap()
 	for className, classType := range v.Context.ClassTypes.Data {
-		objectMap := builtin.NewObjectMap()
+		objectMap := ast.NewObjectMap()
 		if classType.StaticFields != nil {
 			for _, f := range classType.StaticFields.Data {
 				val, _ := f.Expression.Accept(v)
-				objectMap.Set(f.Name, val.(*builtin.Object))
+				objectMap.Set(f.Name, val.(*ast.Object))
 			}
 		}
 		v.Context.StaticField.Set("_", className, objectMap)
@@ -88,14 +88,14 @@ func (v *Interpreter) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) 
 	if err != nil {
 		return nil, err
 	}
-	receiver := r.(*builtin.Object)
-	key := k.(*builtin.Object)
+	receiver := r.(*ast.Object)
+	key := k.(*ast.Object)
 	if receiver.ClassType == builtin.ListType {
-		records := receiver.Extra["records"].([]*builtin.Object)
+		records := receiver.Extra["records"].([]*ast.Object)
 		return records[key.IntegerValue()], nil
 	}
 
-	records := receiver.Extra["values"].(map[string]builtin.Object)
+	records := receiver.Extra["values"].(map[string]ast.Object)
 	return records[key.StringValue()], nil
 }
 
@@ -116,13 +116,13 @@ func (v *Interpreter) VisitDml(n *ast.Dml) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	var records []*builtin.Object
-	obj := o.(*builtin.Object)
+	var records []*ast.Object
+	obj := o.(*ast.Object)
 	// TODO: check SObject class
 	if obj.ClassType == builtin.ListType {
-		records = obj.Extra["records"].([]*builtin.Object)
+		records = obj.Extra["records"].([]*ast.Object)
 	} else {
-		records = []*builtin.Object{obj}
+		records = []*ast.Object{obj}
 	}
 	sObjectType := records[0].ClassType.Name
 	builtin.DatabaseDriver.Execute(n.Type, sObjectType, records, n.UpsertKey)
@@ -144,21 +144,15 @@ func (v *Interpreter) VisitTry(n *ast.Try) (interface{}, error) {
 		return nil, err
 	}
 	if res != nil {
-		switch obj := res.(*builtin.Object); obj.ClassType {
+		switch obj := res.(*ast.Object); obj.ClassType {
 		case builtin.ReturnType, builtin.BreakType, builtin.ContinueType:
 			return obj, nil
 		case builtin.RaiseType:
 			// TODO: implement
 			var c *ast.Catch
 			for _, catch := range n.CatchClause {
-				c = catch.(*ast.Catch)
-				typeResolver := NewTypeResolver(v.Context)
-				catchType, err := typeResolver.ResolveType(c.Type.(*ast.TypeRef).Name)
-				if err != nil {
-					return nil, err
-				}
-				raiseValue := obj.Value().(*builtin.Object)
-				if catchType.Equals(raiseValue.ClassType) {
+				raiseValue := obj.Value().(*ast.Object)
+				if builtin.Equals(catch.Type, raiseValue.ClassType) {
 					v.Context.Env.Define(c.Identifier, raiseValue)
 					_, err := catch.Accept(v)
 					if err != nil {
@@ -200,10 +194,10 @@ func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
 				if err != nil {
 					return nil, err
 				}
-				if res.(*builtin.Object).BoolValue() {
+				if res.(*ast.Object).BoolValue() {
 					res, err = n.Statements.Accept(v)
 					if res != nil {
-						switch obj := res.(*builtin.Object); obj.ClassType {
+						switch obj := res.(*ast.Object); obj.ClassType {
 						case builtin.BreakType:
 							return nil, nil
 						case builtin.ContinueType:
@@ -228,7 +222,7 @@ func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
 				return nil, err
 			}
 			iterator, _ := control.Expression.Accept(v)
-			records := iterator.(*builtin.Object).Extra["records"].([]*builtin.Object)
+			records := iterator.(*ast.Object).Extra["records"].([]*ast.Object)
 			for _, record := range records {
 				v.Context.Env.Define(control.VariableDeclaratorId, record)
 				res, err := n.Statements.Accept(v)
@@ -236,7 +230,7 @@ func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
 					return nil, err
 				}
 				if res != nil {
-					switch obj := res.(*builtin.Object); obj.ClassType {
+					switch obj := res.(*ast.Object); obj.ClassType {
 					case builtin.BreakType:
 						return nil, nil
 					case builtin.ContinueType:
@@ -264,7 +258,7 @@ func (v *Interpreter) VisitIf(n *ast.If) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if res.(*builtin.Object).BoolValue() {
+	if res.(*ast.Object).BoolValue() {
 		return n.IfStatement.Accept(v)
 	} else if n.ElseStatement != nil {
 		return n.ElseStatement.Accept(v)
@@ -280,16 +274,16 @@ func (v *Interpreter) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{}, error) {
 	Publish("method_start", v.Context, n)
 	var receiver interface{}
-	var m *builtin.Method
+	var m *ast.Method
 	var err error
 
-	evaluated := make([]*builtin.Object, len(n.Parameters))
+	evaluated := make([]*ast.Object, len(n.Parameters))
 	for i, p := range n.Parameters {
 		obj, err := p.Accept(v)
 		if err != nil {
 			return nil, err
 		}
-		evaluated[i] = obj.(*builtin.Object)
+		evaluated[i] = obj.(*ast.Object)
 	}
 	switch exp := n.NameOrExpression.(type) {
 	case *ast.FieldAccess:
@@ -300,7 +294,7 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		receiver = r
 		// TODO: extend
 		typeResolver := NewTypeResolver(v.Context)
-		_, m, err = typeResolver.FindInstanceMethod(receiver.(*builtin.Object), exp.FieldName, evaluated, compiler.MODIFIER_ALL_OK)
+		_, m, err = typeResolver.FindInstanceMethod(receiver.(*ast.Object), exp.FieldName, evaluated, compiler.MODIFIER_ALL_OK)
 		if err != nil {
 			panic("not found")
 		}
@@ -325,9 +319,9 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 	}
 	prevClass := v.Context.CurrentClass
 	switch typedReceiver := receiver.(type) {
-	case *builtin.Object:
+	case *ast.Object:
 		v.Context.CurrentClass = typedReceiver.ClassType
-	case *builtin.ClassType:
+	case *ast.ClassType:
 		v.Context.CurrentClass = typedReceiver
 	}
 	defer func() {
@@ -338,9 +332,9 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		var r interface{}
 		v.Extra["node"] = n
 		switch typedReceiver := receiver.(type) {
-		case *builtin.Object:
+		case *ast.Object:
 			r = m.NativeFunction(typedReceiver, evaluated, v.Extra)
-		case *builtin.ClassType:
+		case *ast.ClassType:
 			r = m.NativeFunction(nil, evaluated, v.Extra)
 		}
 		v.Extra["node"] = nil
@@ -349,12 +343,11 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 	} else {
 		prev := v.Context.Env
 		v.Context.Env = NewEnv(nil)
-		for i, p := range m.Parameters {
-			param := p.(*ast.Parameter)
+		for i, param := range m.Parameters {
 			v.Context.Env.Define(param.Name, evaluated[i])
 		}
 		switch obj := receiver.(type) {
-		case *builtin.Object:
+		case *ast.Object:
 			v.Context.Env.Define("this", obj)
 		}
 		r, err := m.Statements.Accept(v)
@@ -365,7 +358,7 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		v.Context.Env = prev
 
 		if r != nil {
-			obj := r.(*builtin.Object)
+			obj := r.(*ast.Object)
 			switch obj.ClassType {
 			case builtin.ReturnType:
 				return obj.Value(), nil
@@ -378,23 +371,20 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 }
 
 func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
+	var err error
 	resolver := NewTypeResolver(v.Context)
-	typeRef := n.Type.(*ast.TypeRef)
-	classType, err := resolver.ResolveType(typeRef.Name)
-	if err != nil {
-		return nil, err
-	}
-	typeParameters := n.Type.(*ast.TypeRef).Parameters
-	genericType := make([]*builtin.ClassType, len(typeParameters))
+	typeParameters := n.TypeRef.Parameters
+	genericType := make([]*ast.ClassType, len(typeParameters))
 	for i, p := range typeParameters {
 		genericType[i], err = resolver.ConvertType(p.(*ast.TypeRef))
 		if err != nil {
 			return nil, err
 		}
 	}
-	newObj := &builtin.Object{
+	classType := n.Type
+	newObj := &ast.Object{
 		ClassType:      classType,
-		InstanceFields: builtin.NewObjectMap(),
+		InstanceFields: ast.NewObjectMap(),
 		GenericType:    genericType,
 		Extra:          map[string]interface{}{},
 	}
@@ -403,18 +393,18 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 			newObj.InstanceFields.Set(f.Name, builtin.Null)
 		} else {
 			r, _ := f.Expression.Accept(v)
-			newObj.InstanceFields.Set(f.Name, r.(*builtin.Object))
+			newObj.InstanceFields.Set(f.Name, r.(*ast.Object))
 		}
 	}
 	typeResolver := NewTypeResolver(v.Context)
 	if classType.HasConstructor() {
-		evaluated := make([]*builtin.Object, len(n.Parameters))
+		evaluated := make([]*ast.Object, len(n.Parameters))
 		for i, p := range n.Parameters {
 			r, err := p.Accept(v)
 			if err != nil {
 				return nil, err
 			}
-			evaluated[i] = r.(*builtin.Object)
+			evaluated[i] = r.(*ast.Object)
 		}
 		_, constructor, err := typeResolver.SearchConstructor(classType, evaluated)
 		if err != nil {
@@ -429,8 +419,7 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 		} else {
 			prev := v.Context.Env
 			v.Context.Env = NewEnv(nil)
-			for i, p := range constructor.Parameters {
-				param := p.(*ast.Parameter)
+			for i, param := range constructor.Parameters {
 				v.Context.Env.Define(param.Name, evaluated[i])
 			}
 			v.Context.Env.Define("this", newObj)
@@ -439,16 +428,16 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 		}
 	}
 	if classType == builtin.ListType {
-		newObj.Extra["records"] = []*builtin.Object{}
+		newObj.Extra["records"] = []*ast.Object{}
 		if n.Init != nil {
 			if len(n.Init.Records) != 0 {
-				records := make([]*builtin.Object, len(n.Init.Records))
+				records := make([]*ast.Object, len(n.Init.Records))
 				for i, r := range n.Init.Records {
 					initRecord, err := r.Accept(v)
 					if err != nil {
 						return nil, err
 					}
-					records[i] = initRecord.(*builtin.Object)
+					records[i] = initRecord.(*ast.Object)
 				}
 				newObj.Extra["records"] = records
 			}
@@ -458,8 +447,8 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 				if err != nil {
 					return nil, err
 				}
-				if s, ok := size.(*builtin.Object); ok && s.ClassType == builtin.IntegerType {
-					records := newObj.Extra["records"].([]*builtin.Object)
+				if s, ok := size.(*ast.Object); ok && s.ClassType == builtin.IntegerType {
+					records := newObj.Extra["records"].([]*ast.Object)
 					recordSize := len(records)
 					remain := s.IntegerValue() - recordSize
 					if remain > 0 {
@@ -474,9 +463,9 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 	}
 	if classType == builtin.MapType {
 		if n.Init == nil {
-			newObj.Extra["values"] = map[string]*builtin.Object{}
+			newObj.Extra["values"] = map[string]*ast.Object{}
 		} else if len(n.Init.Values) != 0 {
-			values := map[string]*builtin.Object{}
+			values := map[string]*ast.Object{}
 			for key, value := range n.Init.Values {
 				mapValue, err := value.Accept(v)
 				if err != nil {
@@ -486,7 +475,7 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 				if err != nil {
 					return nil, err
 				}
-				values[mapKey.(*builtin.Object).StringValue()] = mapValue.(*builtin.Object)
+				values[mapKey.(*ast.Object).StringValue()] = mapValue.(*ast.Object)
 			}
 			newObj.Extra["values"] = values
 		}
@@ -502,7 +491,7 @@ func (v *Interpreter) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, err
 	if n.Op == "++" {
 		name := n.Expression.(*ast.Name)
 		l, _ := name.Accept(v)
-		exp := builtin.NewInteger(l.(*builtin.Object).IntegerValue() + 1)
+		exp := builtin.NewInteger(l.(*ast.Object).IntegerValue() + 1)
 		// TODO: implement
 		v.Context.Env.Update(name.Value[0], exp)
 		return exp, nil
@@ -510,7 +499,7 @@ func (v *Interpreter) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, err
 	if n.Op == "--" {
 		name := n.Expression.(*ast.Name)
 		l, _ := name.Accept(v)
-		exp := builtin.NewInteger(l.(*builtin.Object).IntegerValue() - 1)
+		exp := builtin.NewInteger(l.(*ast.Object).IntegerValue() - 1)
 		// TODO: implement
 		v.Context.Env.Update(name.Value[0], exp)
 		return exp, nil
@@ -529,9 +518,9 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		return nil, err
 	}
 
-	lObj := left.(*builtin.Object)
+	lObj := left.(*ast.Object)
 	lType := lObj.ClassType
-	rObj := right.(*builtin.Object)
+	rObj := right.(*ast.Object)
 	rType := rObj.ClassType
 
 	switch n.Op {
@@ -792,30 +781,30 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			if err != nil {
 				return nil, err
 			}
-			exp.(*builtin.Object).InstanceFields.Set(t.FieldName, rObj)
+			exp.(*ast.Object).InstanceFields.Set(t.FieldName, rObj)
 		case *ast.ArrayAccess:
 			k, err := t.Key.Accept(v)
 			if err != nil {
 				return nil, err
 			}
-			key := k.(*builtin.Object)
+			key := k.(*ast.Object)
 			r, err := t.Receiver.Accept(v)
 			if err != nil {
 				return nil, err
 			}
-			receiver := r.(*builtin.Object)
+			receiver := r.(*ast.Object)
 			if receiver.ClassType == builtin.ListType {
-				receiver.Extra["records"].([]*builtin.Object)[key.IntegerValue()] = rObj
+				receiver.Extra["records"].([]*ast.Object)[key.IntegerValue()] = rObj
 			}
 			if receiver.ClassType == builtin.MapType {
-				receiver.Extra["values"].(map[string]*builtin.Object)[key.StringValue()] = rObj
+				receiver.Extra["values"].(map[string]*ast.Object)[key.StringValue()] = rObj
 			}
 			// TODO: implment set type
 		}
 		return rObj, nil
 	case "+=":
 		// TODO: implement
-		var value *builtin.Object
+		var value *ast.Object
 		if lType == builtin.IntegerType {
 			l := lObj.IntegerValue()
 			if rType == builtin.IntegerType {
@@ -851,11 +840,11 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			if err != nil {
 				return nil, err
 			}
-			exp.(*builtin.Object).InstanceFields.Set(t.FieldName, value)
+			exp.(*ast.Object).InstanceFields.Set(t.FieldName, value)
 		}
 		return value, nil
 	case "-=":
-		var value *builtin.Object
+		var value *ast.Object
 		if lType == builtin.IntegerType {
 			l := lObj.IntegerValue()
 			if rType == builtin.IntegerType {
@@ -887,7 +876,7 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			if err != nil {
 				return nil, err
 			}
-			exp.(*builtin.Object).InstanceFields.Set(t.FieldName, value)
+			exp.(*ast.Object).InstanceFields.Set(t.FieldName, value)
 		}
 		return value, nil
 	}
@@ -900,7 +889,7 @@ func (v *Interpreter) VisitReturn(n *ast.Return) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		return builtin.CreateReturn(res.(*builtin.Object)), nil
+		return builtin.CreateReturn(res.(*ast.Object)), nil
 	}
 	return builtin.CreateReturn(nil), nil
 }
@@ -910,7 +899,7 @@ func (v *Interpreter) VisitThrow(n *ast.Throw) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return builtin.CreateRaise(res.(*builtin.Object)), nil
+	return builtin.CreateRaise(res.(*ast.Object)), nil
 }
 
 func (v *Interpreter) VisitSoql(n *ast.Soql) (interface{}, error) {
@@ -951,7 +940,7 @@ func (v *Interpreter) VisitVariableDeclaration(n *ast.VariableDeclaration) (inte
 			if err != nil {
 				panic(err)
 			}
-			v.Context.Env.Define(d.Name, val.(*builtin.Object))
+			v.Context.Env.Define(d.Name, val.(*ast.Object))
 		} else {
 			v.Context.Env.Define(d.Name, builtin.Null)
 		}
@@ -978,12 +967,12 @@ func (v *Interpreter) VisitWhile(n *ast.While) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		if !c.(*builtin.Object).BoolValue() {
+		if !c.(*ast.Object).BoolValue() {
 			break
 		}
 		res, err := n.Statements.Accept(v)
 		if res != nil {
-			obj := res.(*builtin.Object)
+			obj := res.(*ast.Object)
 			switch obj.ClassType {
 			case builtin.ReturnType, builtin.RaiseType:
 				return obj, nil
@@ -1013,7 +1002,7 @@ func (v *Interpreter) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) 
 	if err != nil {
 		return nil, err
 	}
-	f, _ := r.(*builtin.Object).InstanceFields.Get(n.FieldName)
+	f, _ := r.(*ast.Object).InstanceFields.Get(n.FieldName)
 	return f, nil
 }
 
@@ -1034,7 +1023,7 @@ func (v *Interpreter) VisitBlock(n *ast.Block) (interface{}, error) {
 			return nil, err
 		}
 		if res != nil {
-			obj := res.(*builtin.Object)
+			obj := res.(*ast.Object)
 			switch obj.ClassType {
 			case builtin.ReturnType, builtin.BreakType, builtin.ContinueType, builtin.RaiseType:
 				return obj, nil
@@ -1069,7 +1058,7 @@ func (v *Interpreter) VisitTernalyExpression(n *ast.TernalyExpression) (interfac
 	if err != nil {
 		return nil, err
 	}
-	if res.(*builtin.Object).Extra["value"].(bool) {
+	if res.(*ast.Object).Extra["value"].(bool) {
 		return n.TrueExpression.Accept(v)
 	}
 	return n.FalseExpression.Accept(v)

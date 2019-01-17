@@ -8,12 +8,11 @@ import (
 	"strings"
 
 	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
 )
 
 func TestTypeChecker(t *testing.T) {
 	testCases := []struct {
-		Input        *builtin.ClassType
+		Input        *ast.ClassType
 		ExpectErrors []*Error
 	}{
 		// Array key must be integer or string
@@ -168,12 +167,12 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// method return type must be return expression type
 		{
-			&builtin.ClassType{
+			&ast.ClassType{
 				Name: "klass",
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]*builtin.Method{
+				InstanceMethods: &ast.MethodMap{
+					Data: map[string][]*ast.Method{
 						"foo": {
-							&builtin.Method{
+							&ast.Method{
 								ReturnType: &ast.TypeRef{Name: []string{"Integer"}},
 								Statements: &ast.Block{
 									Statements: []ast.Node{
@@ -188,7 +187,7 @@ func TestTypeChecker(t *testing.T) {
 							},
 						},
 						"bar": {
-							&builtin.Method{
+							&ast.Method{
 								ReturnType: &ast.TypeRef{Name: []string{"Integer"}},
 								Statements: &ast.Block{
 									Statements: []ast.Node{
@@ -203,7 +202,7 @@ func TestTypeChecker(t *testing.T) {
 							},
 						},
 						"baz": {
-							&builtin.Method{
+							&ast.Method{
 								ReturnType: &ast.TypeRef{Name: []string{"Integer"}},
 								Statements: &ast.Block{
 									Statements: []ast.Node{
@@ -218,7 +217,7 @@ func TestTypeChecker(t *testing.T) {
 							},
 						},
 						"qux": {
-							&builtin.Method{
+							&ast.Method{
 								ReturnType: &ast.TypeRef{Name: []string{"Integer"}},
 								Statements: &ast.Block{
 									Statements: []ast.Node{
@@ -333,12 +332,12 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// types must equal on variable declaration, variable assignment
 		{
-			&builtin.ClassType{
+			&ast.ClassType{
 				Name: "klass",
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]*builtin.Method{
+				InstanceMethods: &ast.MethodMap{
+					Data: map[string][]*ast.Method{
 						"foo": {
-							&builtin.Method{
+							&ast.Method{
 								Statements: &ast.Block{
 									Statements: []ast.Node{
 										&ast.VariableDeclaration{
@@ -483,7 +482,7 @@ func TestTypeChecker(t *testing.T) {
 	for i, testCase := range testCases {
 		checker := NewTypeChecker()
 		checker.Context = &Context{}
-		checker.Context.ClassTypes = builtin.NewClassMapWithPrimivie([]*builtin.ClassType{testCase.Input})
+		checker.Context.ClassTypes = ast.NewClassMapWithPrimivie([]*ast.ClassType{testCase.Input})
 		checker.VisitClassType(testCase.Input) // TODO: test error
 
 		messages := make([]string, len(checker.Errors))
@@ -510,17 +509,17 @@ func TestTypeChecker(t *testing.T) {
 
 func TestModifier(t *testing.T) {
 	testCases := []struct {
-		Input       *builtin.ClassType
+		Input       *ast.ClassType
 		ExpectError error
 	}{
 		// method call on `this` context
 		{
-			&builtin.ClassType{
+			&ast.ClassType{
 				Name: "klass",
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]*builtin.Method{
+				InstanceMethods: &ast.MethodMap{
+					Data: map[string][]*ast.Method{
 						"private_method": {
-							&builtin.Method{
+							&ast.Method{
 								Modifiers: []ast.Node{
 									&ast.Modifier{Name: "private"},
 								},
@@ -532,7 +531,7 @@ func TestModifier(t *testing.T) {
 							},
 						},
 						"caller": {
-							&builtin.Method{
+							&ast.Method{
 								ReturnType: nil,
 								Statements: &ast.Block{
 									Statements: []ast.Node{
@@ -554,12 +553,12 @@ func TestModifier(t *testing.T) {
 		},
 		//
 		{
-			&builtin.ClassType{
+			&ast.ClassType{
 				Name: "klass",
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]*builtin.Method{
+				InstanceMethods: &ast.MethodMap{
+					Data: map[string][]*ast.Method{
 						"protected_method": {
-							&builtin.Method{
+							&ast.Method{
 								Modifiers: []ast.Node{
 									&ast.Modifier{Name: "protected"},
 								},
@@ -571,7 +570,7 @@ func TestModifier(t *testing.T) {
 							},
 						},
 						"caller": {
-							&builtin.Method{
+							&ast.Method{
 								ReturnType: nil,
 								Statements: &ast.Block{
 									Statements: []ast.Node{
@@ -597,12 +596,12 @@ func TestModifier(t *testing.T) {
 			errors.New("Method access modifier must be public but protected"),
 		},
 		{
-			&builtin.ClassType{
+			&ast.ClassType{
 				Name: "klass",
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]*builtin.Method{
+				InstanceMethods: &ast.MethodMap{
+					Data: map[string][]*ast.Method{
 						"public_method": {
-							&builtin.Method{
+							&ast.Method{
 								Modifiers: []ast.Node{
 									&ast.Modifier{Name: "public"},
 								},
@@ -614,7 +613,7 @@ func TestModifier(t *testing.T) {
 							},
 						},
 						"caller": {
-							&builtin.Method{
+							&ast.Method{
 								ReturnType: nil,
 								Statements: &ast.Block{
 									Statements: []ast.Node{
@@ -643,7 +642,7 @@ func TestModifier(t *testing.T) {
 	for i, testCase := range testCases {
 		checker := NewTypeChecker()
 		checker.Context = &Context{}
-		checker.Context.ClassTypes = builtin.NewClassMapWithPrimivie([]*builtin.ClassType{testCase.Input})
+		checker.Context.ClassTypes = ast.NewClassMapWithPrimivie([]*ast.ClassType{testCase.Input})
 		_, err := checker.VisitClassType(testCase.Input)
 
 		expected := testCase.ExpectError
@@ -664,13 +663,13 @@ func TestModifier(t *testing.T) {
 	}
 }
 
-func newTestClassType(statements []ast.Node) *builtin.ClassType {
-	return &builtin.ClassType{
+func newTestClassType(statements []ast.Node) *ast.ClassType {
+	return &ast.ClassType{
 		Name: "klass",
-		InstanceMethods: &builtin.MethodMap{
-			Data: map[string][]*builtin.Method{
+		InstanceMethods: &ast.MethodMap{
+			Data: map[string][]*ast.Method{
 				"foo": {
-					&builtin.Method{
+					&ast.Method{
 						Statements: &ast.Block{
 							Statements: statements,
 						},

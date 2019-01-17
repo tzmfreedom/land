@@ -6,15 +6,15 @@ import (
 )
 
 func init() {
-	instanceMethods := NewMethodMap()
+	instanceMethods := ast.NewMethodMap()
 	instanceMethods.Set(
 		"getErrors",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"getErrors",
 				CreateListTypeRef(&ast.TypeRef{Name: []string{"Error"}}),
-				[]ast.Node{},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				[]*ast.Parameter{},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return this.Extra["errors"]
 				},
 			),
@@ -22,12 +22,12 @@ func init() {
 	)
 	instanceMethods.Set(
 		"getId",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"getId",
 				stringTypeRef,
-				[]ast.Node{},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				[]*ast.Parameter{},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return this.Extra["id"]
 				},
 			),
@@ -35,34 +35,34 @@ func init() {
 	)
 	instanceMethods.Set(
 		"isSuccess",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"isSuccess",
 				booleanTypeRef,
-				[]ast.Node{},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				[]*ast.Parameter{},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return this.Extra["isSuccess"]
 				},
 			),
 		},
 	)
 
-	classMap := NewClassMap()
-	saveResult := CreateClass(
+	classMap := ast.NewClassMap()
+	saveResult := ast.CreateClass(
 		"SaveResult",
-		[]*Method{},
+		[]*ast.Method{},
 		instanceMethods,
-		NewMethodMap(),
+		ast.NewMethodMap(),
 	)
 	classMap.Set("SaveResult", saveResult)
 	nameSpaceStore.Set("Database", classMap)
 
-	staticMethods := NewMethodMap()
-	method := CreateMethod(
+	staticMethods := ast.NewMethodMap()
+	method := ast.CreateMethod(
 		"insert",
 		&ast.TypeRef{Name: []string{"Database", "SaveResult"}},
-		[]ast.Node{objectTypeParameter}, // TODO: SObject or List<SObject>
-		func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+		[]*ast.Parameter{objectTypeParameter}, // TODO: SObject or List<SObject>
+		func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 			sobj := params[0]
 			record := &soapforce.SObject{}
 			for k, v := range sobj.InstanceFields.All() {
@@ -73,42 +73,42 @@ func init() {
 			if err != nil {
 				panic(err)
 			}
-			retSaveResults := make([]*Object, len(rawSaveResults))
+			retSaveResults := make([]*ast.Object, len(rawSaveResults))
 			for i, sr := range rawSaveResults {
-				obj := CreateObject(saveResult)
+				obj := ast.CreateObject(saveResult)
 				obj.Extra["isSuccess"] = NewBoolean(sr.Success)
 				obj.Extra["id"] = NewString(sr.Id)
 				obj.Extra["errors"] = sr.Errors
 				retSaveResults[i] = obj
 			}
-			listObject := CreateObject(ListType)
+			listObject := ast.CreateObject(ListType)
 			listObject.Extra["records"] = retSaveResults
 			return listObject
 		},
 	)
-	staticMethods.Set("insert", []*Method{method})
-	method = CreateMethod(
+	staticMethods.Set("insert", []*ast.Method{method})
+	method = ast.CreateMethod(
 		"setSavePoint",
 		&ast.TypeRef{Name: []string{"Database", "SavePoint"}},
-		[]ast.Node{},
-		func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+		[]*ast.Parameter{},
+		func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 			return Null
 		},
 	)
-	staticMethods.Set("setSavePoint", []*Method{method})
-	method = CreateMethod(
+	staticMethods.Set("setSavePoint", []*ast.Method{method})
+	method = ast.CreateMethod(
 		"rollback",
 		nil,
-		[]ast.Node{objectTypeParameter}, // TODO: savepoint
-		func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+		[]*ast.Parameter{objectTypeParameter}, // TODO: savepoint
+		func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 			return Null
 		},
 	)
-	staticMethods.Set("rollback", []*Method{method})
+	staticMethods.Set("rollback", []*ast.Method{method})
 
-	databaseClass := CreateClass(
+	databaseClass := ast.CreateClass(
 		"Database",
-		[]*Method{},
+		[]*ast.Method{},
 		nil,
 		staticMethods,
 	)

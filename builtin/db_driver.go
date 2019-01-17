@@ -23,7 +23,7 @@ func NewDatabaseDriver() *databaseDriver {
 	return &databaseDriver{db}
 }
 
-func (d *databaseDriver) Query(n *ast.Soql, interpreter ast.Visitor) []*Object {
+func (d *databaseDriver) Query(n *ast.Soql, interpreter ast.Visitor) []*ast.Object {
 	builder := SqlBuilder{interpreter: interpreter}
 	sql, selectFields, relations := builder.Build(n)
 	// pp.Println(sql)
@@ -34,7 +34,7 @@ func (d *databaseDriver) Query(n *ast.Soql, interpreter ast.Visitor) []*Object {
 	}
 
 	classType, _ := PrimitiveClassMap().Get(n.FromObject)
-	records := []*Object{}
+	records := []*ast.Object{}
 	for rows.Next() {
 		dispatches := make([]interface{}, len(selectFields))
 		for i, _ := range selectFields {
@@ -45,7 +45,7 @@ func (d *databaseDriver) Query(n *ast.Soql, interpreter ast.Visitor) []*Object {
 		if err != nil {
 			panic(err)
 		}
-		record := CreateObject(classType)
+		record := ast.CreateObject(classType)
 		for i, field := range selectFields {
 			tmpTable := field[0]
 			fieldName := field[1]
@@ -61,7 +61,7 @@ func (d *databaseDriver) Query(n *ast.Soql, interpreter ast.Visitor) []*Object {
 				relationField.InstanceFields.Set(fieldName, value)
 			} else {
 				relationType, _ := PrimitiveClassMap().Get(relationInfo.ReferenceTo)
-				relationField = CreateObject(relationType)
+				relationField = ast.CreateObject(relationType)
 				relationField.InstanceFields.Set(fieldName, value)
 				record.InstanceFields.Set(relationInfo.RelationshipName, relationField)
 			}
@@ -79,7 +79,7 @@ func (d *databaseDriver) QueryRaw(query string) {
 	pp.Println(rows)
 }
 
-func (d *databaseDriver) Execute(dmlType string, sObjectType string, records []*Object, upsertKey string) {
+func (d *databaseDriver) Execute(dmlType string, sObjectType string, records []*ast.Object, upsertKey string) {
 	for _, record := range records {
 		var query string
 

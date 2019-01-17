@@ -114,7 +114,7 @@ func (v *TosVisitor) VisitIntegerLiteral(n *IntegerLiteral) (interface{}, error)
 }
 
 func (v *TosVisitor) VisitParameter(n *Parameter) (interface{}, error) {
-	r, _ := n.Type.Accept(v)
+	r, _ := n.TypeRef.Accept(v)
 	return fmt.Sprintf(
 		"%s %s",
 		r.(string),
@@ -163,7 +163,7 @@ func (v *TosVisitor) VisitFieldDeclaration(n *FieldDeclaration) (interface{}, er
 		r, _ := m.Accept(v)
 		modifiers[i] = r.(string)
 	}
-	r, _ := n.Type.Accept(v)
+	r, _ := n.TypeRef.Accept(v)
 	declarators := make([]string, len(n.Declarators))
 	for i, decl := range n.Declarators {
 		r, _ := decl.Accept(v)
@@ -203,7 +203,7 @@ func (v *TosVisitor) VisitTry(n *Try) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitCatch(n *Catch) (interface{}, error) {
-	t, _ := n.Type.Accept(v)
+	t, _ := n.TypeRef.Accept(v)
 	stmt := ""
 	v.AddIndent(func() {
 		r, _ := n.Block.Accept(v)
@@ -279,7 +279,7 @@ func (v *TosVisitor) VisitForControl(n *ForControl) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitEnhancedForControl(n *EnhancedForControl) (interface{}, error) {
-	t, _ := n.Type.Accept(v)
+	t, _ := n.TypeRef.Accept(v)
 	exp, _ := n.Expression.Accept(v)
 	return fmt.Sprintf(
 		`%s %s : %s`,
@@ -387,7 +387,7 @@ func (v *TosVisitor) VisitMethodInvocation(n *MethodInvocation) (interface{}, er
 }
 
 func (v *TosVisitor) VisitNew(n *New) (interface{}, error) {
-	t, _ := n.Type.Accept(v)
+	t, _ := n.TypeRef.Accept(v)
 	parameters := make([]string, len(n.Parameters))
 	for i, p := range n.Parameters {
 		r, _ := p.Accept(v)
@@ -585,7 +585,7 @@ func (v *TosVisitor) VisitTriggerTiming(n *TriggerTiming) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitVariableDeclaration(n *VariableDeclaration) (interface{}, error) {
-	t, _ := n.Type.Accept(v)
+	t, _ := n.TypeRef.Accept(v)
 	declarators := make([]string, len(n.Declarators))
 	for i, decl := range n.Declarators {
 		r, _ := decl.Accept(v)
@@ -630,7 +630,7 @@ func (v *TosVisitor) VisitWhen(n *When) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitWhenType(n *WhenType) (interface{}, error) {
-	r, _ := n.Type.Accept(v)
+	r, _ := n.TypeRef.Accept(v)
 	return fmt.Sprintf(
 		"%s %s",
 		r.(string),
@@ -660,7 +660,7 @@ func (v *TosVisitor) VisitNothingStatement(n *NothingStatement) (interface{}, er
 }
 
 func (v *TosVisitor) VisitCastExpression(n *CastExpression) (interface{}, error) {
-	t, _ := n.CastType.Accept(v)
+	t, _ := n.CastTypeRef.Accept(v)
 	exp, _ := n.Expression.Accept(v)
 	return fmt.Sprintf("(%s)%s", t.(string), exp.(string)), nil
 }

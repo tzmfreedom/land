@@ -4,15 +4,15 @@ import (
 	"github.com/tzmfreedom/goland/ast"
 )
 
-var ObjectType = CreateClass(
+var ObjectType = ast.CreateClass(
 	"Object",
-	[]*Method{},
+	[]*ast.Method{},
 	nil,
 	nil,
 )
 
 var objectTypeParameter = &ast.Parameter{
-	Type: &ast.TypeRef{
+	TypeRef: &ast.TypeRef{
 		Name:       []string{"Object"},
 		Parameters: []ast.Node{},
 	},

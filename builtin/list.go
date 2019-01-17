@@ -6,8 +6,8 @@ import (
 
 var ListType = createListType()
 
-func CreateListType(classType *ClassType) *ClassType {
-	return &ClassType{
+func CreateListType(classType *ast.ClassType) *ast.ClassType {
+	return &ast.ClassType{
 		Name:            "List",
 		Modifiers:       ListType.Modifiers,
 		Constructors:    ListType.Constructors,
@@ -16,7 +16,7 @@ func CreateListType(classType *ClassType) *ClassType {
 		StaticFields:    ListType.StaticFields,
 		StaticMethods:   ListType.StaticMethods,
 		Extra: map[string]interface{}{
-			"generics": []*ClassType{classType},
+			"generics": []*ast.ClassType{classType},
 		},
 	}
 }
@@ -30,20 +30,20 @@ func CreateListTypeRef(typeRef *ast.TypeRef) *ast.TypeRef {
 
 func CreateListTypeParameter(typeRef *ast.TypeRef) *ast.Parameter {
 	return &ast.Parameter{
-		Type: CreateListTypeRef(typeRef),
-		Name: "_",
+		TypeRef: CreateListTypeRef(typeRef),
+		Name:    "_",
 	}
 }
 
-func CreateListObject(classType *ClassType, records []*Object) *Object {
-	listObj := CreateObject(ListType)
-	listObj.GenericType = []*ClassType{classType}
+func CreateListObject(classType *ast.ClassType, records []*ast.Object) *ast.Object {
+	listObj := ast.CreateObject(ListType)
+	listObj.GenericType = []*ast.ClassType{classType}
 	listObj.Extra["records"] = records
 	return listObj
 }
 
 var t1Parameter = &ast.Parameter{
-	Type: &ast.TypeRef{
+	TypeRef: &ast.TypeRef{
 		Name:       []string{"T:1"},
 		Parameters: []ast.Node{},
 	},
@@ -51,7 +51,7 @@ var t1Parameter = &ast.Parameter{
 }
 
 var t2Parameter = &ast.Parameter{
-	Type: &ast.TypeRef{
+	TypeRef: &ast.TypeRef{
 		Name:       []string{"T:2"},
 		Parameters: []ast.Node{},
 	},
@@ -68,17 +68,17 @@ var t2TypeRef = &ast.TypeRef{
 	Parameters: []ast.Node{},
 }
 
-func createListType() *ClassType {
-	instanceMethods := NewMethodMap()
+func createListType() *ast.ClassType {
+	instanceMethods := ast.NewMethodMap()
 	instanceMethods.Set(
 		"add",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"add",
 				nil,
-				[]ast.Node{t1Parameter},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
-					records := this.Extra["records"].([]*Object)
+				[]*ast.Parameter{t1Parameter},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					records := this.Extra["records"].([]*ast.Object)
 					listElement := params[0]
 					this.Extra["records"] = append(records, listElement)
 					return nil
@@ -88,41 +88,33 @@ func createListType() *ClassType {
 	)
 	instanceMethods.Set(
 		"size",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"size",
 				integerTypeRef,
-				[]ast.Node{},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
-					return NewInteger(len(this.Extra["records"].([]*Object)))
+				[]*ast.Parameter{},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					return NewInteger(len(this.Extra["records"].([]*ast.Object)))
 				},
 			),
 		},
 	)
 
-	classType := CreateClass(
+	classType := ast.CreateClass(
 		"List",
-		[]*Method{
+		[]*ast.Method{
 			{
-				Modifiers: []ast.Node{
-					&ast.Modifier{
-						Name: "public",
-					},
-				},
-				Parameters: []ast.Node{},
-				NativeFunction: func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				Modifiers:  []*ast.Modifier{ast.PublicModifier()},
+				Parameters: []*ast.Parameter{},
+				NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return nil
 				},
 			},
 			{
-				Modifiers: []ast.Node{
-					&ast.Modifier{
-						Name: "public",
-					},
-				},
-				Parameters: []ast.Node{
-					&ast.Parameter{
-						Type: &ast.TypeRef{
+				Modifiers: []*ast.Modifier{ast.PublicModifier()},
+				Parameters: []*ast.Parameter{
+					{
+						TypeRef: &ast.TypeRef{
 							Name: []string{"List"},
 							Parameters: []ast.Node{
 								&ast.TypeRef{
@@ -133,12 +125,12 @@ func createListType() *ClassType {
 						Name: "list",
 					},
 				},
-				NativeFunction: func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					listObj := params[0]
-					listParams := listObj.Extra["records"].([]*Object)
-					newListParams := make([]*Object, len(listParams))
+					listParams := listObj.Extra["records"].([]*ast.Object)
+					newListParams := make([]*ast.Object, len(listParams))
 					for i, listParam := range listParams {
-						newListParams[i] = &Object{
+						newListParams[i] = &ast.Object{
 							ClassType: listParam.ClassType,
 						}
 					}

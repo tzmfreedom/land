@@ -4,14 +4,13 @@ import (
 	"fmt"
 
 	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
 )
 
 type ClassChecker struct {
 	Context *Context
 }
 
-func (c *ClassChecker) Check(t *builtin.ClassType) error {
+func (c *ClassChecker) Check(t *ast.ClassType) error {
 	if err := c.checkSameParameterName(t.InstanceMethods); err != nil {
 		return err
 	}
@@ -33,12 +32,12 @@ func (c *ClassChecker) Check(t *builtin.ClassType) error {
 	return nil
 }
 
-func (c *ClassChecker) checkSameParameterName(m *builtin.MethodMap) error {
+func (c *ClassChecker) checkSameParameterName(m *ast.MethodMap) error {
 	for _, methods := range m.Data {
 		for _, m := range methods {
 			parameterNames := map[string]struct{}{}
 			for _, p := range m.Parameters {
-				name := p.(*ast.Parameter).Name
+				name := p.Name
 				if _, ok := parameterNames[name]; ok {
 					return fmt.Errorf("parameter name is duplicated: %s", name)
 				}
@@ -49,8 +48,7 @@ func (c *ClassChecker) checkSameParameterName(m *builtin.MethodMap) error {
 	return nil
 }
 
-func (c *ClassChecker) checkDuplicated(m *builtin.MethodMap) error {
-	resolver := NewTypeResolver(c.Context, false)
+func (c *ClassChecker) checkDuplicated(m *ast.MethodMap) error {
 	for _, methods := range m.Data {
 		if len(methods) == 1 {
 			continue
@@ -63,11 +61,8 @@ func (c *ClassChecker) checkDuplicated(m *builtin.MethodMap) error {
 				}
 				match := true
 				for i, p := range m.Parameters {
-					otherParam := other.Parameters[i].(*ast.Parameter)
-					otherParamType, _ := resolver.ResolveType(otherParam.Type.(*ast.TypeRef).Name)
-					methodParam := p.(*ast.Parameter)
-					methodParamType, _ := resolver.ResolveType(methodParam.Type.(*ast.TypeRef).Name)
-					if methodParamType != otherParamType {
+					otherParam := other.Parameters[i]
+					if p.Type != otherParam.Type {
 						match = false
 						break
 					}
@@ -83,7 +78,7 @@ func (c *ClassChecker) checkDuplicated(m *builtin.MethodMap) error {
 
 // if override modifier is specified, check modifier virtual/abstract on SuperClassRef
 // if SuperClassRef is abstract/virtual, check override method implementation
-func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
+func (c *ClassChecker) checkOverrideMethod(t *ast.ClassType) error {
 	resolver := NewTypeResolver(c.Context, false)
 	for _, methods := range t.InstanceMethods.Data {
 		for _, m := range methods {
@@ -92,18 +87,18 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 					return fmt.Errorf("@Override specified for non-overriding method: %s", m.Name)
 				}
 
-				types := make([]*builtin.ClassType, len(m.Parameters))
+				types := make([]*ast.ClassType, len(m.Parameters))
 				for i, p := range m.Parameters {
-					types[i], _ = resolver.ResolveType(p.(*ast.Parameter).Type.(*ast.TypeRef).Name)
+					types[i] = p.Type
 				}
 				_, _, err := resolver.FindInstanceMethod(t.SuperClass, m.Name, types, MODIFIER_NO_CHECK)
 				if err != nil {
 					return fmt.Errorf("method %s missing on super class", m.Name)
 				}
 			} else {
-				types := make([]*builtin.ClassType, len(m.Parameters))
+				types := make([]*ast.ClassType, len(m.Parameters))
 				for i, p := range m.Parameters {
-					types[i], _ = resolver.ResolveType(p.(*ast.Parameter).Type.(*ast.TypeRef).Name)
+					types[i] = p.Type
 				}
 				if t.SuperClassRef == nil {
 					continue
@@ -122,9 +117,9 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 					return fmt.Errorf("override %s is required super class", m.Name)
 				}
 
-				types := make([]*builtin.ClassType, len(m.Parameters))
+				types := make([]*ast.ClassType, len(m.Parameters))
 				for i, p := range m.Parameters {
-					types[i], _ = resolver.ResolveType(p.(*ast.Parameter).Type.(*ast.TypeRef).Name)
+					types[i] = p.Type
 				}
 				_, _, err := resolver.FindStaticMethod(t.SuperClass, m.Name, types, MODIFIER_NO_CHECK)
 				if err != nil {
@@ -136,7 +131,7 @@ func (c *ClassChecker) checkOverrideMethod(t *builtin.ClassType) error {
 	return nil
 }
 
-func (c *ClassChecker) checkOverrideField(t *builtin.ClassType) error {
+func (c *ClassChecker) checkOverrideField(t *ast.ClassType) error {
 	for _, field := range t.InstanceFields.Data {
 		if field.IsOverride() {
 			if t.SuperClassRef == nil {

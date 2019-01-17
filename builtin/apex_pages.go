@@ -3,40 +3,40 @@ package builtin
 import "github.com/tzmfreedom/goland/ast"
 
 func init() {
-	instanceMethods := NewMethodMap()
-	staticMethods := NewMethodMap()
+	instanceMethods := ast.NewMethodMap()
+	staticMethods := ast.NewMethodMap()
 	staticMethods.Set(
 		"currentPage",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"currentPage",
 				pageReferenceTypeRef,
-				[]ast.Node{},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				[]*ast.Parameter{},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return extra["current_page"]
 				},
 			),
 		},
 	)
 
-	classType := CreateClass(
+	classType := ast.CreateClass(
 		"ApexPages",
-		[]*Method{},
+		[]*ast.Method{},
 		instanceMethods,
 		staticMethods,
 	)
 
 	primitiveClassMap.Set("ApexPages", classType)
 
-	instanceMethods = NewMethodMap()
+	instanceMethods = ast.NewMethodMap()
 	instanceMethods.Set(
 		"getRecord",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"getRecord",
 				&ast.TypeRef{Name: []string{"Account"}}, // TODO: SObject
-				[]ast.Node{},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				[]*ast.Parameter{},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return this.Extra["record"]
 				},
 			),
@@ -44,13 +44,13 @@ func init() {
 	)
 	instanceMethods.Set(
 		"getId",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"getId",
 				stringTypeRef, // TODO: SObject
-				[]ast.Node{},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
-					record := this.Extra["record"].(*Object)
+				[]*ast.Parameter{},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					record := this.Extra["record"].(*ast.Object)
 					value, _ := record.InstanceFields.Get("Id")
 					return value
 				},
@@ -58,26 +58,22 @@ func init() {
 		},
 	)
 
-	staticMethods = NewMethodMap()
-	classType = CreateClass(
+	staticMethods = ast.NewMethodMap()
+	classType = ast.CreateClass(
 		"StandardController",
-		[]*Method{
+		[]*ast.Method{
 			{
-				Modifiers: []ast.Node{
-					&ast.Modifier{
-						Name: "public",
-					},
-				},
-				Parameters: []ast.Node{
-					&ast.Parameter{
-						Type: &ast.TypeRef{
+				Modifiers: []*ast.Modifier{ast.PublicModifier()},
+				Parameters: []*ast.Parameter{
+					{
+						TypeRef: &ast.TypeRef{
 							Name:       []string{"Account"}, // TODO: Sobject
 							Parameters: []ast.Node{},
 						},
 						Name: "_",
 					},
 				},
-				NativeFunction: func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					this.Extra["record"] = params[0]
 					return nil
 				},
@@ -87,7 +83,7 @@ func init() {
 		staticMethods,
 	)
 
-	classMap := NewClassMap()
+	classMap := ast.NewClassMap()
 	classMap.Set("StandardController", classType)
 
 	nameSpaceStore.Set("ApexPages", classMap)

@@ -6,27 +6,26 @@ import (
 	"errors"
 
 	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
 )
 
 func TestClassChecker(t *testing.T) {
 	testCases := []struct {
-		Input         *builtin.ClassType
+		Input         *ast.ClassType
 		ExpectedError error
 	}{
 		// difference parameter type
 		{
-			&builtin.ClassType{
+			&ast.ClassType{
 				Modifiers:      []ast.Node{},
 				Annotations:    []ast.Node{},
 				Name:           "Foo",
 				SuperClassRef:  nil,
-				InstanceFields: builtin.NewFieldMap(),
-				StaticFields:   builtin.NewFieldMap(),
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]*builtin.Method{
+				InstanceFields: ast.NewFieldMap(),
+				StaticFields:   ast.NewFieldMap(),
+				InstanceMethods: &ast.MethodMap{
+					Data: map[string][]*ast.Method{
 						"bar": {
-							&builtin.Method{
+							&ast.Method{
 								Name: "bar",
 								ReturnType: &ast.TypeRef{
 									Name: []string{
@@ -46,7 +45,7 @@ func TestClassChecker(t *testing.T) {
 									},
 								},
 							},
-							&builtin.Method{
+							&ast.Method{
 								Name: "bar",
 								ReturnType: &ast.TypeRef{
 									Name: []string{
@@ -69,23 +68,23 @@ func TestClassChecker(t *testing.T) {
 						},
 					},
 				},
-				StaticMethods: builtin.NewMethodMap(),
+				StaticMethods: ast.NewMethodMap(),
 			},
 			nil,
 		},
 		// same parameter and name signature, difference return type
 		{
-			&builtin.ClassType{
+			&ast.ClassType{
 				Modifiers:      []ast.Node{},
 				Annotations:    []ast.Node{},
 				Name:           "Foo",
 				SuperClassRef:  nil,
-				InstanceFields: builtin.NewFieldMap(),
-				StaticFields:   builtin.NewFieldMap(),
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]*builtin.Method{
+				InstanceFields: ast.NewFieldMap(),
+				StaticFields:   ast.NewFieldMap(),
+				InstanceMethods: &ast.MethodMap{
+					Data: map[string][]*ast.Method{
 						"bar": {
-							&builtin.Method{
+							&ast.Method{
 								Name: "bar",
 								ReturnType: &ast.TypeRef{
 									Name: []string{
@@ -105,7 +104,7 @@ func TestClassChecker(t *testing.T) {
 									},
 								},
 							},
-							&builtin.Method{
+							&ast.Method{
 								Name: "bar",
 								ReturnType: &ast.TypeRef{
 									Name: []string{
@@ -128,23 +127,23 @@ func TestClassChecker(t *testing.T) {
 						},
 					},
 				},
-				StaticMethods: builtin.NewMethodMap(),
+				StaticMethods: ast.NewMethodMap(),
 			},
 			errors.New("method bar is duplicated"),
 		},
 		// different parameter number
 		{
-			&builtin.ClassType{
+			&ast.ClassType{
 				Modifiers:      []ast.Node{},
 				Annotations:    []ast.Node{},
 				Name:           "Foo",
 				SuperClassRef:  nil,
-				InstanceFields: builtin.NewFieldMap(),
-				StaticFields:   builtin.NewFieldMap(),
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]*builtin.Method{
+				InstanceFields: ast.NewFieldMap(),
+				StaticFields:   ast.NewFieldMap(),
+				InstanceMethods: &ast.MethodMap{
+					Data: map[string][]*ast.Method{
 						"bar": {
-							&builtin.Method{
+							&ast.Method{
 								Name: "bar",
 								ReturnType: &ast.TypeRef{
 									Name: []string{
@@ -164,7 +163,7 @@ func TestClassChecker(t *testing.T) {
 									},
 								},
 							},
-							&builtin.Method{
+							&ast.Method{
 								Name: "bar",
 								ReturnType: &ast.TypeRef{
 									Name: []string{
@@ -191,23 +190,23 @@ func TestClassChecker(t *testing.T) {
 						},
 					},
 				},
-				StaticMethods: builtin.NewMethodMap(),
+				StaticMethods: ast.NewMethodMap(),
 			},
 			nil,
 		},
 		// same parameter name
 		{
-			&builtin.ClassType{
+			&ast.ClassType{
 				Modifiers:      []ast.Node{},
 				Annotations:    []ast.Node{},
 				Name:           "Foo",
 				SuperClassRef:  nil,
-				InstanceFields: builtin.NewFieldMap(),
-				StaticFields:   builtin.NewFieldMap(),
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]*builtin.Method{
+				InstanceFields: ast.NewFieldMap(),
+				StaticFields:   ast.NewFieldMap(),
+				InstanceMethods: &ast.MethodMap{
+					Data: map[string][]*ast.Method{
 						"bar": {
-							&builtin.Method{
+							&ast.Method{
 								Name: "bar",
 								ReturnType: &ast.TypeRef{
 									Name: []string{
@@ -234,7 +233,7 @@ func TestClassChecker(t *testing.T) {
 						},
 					},
 				},
-				StaticMethods: builtin.NewMethodMap(),
+				StaticMethods: ast.NewMethodMap(),
 			},
 			errors.New("parameter name is duplicated: a"),
 		},
@@ -242,7 +241,7 @@ func TestClassChecker(t *testing.T) {
 	for _, testCase := range testCases {
 		checker := &ClassChecker{}
 		checker.Context = &Context{}
-		checker.Context.ClassTypes = builtin.NewClassMapWithPrimivie(nil)
+		checker.Context.ClassTypes = ast.NewClassMapWithPrimivie(nil)
 		err := checker.Check(testCase.Input)
 		if testCase.ExpectedError == nil {
 			if err != nil {

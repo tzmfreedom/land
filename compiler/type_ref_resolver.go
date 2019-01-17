@@ -9,7 +9,7 @@ type TypeRefResolver struct {
 	resolver *builtin.TypeRefResolver
 }
 
-func NewTypeRefResolver(classTypes *builtin.ClassMap, nameSpaceStore *builtin.NameSpaceStore) *TypeRefResolver {
+func NewTypeRefResolver(classTypes *ast.ClassMap, nameSpaceStore *builtin.NameSpaceStore) *TypeRefResolver {
 	return &TypeRefResolver{
 		resolver: &builtin.TypeRefResolver{
 			ClassTypes: classTypes,
@@ -18,19 +18,19 @@ func NewTypeRefResolver(classTypes *builtin.ClassMap, nameSpaceStore *builtin.Na
 	}
 }
 
-func (r *TypeRefResolver) Resolve(n *builtin.ClassType) (*builtin.ClassType, error) {
+func (r *TypeRefResolver) Resolve(n *ast.ClassType) (*ast.ClassType, error) {
 	var err error
 	if n.SuperClassRef != nil {
-		n.SuperClass, err = r.resolver.ResolveType(n.SuperClassRef.(*ast.TypeRef).Name)
+		n.SuperClass, err = r.resolver.ResolveType(n.SuperClassRef.Name)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	if n.ImplementClassRefs != nil {
-		n.ImplementClasses = make([]*builtin.ClassType, len(n.ImplementClassRefs))
+		n.ImplementClasses = make([]*ast.ClassType, len(n.ImplementClassRefs))
 		for i, impl := range n.ImplementClassRefs {
-			n.ImplementClasses[i], err = r.resolver.ResolveType(impl.(*ast.TypeRef).Name)
+			n.ImplementClasses[i], err = r.resolver.ResolveType(impl.Name)
 			if err != nil {
 				return nil, err
 			}

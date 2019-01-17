@@ -3,6 +3,7 @@ package compiler
 import (
 	"strings"
 
+	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 )
 
@@ -11,17 +12,17 @@ type Env interface{}
 type Context struct {
 	Env         *TypeEnv
 	StaticField *TypeMap
-	ClassTypes  *builtin.ClassMap       // loaded User Class
+	ClassTypes  *ast.ClassMap           // loaded User Class
 	NameSpaces  *builtin.NameSpaceStore // NameSpaces and Related Classes
 
-	CurrentMethod *builtin.Method
-	CurrentClass  *builtin.ClassType
+	CurrentMethod *ast.Method
+	CurrentClass  *ast.ClassType
 }
 
 func NewContext() *Context {
 	ctx := &Context{}
 	ctx.StaticField = newTypeMap()
-	ctx.ClassTypes = builtin.NewClassMap()
+	ctx.ClassTypes = ast.NewClassMap()
 	ctx.NameSpaces = builtin.NewNameSpaceStore()
 	ctx.Env = newTypeEnv(nil)
 	return ctx
@@ -42,7 +43,7 @@ func newTypeEnv(p *TypeEnv) *TypeEnv {
 	}
 }
 
-func (e *TypeEnv) Get(k string) (*builtin.ClassType, bool) {
+func (e *TypeEnv) Get(k string) (*ast.ClassType, bool) {
 	n, ok := e.Data.Get(k)
 	if ok {
 		return n, true
@@ -53,7 +54,7 @@ func (e *TypeEnv) Get(k string) (*builtin.ClassType, bool) {
 	return nil, false
 }
 
-func (e *TypeEnv) Set(k string, n *builtin.ClassType) {
+func (e *TypeEnv) Set(k string, n *ast.ClassType) {
 	e.Data.Set(k, n)
 }
 
@@ -61,20 +62,20 @@ func (e *TypeEnv) Set(k string, n *builtin.ClassType) {
  * TypeMap
  */
 type TypeMap struct {
-	Data map[string]*builtin.ClassType
+	Data map[string]*ast.ClassType
 }
 
 func newTypeMap() *TypeMap {
 	return &TypeMap{
-		Data: map[string]*builtin.ClassType{},
+		Data: map[string]*ast.ClassType{},
 	}
 }
 
-func (m *TypeMap) Set(k string, n *builtin.ClassType) {
+func (m *TypeMap) Set(k string, n *ast.ClassType) {
 	m.Data[strings.ToLower(k)] = n
 }
 
-func (m *TypeMap) Get(k string) (*builtin.ClassType, bool) {
+func (m *TypeMap) Get(k string) (*ast.ClassType, bool) {
 	n, ok := m.Data[strings.ToLower(k)]
 	return n, ok
 }
@@ -92,7 +93,7 @@ func NewStaticFieldMap() *StaticFieldMap {
 	}
 }
 
-func (m *StaticFieldMap) Add(k string, n *builtin.ClassType) {
+func (m *StaticFieldMap) Add(k string, n *ast.ClassType) {
 	typeMap, _ := m.Get(k)
 	typeMap.Set(k, n)
 }

@@ -21,13 +21,13 @@ func NewTypeChecker() *TypeChecker {
 	return checker
 }
 
-func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) {
+func (v *TypeChecker) VisitClassType(n *ast.ClassType) (interface{}, error) {
 	v.Context.CurrentClass = n
 	if n.StaticFields != nil {
 		for _, f := range n.StaticFields.Data {
 			e, _ := f.Expression.Accept(v)
-			if !f.Type.Equals(e.(*builtin.ClassType)) {
-				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", e.(*builtin.ClassType).String(), f.Type.String()), f.Expression)
+			if !builtin.Equals(f.Type, e.(*ast.ClassType)) {
+				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", e.(*ast.ClassType).String(), f.Type.String()), f.Expression)
 			}
 		}
 	}
@@ -38,8 +38,8 @@ func (v *TypeChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) 
 			if e == nil {
 				continue
 			}
-			if !f.Type.Equals(e.(*builtin.ClassType)) {
-				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", e.(*builtin.ClassType).String(), f.Type.String()), f.Expression)
+			if !builtin.Equals(f.Type, e.(*ast.ClassType)) {
+				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", e.(*ast.ClassType).String(), f.Type.String()), f.Expression)
 			}
 		}
 	}
@@ -112,7 +112,7 @@ func (v *TypeChecker) VisitIntegerLiteral(n *ast.IntegerLiteral) (interface{}, e
 }
 
 func (v *TypeChecker) VisitParameter(n *ast.Parameter) (interface{}, error) {
-	n.Type.Accept(v)
+	panic("not pass")
 	return nil, nil
 }
 
@@ -121,7 +121,7 @@ func (v *TypeChecker) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) 
 	if err != nil {
 		return nil, err
 	}
-	klass := k.(*builtin.ClassType)
+	klass := k.(*ast.ClassType)
 	if !klass.IsGeneric() {
 		v.AddError("receiver should be list or map", n.Key)
 		return nil, nil
@@ -130,18 +130,18 @@ func (v *TypeChecker) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) 
 	if err != nil {
 		return nil, err
 	}
-	generics := klass.Extra["generics"].([]*builtin.ClassType)
+	generics := klass.Extra["generics"].([]*ast.ClassType)
 	if len(generics) == 0 {
 		return nil, v.compileError("generics is not specified", n)
 	}
 	if klass.Name == "Map" {
 		if t != builtin.StringType {
-			v.AddError(fmt.Sprintf("map key <%v> must be String", t.(*builtin.ClassType).String()), n.Key)
+			v.AddError(fmt.Sprintf("map key <%v> must be String", t.(*ast.ClassType).String()), n.Key)
 		}
 		return generics[1], nil
 	}
 	if t != builtin.IntegerType {
-		v.AddError(fmt.Sprintf("list key <%v> must be Integer", t.(*builtin.ClassType).String()), n.Key)
+		v.AddError(fmt.Sprintf("list key <%v> must be Integer", t.(*ast.ClassType).String()), n.Key)
 	}
 	// TODO: implement set
 	return generics[0], nil
@@ -191,12 +191,8 @@ func (v *TypeChecker) VisitTry(n *ast.Try) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitCatch(n *ast.Catch) (interface{}, error) {
-	t, err := n.Type.Accept(v)
-	if err != nil {
-		return nil, err
-	}
-	v.Context.Env.Set(n.Identifier, t.(*builtin.ClassType)) // TODO: append scope
-	_, err = n.Block.Accept(v)
+	v.Context.Env.Set(n.Identifier, n.Type) // TODO: append scope
+	_, err := n.Block.Accept(v)
 	if err != nil {
 		return nil, err
 	}
@@ -247,17 +243,16 @@ func (v *TypeChecker) VisitForControl(n *ast.ForControl) (interface{}, error) {
 			return nil, err
 		}
 		if t != builtin.BooleanType {
-			v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", t.(*builtin.ClassType).String()), n.Expression)
+			v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", t.(*ast.ClassType).String()), n.Expression)
 		}
 	}
 	return nil, nil
 }
 
 func (v *TypeChecker) VisitEnhancedForControl(n *ast.EnhancedForControl) (interface{}, error) {
-	t, _ := n.Type.Accept(v)
-	declClassType := t.(*builtin.ClassType)
+	declClassType := n.Type
 	exp, _ := n.Expression.Accept(v)
-	expClassType := exp.(*builtin.ClassType)
+	expClassType := exp.(*ast.ClassType)
 	v.Context.Env.Set(n.VariableDeclaratorId, declClassType)
 
 	if expClassType.Name != "List" && expClassType.Name != "Set" {
@@ -265,8 +260,8 @@ func (v *TypeChecker) VisitEnhancedForControl(n *ast.EnhancedForControl) (interf
 		return nil, nil
 	}
 
-	genericsType := expClassType.Extra["generics"].([]*builtin.ClassType)[0]
-	if !declClassType.Equals(genericsType) {
+	genericsType := expClassType.Extra["generics"].([]*ast.ClassType)[0]
+	if !builtin.Equals(declClassType, genericsType) {
 		v.AddError(fmt.Sprintf("expression <%s> must be <%s> expression", declClassType.Name, expClassType.Name), n)
 	}
 	return nil, nil
@@ -275,7 +270,7 @@ func (v *TypeChecker) VisitEnhancedForControl(n *ast.EnhancedForControl) (interf
 func (v *TypeChecker) VisitIf(n *ast.If) (interface{}, error) {
 	t, _ := n.Condition.Accept(v)
 	if t != builtin.BooleanType {
-		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", t.(*builtin.ClassType).String()), n.Condition)
+		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", t.(*ast.ClassType).String()), n.Condition)
 	}
 	if _, err := n.IfStatement.Accept(v); err != nil {
 		return nil, err
@@ -299,9 +294,7 @@ func (v *TypeChecker) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 	}
 	v.Context.Env.Set("this", classType)
 	for _, param := range n.Parameters {
-		p := param.(*ast.Parameter)
-		t, _ := p.Type.Accept(v)
-		env.Set(p.Name, t.(*builtin.ClassType))
+		env.Set(param.Name, param.Type)
 	}
 	r, err := n.Statements.Accept(v)
 	if err != nil {
@@ -310,7 +303,7 @@ func (v *TypeChecker) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 	}
 	if n.ReturnType != nil && r == nil {
 		retType, _ := n.ReturnType.Accept(v)
-		v.AddError(fmt.Sprintf("return type <void> does not match %v", retType.(*builtin.ClassType).String()), n)
+		v.AddError(fmt.Sprintf("return type <void> does not match %v", retType.(*ast.ClassType).String()), n)
 	}
 
 	v.Context.CurrentMethod = nil
@@ -321,13 +314,13 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 	resolver := NewTypeResolver(v.Context, false)
 
 	nameOrExp := n.NameOrExpression
-	types := make([]*builtin.ClassType, len(n.Parameters))
+	types := make([]*ast.ClassType, len(n.Parameters))
 	for i, p := range n.Parameters {
 		t, err := p.Accept(v)
 		if err != nil {
 			return nil, err
 		}
-		types[i] = t.(*builtin.ClassType)
+		types[i] = t.(*ast.ClassType)
 	}
 	if name, ok := nameOrExp.(*ast.Name); ok {
 		// TODO: implement
@@ -339,16 +332,16 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 			return nil, v.compileError(err.Error(), n)
 		}
 		if method.ReturnType != nil {
-			retType := method.ReturnType.(*ast.TypeRef).Name[0]
+			retType := method.ReturnTypeRef.Name[0]
 			if retType == "T:1" || retType == "T:2" {
-				generics := receiverType.Extra["generics"].([]*builtin.ClassType)
+				generics := receiverType.Extra["generics"].([]*ast.ClassType)
 				if retType == "T:1" {
 					return generics[0], nil
 				} else {
 					return generics[1], nil
 				}
 			}
-			return method.ReturnType.Accept(v)
+			return method.ReturnType, nil
 		}
 	} else if fieldAccess, ok := nameOrExp.(*ast.FieldAccess); ok {
 		classType, err := fieldAccess.Expression.Accept(v)
@@ -356,7 +349,7 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 			return nil, err
 		}
 		receiverType, method, err := resolver.FindInstanceMethod(
-			classType.(*builtin.ClassType),
+			classType.(*ast.ClassType),
 			fieldAccess.FieldName,
 			types,
 			MODIFIER_PUBLIC_ONLY,
@@ -366,43 +359,39 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		}
 		if method.ReturnType != nil {
 			// TODO: duplicate code
-			retType := method.ReturnType.(*ast.TypeRef).Name[0]
+			retType := method.ReturnTypeRef.Name[0]
 			if retType == "T:1" || retType == "T:2" {
-				generics := receiverType.Extra["generics"].([]*builtin.ClassType)
+				generics := receiverType.Extra["generics"].([]*ast.ClassType)
 				if retType == "T:1" {
 					return generics[0], nil
 				} else {
 					return generics[1], nil
 				}
 			}
-			return method.ReturnType.Accept(v)
+			return method.ReturnType, nil
 		}
 	}
 	return nil, nil
 }
 
 func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
-	t, err := n.Type.Accept(v)
-	if err != nil {
-		return nil, err
-	}
-	params := make([]*builtin.ClassType, len(n.Parameters))
+	params := make([]*ast.ClassType, len(n.Parameters))
 	for i, p := range n.Parameters {
 		param, err := p.Accept(v)
 		if err != nil {
 			return nil, err
 		}
-		params[i] = param.(*builtin.ClassType)
+		params[i] = param.(*ast.ClassType)
 	}
 	typeResolver := NewTypeResolver(v.Context, false)
-	classType := t.(*builtin.ClassType)
+	classType := n.Type
 
 	if classType.IsAbstract() || classType.Constructors == nil {
 		v.AddError(fmt.Sprintf("Type cannot be constructed: %s", classType.Name), n)
-		return t, nil
+		return n.Type, nil
 	}
 	if !classType.HasConstructor() {
-		return t, nil
+		return n.Type, nil
 	}
 	_, method, err := typeResolver.SearchConstructor(classType, params)
 	if err != nil {
@@ -410,13 +399,13 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 	}
 	if method == nil {
 		v.AddError(fmt.Sprintf("constructor <%s> not found", classType.Name), n)
-		return t, nil
+		return n.Type, nil
 	}
 	// TODO: for protected impl
 	if method.IsPrivate() && v.Context.CurrentClass != classType {
 		v.AddError(fmt.Sprintf("constructor <%s> not found", classType.Name), n)
 	}
-	return t, nil
+	return n.Type, nil
 }
 
 func (v *TypeChecker) VisitNullLiteral(n *ast.NullLiteral) (interface{}, error) {
@@ -426,7 +415,7 @@ func (v *TypeChecker) VisitNullLiteral(n *ast.NullLiteral) (interface{}, error) 
 func (v *TypeChecker) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, error) {
 	t, _ := n.Expression.Accept(v)
 	if t != builtin.IntegerType {
-		v.AddError(fmt.Sprintf("expression <%s> must be Integer", t.(*builtin.ClassType).String()), n.Expression)
+		v.AddError(fmt.Sprintf("expression <%s> must be Integer", t.(*ast.ClassType).String()), n.Expression)
 	}
 	return nil, nil
 }
@@ -439,7 +428,7 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		n.Op == "=*" ||
 		n.Op == "=/" {
 
-		var l *builtin.ClassType
+		var l *ast.ClassType
 		resolver := NewTypeResolver(v.Context, false)
 		switch leftNode := n.Left.(type) {
 		case *ast.Name:
@@ -450,27 +439,27 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			l = left
 		case *ast.FieldAccess:
 			classType, _ := leftNode.Expression.Accept(v)
-			f, _ := resolver.findInstanceField(classType.(*builtin.ClassType), leftNode.FieldName, MODIFIER_PUBLIC_ONLY, true)
+			f, _ := resolver.findInstanceField(classType.(*ast.ClassType), leftNode.FieldName, MODIFIER_PUBLIC_ONLY, true)
 			l = f.Type
 		case *ast.ArrayAccess:
 			left, err := leftNode.Accept(v)
 			if err != nil {
 				return nil, err
 			}
-			l = left.(*builtin.ClassType)
+			l = left.(*ast.ClassType)
 		}
-		if r != nil && !l.Equals(r.(*builtin.ClassType)) {
-			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", l.String(), r.(*builtin.ClassType).String()), n.Left)
+		if r != nil && !builtin.Equals(l, r.(*ast.ClassType)) {
+			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", l.String(), r.(*ast.ClassType).String()), n.Left)
 		}
 		return l, nil
 	} else {
 		l, _ := n.Left.Accept(v)
 		if n.Op == "+" {
 			if l != builtin.IntegerType && l != builtin.StringType && l != builtin.DoubleType {
-				v.AddError(fmt.Sprintf("expression <%s> must be Integer, String or Double", l.(*builtin.ClassType).String()), n.Left)
+				v.AddError(fmt.Sprintf("expression <%s> must be Integer, String or Double", l.(*ast.ClassType).String()), n.Left)
 			}
 			if (l == builtin.StringType || r == builtin.StringType) && l != r {
-				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", l.(*builtin.ClassType).String(), r.(*builtin.ClassType).String()), n.Left)
+				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", l.(*ast.ClassType).String(), r.(*ast.ClassType).String()), n.Left)
 			}
 			if l == builtin.DoubleType || r == builtin.DoubleType {
 				return builtin.DoubleType, nil
@@ -482,9 +471,9 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		}
 		if n.Op == "-" || n.Op == "*" || n.Op == "/" || n.Op == "%" {
 			if l != builtin.IntegerType && l != builtin.DoubleType {
-				v.AddError(fmt.Sprintf("expression <%s> must be Integer or Double", l.(*builtin.ClassType).String()), n.Left)
+				v.AddError(fmt.Sprintf("expression <%s> must be Integer or Double", l.(*ast.ClassType).String()), n.Left)
 			} else if r != builtin.IntegerType && r != builtin.DoubleType {
-				v.AddError(fmt.Sprintf("expression <%s> must be Integer or Double", r.(*builtin.ClassType).String()), n.Right)
+				v.AddError(fmt.Sprintf("expression <%s> must be Integer or Double", r.(*ast.ClassType).String()), n.Right)
 			}
 			if l == builtin.DoubleType || r == builtin.DoubleType {
 				return builtin.DoubleType, nil
@@ -503,18 +492,22 @@ func (v *TypeChecker) VisitReturn(n *ast.Return) (interface{}, error) {
 	if v.Context.CurrentMethod.ReturnType == nil {
 		if n.Expression != nil {
 			exp, _ := n.Expression.Accept(v)
-			v.AddError(fmt.Sprintf("return type <%s> does not match void", exp.(*builtin.ClassType).String()), n.Expression)
+			v.AddError(fmt.Sprintf("return type <%s> does not match void", exp.(*ast.ClassType).String()), n.Expression)
 		}
 		return nil, nil
 	}
 
-	retType, _ := v.Context.CurrentMethod.ReturnType.Accept(v)
+	retType := v.Context.CurrentMethod.ReturnType
 	if n.Expression == nil {
-		v.AddError(fmt.Sprintf("return type <void> does not match %v", retType.(*builtin.ClassType).String()), n.Expression)
+		v.AddError(fmt.Sprintf("return type <void> does not match %v", retType.String()), n.Expression)
+		return nil, nil
 	}
-	exp, _ := n.Expression.Accept(v)
-	if !retType.(*builtin.ClassType).Equals(exp.(*builtin.ClassType)) {
-		v.AddError(fmt.Sprintf("return type <%s> does not match %v", exp.(*builtin.ClassType).String(), retType.(*builtin.ClassType).String()), n.Expression)
+	exp, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	if !builtin.Equals(retType, exp.(*ast.ClassType)) {
+		v.AddError(fmt.Sprintf("return type <%s> does not match %v", exp.(*ast.ClassType).String(), retType.String()), n.Expression)
 	}
 	return exp, nil
 }
@@ -525,16 +518,14 @@ func (v *TypeChecker) VisitThrow(n *ast.Throw) (interface{}, error) {
 		return nil, err
 	}
 	// Check Subclass of Exception
-	baseClass := r.(*builtin.ClassType)
-	super := baseClass.SuperClassRef
+	baseClass := r.(*ast.ClassType)
+	super := baseClass.SuperClass
 	if super == nil {
 		v.AddError(fmt.Sprintf("Throw expression must be of type exception: %s", baseClass.Name), n)
 	} else {
-		typeResolver := NewTypeResolver(v.Context, false)
-		t, err := typeResolver.ResolveType(super.(*ast.TypeRef).Name)
 		if err != nil {
 			v.AddError(err.Error(), n)
-		} else if t != builtin.ExceptionType {
+		} else if super != builtin.ExceptionType {
 			v.AddError(fmt.Sprintf("Throw expression must be of type exception: %s", baseClass.Name), n)
 		}
 	}
@@ -547,10 +538,10 @@ func (v *TypeChecker) VisitSoql(n *ast.Soql) (interface{}, error) {
 	if err != nil {
 		return nil, v.compileError(err.Error(), n)
 	}
-	return &builtin.ClassType{
+	return &ast.ClassType{
 		Name: "List",
 		Extra: map[string]interface{}{
-			"generics": []*builtin.ClassType{t},
+			"generics": []*ast.ClassType{t},
 		},
 	}, nil
 }
@@ -585,10 +576,6 @@ func (v *TypeChecker) VisitTriggerTiming(n *ast.TriggerTiming) (interface{}, err
 }
 
 func (v *TypeChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (interface{}, error) {
-	declType, err := n.Type.Accept(v)
-	if err != nil {
-		return nil, err
-	}
 	for _, d := range n.Declarators {
 		t, err := d.Accept(v)
 		if err != nil {
@@ -596,12 +583,12 @@ func (v *TypeChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (inte
 		}
 		decl := d.(*ast.VariableDeclarator)
 		if _, ok := v.Context.Env.Get(decl.Name); ok {
-			v.AddError(fmt.Sprintf("variable declaration is duplicated <%s>", decl.Name), n.Type)
+			v.AddError(fmt.Sprintf("variable declaration is duplicated <%s>", decl.Name), n)
 			continue
 		}
-		v.Context.Env.Set(decl.Name, declType.(*builtin.ClassType))
-		if !declType.(*builtin.ClassType).Equals(t.(*builtin.ClassType)) {
-			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", declType.(*builtin.ClassType).String(), t.(*builtin.ClassType).String()), n.Type)
+		v.Context.Env.Set(decl.Name, n.Type)
+		if !builtin.Equals(n.Type, t.(*ast.ClassType)) {
+			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", n.Type.String(), t.(*ast.ClassType).String()), n)
 		}
 	}
 	return nil, nil
@@ -625,7 +612,7 @@ func (v *TypeChecker) VisitWhenType(n *ast.WhenType) (interface{}, error) {
 func (v *TypeChecker) VisitWhile(n *ast.While) (interface{}, error) {
 	t, _ := n.Condition.Accept(v)
 	if t != builtin.BooleanType {
-		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", t.(*builtin.ClassType).String()), n.Condition)
+		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", t.(*ast.ClassType).String()), n.Condition)
 	}
 	_, err := n.Statements.Accept(v)
 	if err != nil {
@@ -639,17 +626,16 @@ func (v *TypeChecker) VisitNothingStatement(n *ast.NothingStatement) (interface{
 }
 
 func (v *TypeChecker) VisitCastExpression(n *ast.CastExpression) (interface{}, error) {
-	t, _ := n.CastType.Accept(v)
 	exp, _ := n.Expression.Accept(v)
-	if t != exp {
+	if n.CastType != exp {
 		// v.Errors
 	}
-	return t, nil
+	return n.CastType, nil
 }
 
 func (v *TypeChecker) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) {
 	classType, _ := n.Expression.Accept(v)
-	f, ok := classType.(*builtin.ClassType).InstanceFields.Get(n.FieldName)
+	f, ok := classType.(*ast.ClassType).InstanceFields.Get(n.FieldName)
 	if !ok {
 		return nil, v.compileError(fmt.Sprintf("field <%s> does not exist", n.FieldName), n)
 	}
@@ -703,12 +689,12 @@ func (v *TypeChecker) VisitSoqlBindVariable(n *ast.SoqlBindVariable) (interface{
 func (v *TypeChecker) VisitTernalyExpression(n *ast.TernalyExpression) (interface{}, error) {
 	c, _ := n.Condition.Accept(v)
 	if c != builtin.BooleanType {
-		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", c.(*builtin.ClassType).String()), n.Condition)
+		v.AddError(fmt.Sprintf("condition <%s> must be Boolean expression", c.(*ast.ClassType).String()), n.Condition)
 	}
 	t, _ := n.TrueExpression.Accept(v)
 	f, _ := n.FalseExpression.Accept(v)
-	if !t.(*builtin.ClassType).Equals(f.(*builtin.ClassType)) {
-		v.AddError(fmt.Sprintf("expression does not match %s != %s", t.(*builtin.ClassType).String(), f.(*builtin.ClassType).String()), n.TrueExpression)
+	if !builtin.Equals(t.(*ast.ClassType), f.(*ast.ClassType)) {
+		v.AddError(fmt.Sprintf("expression does not match %s != %s", t.(*ast.ClassType).String(), f.(*ast.ClassType).String()), n.TrueExpression)
 	}
 	return t, nil
 }
@@ -734,15 +720,13 @@ func (v *TypeChecker) VisitConstructorDeclaration(n *ast.ConstructorDeclaration)
 	env := newTypeEnv(nil)
 	v.Context.Env = env
 	for _, param := range n.Parameters {
-		p := param.(*ast.Parameter)
-		t, _ := p.Type.Accept(v)
-		env.Set(p.Name, t.(*builtin.ClassType))
+		env.Set(param.Name, param.Type)
 	}
 	n.Statements.Accept(v)
 	return nil, nil
 }
 
-func (v *TypeChecker) VisitMethod(n *builtin.Method) (interface{}, error) {
+func (v *TypeChecker) VisitMethod(n *ast.Method) (interface{}, error) {
 	v.Context.CurrentMethod = n
 	env := newTypeEnv(nil)
 	v.Context.Env = env
@@ -758,9 +742,7 @@ func (v *TypeChecker) VisitMethod(n *builtin.Method) (interface{}, error) {
 	}
 	v.Context.Env.Set("this", classType)
 	for _, param := range n.Parameters {
-		p := param.(*ast.Parameter)
-		t, _ := p.Type.Accept(v)
-		env.Set(p.Name, t.(*builtin.ClassType))
+		env.Set(param.Name, param.Type)
 	}
 	r, err := n.Statements.Accept(v)
 	if err != nil {
@@ -768,8 +750,7 @@ func (v *TypeChecker) VisitMethod(n *builtin.Method) (interface{}, error) {
 		return nil, err
 	}
 	if n.ReturnType != nil && r == nil {
-		retType, _ := n.ReturnType.Accept(v)
-		v.AddError(fmt.Sprintf("return type <void> does not match %v", retType.(*builtin.ClassType).String()), n.ReturnType)
+		v.AddError(fmt.Sprintf("return type <void> does not match %v", n.ReturnType.String()), n.ReturnTypeRef)
 	}
 
 	v.Context.CurrentMethod = nil

@@ -4,12 +4,11 @@ import (
 	"errors"
 
 	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
 )
 
 type SoqlChecker struct{}
 
-func (v *SoqlChecker) VisitClassType(n *builtin.ClassType) (interface{}, error) {
+func (v *SoqlChecker) VisitClassType(n *ast.ClassType) (interface{}, error) {
 	return nil, nil
 }
 

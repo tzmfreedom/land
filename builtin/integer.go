@@ -6,9 +6,9 @@ import (
 	"github.com/tzmfreedom/goland/ast"
 )
 
-var IntegerType = &ClassType{
+var IntegerType = &ast.ClassType{
 	Name: "Integer",
-	ToString: func(o *Object) string {
+	ToString: func(o *ast.Object) string {
 		return fmt.Sprintf("%d", o.Value().(int))
 	},
 }

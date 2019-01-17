@@ -4,16 +4,16 @@ import "github.com/tzmfreedom/goland/ast"
 
 var setType = createSetType()
 
-func createSetType() *ClassType {
-	instanceMethods := NewMethodMap()
+func createSetType() *ast.ClassType {
+	instanceMethods := ast.NewMethodMap()
 	instanceMethods.Set(
 		"size",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"size",
 				integerTypeRef,
-				[]ast.Node{},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				[]*ast.Parameter{},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return NewInteger(len(this.Extra["values"].(map[string]struct{})))
 				},
 			),
@@ -21,12 +21,12 @@ func createSetType() *ClassType {
 	)
 	instanceMethods.Set(
 		"add",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"add",
 				integerTypeRef,
-				[]ast.Node{t1Parameter},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				[]*ast.Parameter{t1Parameter},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					key := params[0].StringValue()
 					values := this.Extra["values"].(map[string]struct{})
 					values[key] = struct{}{}
@@ -37,12 +37,12 @@ func createSetType() *ClassType {
 	)
 	instanceMethods.Set(
 		"clear",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"clear",
 				nil,
-				[]ast.Node{},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				[]*ast.Parameter{},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					this.Extra["values"] = map[string]struct{}{}
 					return nil
 				},
@@ -50,17 +50,13 @@ func createSetType() *ClassType {
 		},
 	)
 
-	return &ClassType{
+	return &ast.ClassType{
 		Name: "Set",
-		Constructors: []*Method{
+		Constructors: []*ast.Method{
 			{
-				Modifiers: []ast.Node{
-					&ast.Modifier{
-						Name: "public",
-					},
-				},
-				Parameters: []ast.Node{},
-				NativeFunction: func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				Modifiers:  []*ast.Modifier{ast.PublicModifier()},
+				Parameters: []*ast.Parameter{},
+				NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return nil
 				},
 			},

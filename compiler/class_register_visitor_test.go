@@ -8,13 +8,12 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
 )
 
 func TestClassRegister(t *testing.T) {
 	testCases := []struct {
 		Input    ast.Node
-		Expected *builtin.ClassType
+		Expected *ast.ClassType
 	}{
 		{
 			&ast.ClassDeclaration{
@@ -157,16 +156,16 @@ func TestClassRegister(t *testing.T) {
 					},
 				},
 			},
-			&builtin.ClassType{
+			&ast.ClassType{
 				Modifiers:    []ast.Node{},
 				Annotations:  []ast.Node{},
 				Name:         "Foo",
-				InnerClasses: builtin.NewClassMap(),
-				Constructors: []*builtin.Method{},
-				InstanceMethods: &builtin.MethodMap{
-					Data: map[string][]*builtin.Method{
+				InnerClasses: ast.NewClassMap(),
+				Constructors: []*ast.Method{},
+				InstanceMethods: &ast.MethodMap{
+					Data: map[string][]*ast.Method{
 						"method": {
-							&builtin.Method{
+							&ast.Method{
 								Name: "method",
 								Modifiers: []ast.Node{
 									&ast.Modifier{
@@ -183,10 +182,10 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 				},
-				StaticMethods: &builtin.MethodMap{
-					Data: map[string][]*builtin.Method{
+				StaticMethods: &ast.MethodMap{
+					Data: map[string][]*ast.Method{
 						"static_method": {
-							&builtin.Method{
+							&ast.Method{
 								Name: "static_method",
 								Modifiers: []ast.Node{
 									&ast.Modifier{
@@ -222,8 +221,8 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 				},
-				InstanceFields: &builtin.FieldMap{
-					Data: map[string]*builtin.Field{
+				InstanceFields: &ast.FieldMap{
+					Data: map[string]*ast.Field{
 						"field": {
 							Type: &ast.TypeRef{
 								Name: []string{
@@ -258,8 +257,8 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 				},
-				StaticFields: &builtin.FieldMap{
-					Data: map[string]*builtin.Field{
+				StaticFields: &ast.FieldMap{
+					Data: map[string]*ast.Field{
 						"static_field": {
 							Type: &ast.TypeRef{
 								Name: []string{
@@ -310,11 +309,11 @@ func TestClassRegister(t *testing.T) {
 			panic(err)
 		}
 
-		equalNode(t, testCase.Expected, actual.(*builtin.ClassType))
+		equalNode(t, testCase.Expected, actual.(*ast.ClassType))
 	}
 }
 
-func equalNode(t *testing.T, expected *builtin.ClassType, actual *builtin.ClassType) {
+func equalNode(t *testing.T, expected *ast.ClassType, actual *ast.ClassType) {
 	if ok := cmp.Equal(expected, actual); !ok {
 		diff := cmp.Diff(expected, actual)
 		pp.Print(actual)

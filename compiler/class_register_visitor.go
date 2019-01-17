@@ -4,17 +4,16 @@ import (
 	"fmt"
 
 	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
 )
 
 type ClassRegisterVisitor struct{}
 
 func (v *ClassRegisterVisitor) VisitClassDeclaration(n *ast.ClassDeclaration) (interface{}, error) {
-	t := &builtin.ClassType{}
+	t := &ast.ClassType{}
 	t.Name = n.Name
 	t.Modifiers = n.Modifiers
 	t.ImplementClassRefs = n.ImplementClassRefs
-	t.InnerClasses = builtin.NewClassMap()
+	t.InnerClasses = ast.NewClassMap()
 	t.SuperClassRef = n.SuperClassRef
 	t.Location = n.Location
 	t.Annotations = n.Annotations
@@ -36,19 +35,19 @@ func (v *ClassRegisterVisitor) VisitAnnotation(n *ast.Annotation) (interface{}, 
 }
 
 func (v *ClassRegisterVisitor) VisitInterfaceDeclaration(n *ast.InterfaceDeclaration) (interface{}, error) {
-	t := &builtin.ClassType{}
+	t := &ast.ClassType{}
 	t.Name = n.Name
 	t.Modifiers = n.Modifiers
-	t.InnerClasses = builtin.NewClassMap()
+	t.InnerClasses = ast.NewClassMap()
 	t.Location = n.Location
 	t.Annotations = n.Annotations
 	t.Parent = n.Parent
 	t.Interface = true
 
-	err := v.setDeclaration(n.Methods, t)
+	err := v.setMethods(n.Methods, t)
 	for _, methods := range t.InstanceMethods.All() {
 		for _, method := range methods {
-			method.Modifiers = []ast.Node{builtin.PublicModifier()}
+			method.Modifiers = []*ast.Modifier{ast.PublicModifier()}
 		}
 	}
 
@@ -258,26 +257,26 @@ func (v *ClassRegisterVisitor) VisitConstructorDeclaration(n *ast.ConstructorDec
 	return ast.VisitConstructorDeclaration(v, n)
 }
 
-func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *builtin.ClassType) error {
-	t.InstanceFields = builtin.NewFieldMap()
-	t.StaticFields = builtin.NewFieldMap()
-	t.InstanceMethods = builtin.NewMethodMap()
-	t.StaticMethods = builtin.NewMethodMap()
-	t.Constructors = []*builtin.Method{}
+func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *ast.ClassType) error {
+	t.InstanceFields = ast.NewFieldMap()
+	t.StaticFields = ast.NewFieldMap()
+	t.InstanceMethods = ast.NewMethodMap()
+	t.StaticMethods = ast.NewMethodMap()
+	t.Constructors = []*ast.Method{}
 
 	for _, d := range declarations {
 		switch decl := d.(type) {
 		case *ast.ConstructorDeclaration:
 			t.Constructors = append(
 				t.Constructors,
-				builtin.NewConstructor(decl),
+				ast.NewConstructor(decl),
 			)
 		case *ast.MethodDeclaration:
 			// TODO: check method name and signature to prevent conflict
 			if decl.IsStatic() {
-				t.StaticMethods.Add(decl.Name, builtin.NewMethod(decl))
+				t.StaticMethods.Add(decl.Name, ast.NewMethod(decl))
 			} else {
-				t.InstanceMethods.Add(decl.Name, builtin.NewMethod(decl))
+				t.InstanceMethods.Add(decl.Name, ast.NewMethod(decl))
 			}
 		case *ast.PropertyDeclaration:
 			identifier := decl.Identifier
@@ -296,8 +295,8 @@ func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *builti
 				}
 				t.StaticFields.Set(
 					identifier,
-					&builtin.Field{
-						TypeRef:    decl.Type,
+					&ast.Field{
+						TypeRef:    decl.TypeRef,
 						Modifiers:  decl.Modifiers,
 						Name:       identifier,
 						Expression: &ast.NullLiteral{},
@@ -320,8 +319,8 @@ func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *builti
 				}
 				t.InstanceFields.Set(
 					identifier,
-					&builtin.Field{
-						TypeRef:    decl.Type,
+					&ast.Field{
+						TypeRef:    decl.TypeRef,
 						Modifiers:  decl.Modifiers,
 						Name:       identifier,
 						Expression: &ast.NullLiteral{},
@@ -339,8 +338,8 @@ func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *builti
 					}
 					t.StaticFields.Set(
 						varDecl.Name,
-						&builtin.Field{
-							TypeRef:    decl.Type,
+						&ast.Field{
+							TypeRef:    decl.TypeRef,
 							Modifiers:  decl.Modifiers,
 							Name:       varDecl.Name,
 							Expression: varDecl.Expression,
@@ -355,8 +354,8 @@ func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *builti
 					}
 					t.InstanceFields.Set(
 						varDecl.Name,
-						&builtin.Field{
-							TypeRef:    decl.Type,
+						&ast.Field{
+							TypeRef:    decl.TypeRef,
 							Modifiers:  decl.Modifiers,
 							Name:       varDecl.Name,
 							Expression: varDecl.Expression,
@@ -366,11 +365,29 @@ func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *builti
 			}
 		case *ast.ClassDeclaration:
 			r, _ := decl.Accept(v)
-			class := r.(*builtin.ClassType)
+			class := r.(*ast.ClassType)
 			if _, ok := t.InnerClasses.Get(class.Name); ok {
 				return fmt.Errorf("Class %s is already defined", class.Name)
 			}
 			t.InnerClasses.Set(class.Name, class)
+		}
+	}
+	return nil
+}
+
+func (v *ClassRegisterVisitor) setMethods(methods []*ast.MethodDeclaration, t *ast.ClassType) error {
+	t.InstanceFields = ast.NewFieldMap()
+	t.StaticFields = ast.NewFieldMap()
+	t.InstanceMethods = ast.NewMethodMap()
+	t.StaticMethods = ast.NewMethodMap()
+	t.Constructors = []*ast.Method{}
+
+	for _, d := range methods {
+		// TODO: check method name and signature to prevent conflict
+		if d.IsStatic() {
+			t.StaticMethods.Add(d.Name, ast.NewMethod(d))
+		} else {
+			t.InstanceMethods.Add(d.Name, ast.NewMethod(d))
 		}
 	}
 	return nil

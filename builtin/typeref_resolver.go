@@ -9,11 +9,11 @@ import (
 
 type TypeRefResolver struct {
 	NameSpaces   *NameSpaceStore
-	ClassTypes   *ClassMap
-	CurrentClass *ClassType
+	ClassTypes   *ast.ClassMap
+	CurrentClass *ast.ClassType
 }
 
-func (r *TypeRefResolver) ResolveType(names []string) (*ClassType, error) {
+func (r *TypeRefResolver) ResolveType(names []string) (*ast.ClassType, error) {
 	if len(names) == 1 {
 		className := names[0]
 		if class, ok := r.ClassTypes.Get(className); ok {
@@ -56,7 +56,7 @@ func (r *TypeRefResolver) ResolveType(names []string) (*ClassType, error) {
 	return nil, fmt.Errorf("%s does not found", strings.Join(names, "."))
 }
 
-func (r *TypeRefResolver) ConvertType(n *ast.TypeRef) (*ClassType, error) {
+func (r *TypeRefResolver) ConvertType(n *ast.TypeRef) (*ast.ClassType, error) {
 	// convert list from array
 	for n.Dimmension > 0 {
 		name := n.Name
@@ -76,7 +76,7 @@ func (r *TypeRefResolver) ConvertType(n *ast.TypeRef) (*ClassType, error) {
 		return nil, err
 	}
 	if t.IsGeneric() {
-		types := make([]*ClassType, len(n.Parameters))
+		types := make([]*ast.ClassType, len(n.Parameters))
 		var err error
 		for i, p := range n.Parameters {
 			types[i], err = r.ConvertType(p.(*ast.TypeRef))
@@ -84,7 +84,7 @@ func (r *TypeRefResolver) ConvertType(n *ast.TypeRef) (*ClassType, error) {
 				return nil, err
 			}
 		}
-		return &ClassType{
+		return &ast.ClassType{
 			Name:            t.Name,
 			Constructors:    t.Constructors,
 			InstanceMethods: t.InstanceMethods,

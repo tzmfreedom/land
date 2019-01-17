@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/tzmfreedom/goland/ast"
 )
 
 type ToStringer struct {
@@ -20,13 +22,13 @@ func (v *ToStringer) withIndent(src string) string {
 	return strings.Repeat(" ", v.Indent) + src
 }
 
-func (v *ToStringer) String(o *Object) string {
+func (v *ToStringer) String(o *ast.Object) string {
 	if o.ClassType.ToString != nil {
 		return o.ClassType.ToString(o)
 	}
 	switch o.ClassType {
 	case ListType:
-		records := o.Extra["records"].([]*Object)
+		records := o.Extra["records"].([]*ast.Object)
 		recordExpressions := make([]string, len(records))
 		v.AddIndent(func() {
 			for i, record := range records {
@@ -79,7 +81,7 @@ func (v *ToStringer) String(o *Object) string {
 	)
 }
 
-func String(o *Object) string {
+func String(o *ast.Object) string {
 	stringer := &ToStringer{}
 	return stringer.String(o)
 }

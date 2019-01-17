@@ -1,17 +1,15 @@
 package builtin
 
 import (
-	"strings"
-
 	"fmt"
 
 	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
 )
 
-var PrimitiveClasses []*ClassType
+var PrimitiveClasses []*ast.ClassType
 
-func NewClassMapWithPrimivie(classTypes []*ClassType) *ClassMap {
+func NewClassMapWithPrimivie(classTypes []*ast.ClassType) *ast.ClassMap {
 	classMap := PrimitiveClassMap()
 	for _, classType := range classTypes {
 		classMap.Set(classType.Name, classType)
@@ -19,8 +17,8 @@ func NewClassMapWithPrimivie(classTypes []*ClassType) *ClassMap {
 	return classMap
 }
 
-var primitiveClassMap = &ClassMap{
-	Data: map[string]*ClassType{
+var primitiveClassMap = &ast.ClassMap{
+	Data: map[string]*ast.ClassType{
 		"integer": IntegerType,
 		"string":  StringType,
 		"double":  DoubleType,
@@ -28,7 +26,7 @@ var primitiveClassMap = &ClassMap{
 	},
 }
 
-func PrimitiveClassMap() *ClassMap {
+func PrimitiveClassMap() *ast.ClassMap {
 	return primitiveClassMap
 }
 
@@ -38,131 +36,15 @@ func GetNameSpaceStore() *NameSpaceStore {
 	return nameSpaceStore
 }
 
-type Object struct {
-	ClassType      *ClassType
-	InstanceFields *ObjectMap
-	GenericType    []*ClassType
-	Extra          map[string]interface{}
-}
+var ReturnType = &ast.ClassType{Name: "Return"}
+var RaiseType = &ast.ClassType{Name: "Raise"}
+var BreakType = &ast.ClassType{Name: "Break"}
+var Break = &ast.Object{ClassType: BreakType}
+var ContinueType = &ast.ClassType{Name: "Continue"}
+var Continue = &ast.Object{ClassType: ContinueType}
 
-func CreateObject(t *ClassType) *Object {
-	return &Object{
-		ClassType:      t,
-		InstanceFields: NewObjectMap(),
-		GenericType:    []*ClassType{},
-		Extra:          map[string]interface{}{},
-	}
-}
-
-func (o *Object) Value() interface{} {
-	return o.Extra["value"]
-}
-
-func (o *Object) IntegerValue() int {
-	return o.Value().(int)
-}
-
-func (o *Object) DoubleValue() float64 {
-	return o.Value().(float64)
-}
-
-func (o *Object) BoolValue() bool {
-	return o.Value().(bool)
-}
-
-func (o *Object) StringValue() string {
-	return o.Value().(string)
-}
-
-/**
- * ObjectMap
- */
-type ObjectMap struct {
-	Data map[string]*Object
-}
-
-func NewObjectMap() *ObjectMap {
-	return &ObjectMap{
-		Data: map[string]*Object{},
-	}
-}
-
-func (m *ObjectMap) Set(k string, n *Object) {
-	m.Data[strings.ToLower(k)] = n
-}
-
-func (m *ObjectMap) Get(k string) (*Object, bool) {
-	n, ok := m.Data[strings.ToLower(k)]
-	return n, ok
-}
-
-func (m *ObjectMap) All() map[string]*Object {
-	return m.Data
-}
-
-var publicModifier = &ast.Modifier{Name: "public"}
-var privateModifier = &ast.Modifier{Name: "private"}
-var protectedModifier = &ast.Modifier{Name: "protected"}
-var globalModifier = &ast.Modifier{Name: "global"}
-var abstractModifier = &ast.Modifier{Name: "abstract"}
-
-func PublicModifier() *ast.Modifier {
-	return publicModifier
-}
-
-func CreateClass(
-	name string,
-	constructors []*Method,
-	instanceMethods *MethodMap,
-	staticMethods *MethodMap,
-) *ClassType {
-	return &ClassType{
-		Name:            name,
-		Modifiers:       []ast.Node{PublicModifier()},
-		Constructors:    constructors,
-		InstanceFields:  NewFieldMap(),
-		StaticFields:    NewFieldMap(),
-		InstanceMethods: instanceMethods,
-		StaticMethods:   staticMethods,
-		InnerClasses:    NewClassMap(),
-	}
-}
-
-func CreateMethod(
-	name string,
-	returnType ast.Node,
-	parameters []ast.Node,
-	nativeFunction func(*Object, []*Object, map[string]interface{}) interface{},
-) *Method {
-	return &Method{
-		Name:           name,
-		Modifiers:      []ast.Node{PublicModifier()},
-		ReturnType:     returnType,
-		Parameters:     parameters,
-		NativeFunction: nativeFunction,
-	}
-}
-
-func CreateField(
-	name string,
-	fieldType *ClassType,
-) *Field {
-	return &Field{
-		Name:      name,
-		Modifiers: []ast.Node{PublicModifier()},
-		Type:      fieldType,
-	}
-}
-
-var ReturnType = &ClassType{Name: "Return"}
-var RaiseType = &ClassType{Name: "Raise"}
-var BreakType = &ClassType{Name: "Break"}
-var Break = &Object{ClassType: BreakType}
-var ContinueType = &ClassType{Name: "Continue"}
-var Continue = &Object{ClassType: ContinueType}
-
-func CreateReturn(value *Object) *Object {
-	return &Object{
+func CreateReturn(value *ast.Object) *ast.Object {
+	return &ast.Object{
 		ClassType: ReturnType,
 		Extra: map[string]interface{}{
 			"value": value,
@@ -170,8 +52,8 @@ func CreateReturn(value *Object) *Object {
 	}
 }
 
-func CreateRaise(value *Object) *Object {
-	return &Object{
+func CreateRaise(value *ast.Object) *ast.Object {
+	return &ast.Object{
 		ClassType: RaiseType,
 		Extra: map[string]interface{}{
 			"value": value,
@@ -181,7 +63,7 @@ func CreateRaise(value *Object) *Object {
 
 func Debug(obj interface{}) {
 	switch o := obj.(type) {
-	case *Object:
+	case *ast.Object:
 		fmt.Println(o.ClassType)
 		fmt.Println(o.Extra)
 	case ast.Node:

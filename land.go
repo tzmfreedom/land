@@ -27,7 +27,7 @@ import (
 	"github.com/tzmfreedom/goland/visitor"
 )
 
-var classMap = builtin.NewClassMap()
+var classMap = ast.NewClassMap()
 var preprocessors = []ast.PreProcessor{
 	func(src string) string {
 		src = strings.Replace(src, "// #debugger", "_Debugger.run();", -1)
@@ -259,24 +259,24 @@ func parseOption(args []string) (*option, error) {
 	}, nil
 }
 
-func convert(n *builtin.ClassType, classMap *builtin.ClassMap) (*builtin.ClassType, error) {
+func convert(n *ast.ClassType, classMap *ast.ClassMap) (*ast.ClassType, error) {
 	resolver := compiler.NewTypeRefResolver(classMap, builtin.GetNameSpaceStore())
 	return resolver.Resolve(n)
 }
 
-func check(n *builtin.ClassType) error {
+func check(n *ast.ClassType) error {
 	checker := &visitor.SoqlChecker{}
 	_, err := checker.VisitClassType(n)
 	return err
 }
 
-func register(n ast.Node) (*builtin.ClassType, error) {
+func register(n ast.Node) (*ast.ClassType, error) {
 	register := &compiler.ClassRegisterVisitor{}
 	t, err := n.Accept(register)
 	if err != nil {
 		return nil, err
 	}
-	classType := t.(*builtin.ClassType)
+	classType := t.(*ast.ClassType)
 	if _, ok := classMap.Get(classType.Name); ok {
 		return nil, fmt.Errorf("Class %s is already defined", classType.Name)
 	}
@@ -284,7 +284,7 @@ func register(n ast.Node) (*builtin.ClassType, error) {
 	return classType, nil
 }
 
-func semanticAnalysis(t *builtin.ClassType) error {
+func semanticAnalysis(t *ast.ClassType) error {
 	typeChecker := compiler.NewTypeChecker()
 	typeChecker.Context.ClassTypes = builtin.PrimitiveClassMap()
 	for _, class := range classMap.Data {
@@ -303,7 +303,7 @@ func semanticAnalysis(t *builtin.ClassType) error {
 	return err
 }
 
-func run(action string, classTypes []*builtin.ClassType, options ...func(*interpreter.Interpreter)) error {
+func run(action string, classTypes []*ast.ClassType, options ...func(*interpreter.Interpreter)) error {
 	method := "action"
 	args := strings.Split(action, "#")
 	if len(args) > 1 {
@@ -323,7 +323,7 @@ func run(action string, classTypes []*builtin.ClassType, options ...func(*interp
 	return err
 }
 
-func interactiveRun(classTypes []*builtin.ClassType, option *option) error {
+func interactiveRun(classTypes []*ast.ClassType, option *option) error {
 	lastReloadedAt := time.Now()
 	landInterpreter := interpreter.NewInterpreterWithBuiltin(classTypes)
 	l, _ := readline.NewEx(&readline.Config{
@@ -438,7 +438,7 @@ public static void action() { %s; }
 }`, statement)
 }
 
-func watchAndRunTest(classTypes []*builtin.ClassType, option *option) error {
+func watchAndRunTest(classTypes []*ast.ClassType, option *option) error {
 	interpreter := interpreter.NewInterpreterWithBuiltin(classTypes)
 
 	watcher, err := fsnotify.NewWatcher()
@@ -492,7 +492,7 @@ func runAction(interpreter *interpreter.Interpreter, expression []string) error 
 	return err
 }
 
-func buildFile(interpreter *interpreter.Interpreter, file string) (*builtin.ClassType, error) {
+func buildFile(interpreter *interpreter.Interpreter, file string) (*ast.ClassType, error) {
 	t, err := ast.ParseFile(file, preprocessors...)
 	classType, err := register(t)
 	if err != nil {
@@ -514,8 +514,8 @@ func buildFile(interpreter *interpreter.Interpreter, file string) (*builtin.Clas
 	return classType, nil
 }
 
-func buildAllFile(trees []ast.Node) ([]*builtin.ClassType, error) {
-	classTypes := make([]*builtin.ClassType, len(trees))
+func buildAllFile(trees []ast.Node) ([]*ast.ClassType, error) {
+	classTypes := make([]*ast.ClassType, len(trees))
 	var err error
 	for i, t := range trees {
 		classTypes[i], err = register(t)
@@ -560,7 +560,7 @@ func execFile(code string, env *interpreter.Env) *interpreter.Env {
 	if err = semanticAnalysis(classType); err != nil {
 		panic(err)
 	}
-	interpreter := interpreter.NewInterpreterWithBuiltin([]*builtin.ClassType{classType})
+	interpreter := interpreter.NewInterpreterWithBuiltin([]*ast.ClassType{classType})
 	interpreter.Context.Env = env
 	invoke := &ast.MethodInvocation{
 		NameOrExpression: &ast.Name{
@@ -584,7 +584,7 @@ func reloadAll(interpreter *interpreter.Interpreter, files []string) {
 			handleError(err)
 		}
 	}
-	classTypes := make([]*builtin.ClassType, len(trees))
+	classTypes := make([]*ast.ClassType, len(trees))
 	for i, t := range trees {
 		classTypes[i], err = register(t)
 		if err != nil {

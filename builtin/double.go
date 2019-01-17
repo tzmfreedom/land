@@ -1,10 +1,14 @@
 package builtin
 
-import "fmt"
+import (
+	"fmt"
 
-var DoubleType = &ClassType{
+	"github.com/tzmfreedom/goland/ast"
+)
+
+var DoubleType = &ast.ClassType{
 	Name: "Double",
-	ToString: func(o *Object) string {
+	ToString: func(o *ast.Object) string {
 		return fmt.Sprintf("%f", o.Value().(float64))
 	},
 }

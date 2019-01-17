@@ -64,7 +64,7 @@ func (b *SqlBuilder) createWhere(n ast.Node, tmpTableMap map[string]string) stri
 		if err != nil {
 			panic(err)
 		}
-		return fmt.Sprintf("%s %s '%s'", field, val.Op, String(value.(*Object)))
+		return fmt.Sprintf("%s %s '%s'", field, val.Op, String(value.(*ast.Object)))
 	case *ast.WhereBinaryOperator:
 		where := ""
 		if val.Left != nil {

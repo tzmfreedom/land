@@ -6,9 +6,9 @@ import (
 	"github.com/tzmfreedom/goland/ast"
 )
 
-var BooleanType = &ClassType{
+var BooleanType = &ast.ClassType{
 	Name: "Boolean",
-	ToString: func(o *Object) string {
+	ToString: func(o *ast.Object) string {
 		return fmt.Sprintf("%t", o.Value().(bool))
 	},
 }

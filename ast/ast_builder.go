@@ -20,8 +20,8 @@ func (v *Builder) VisitCompilationUnit(ctx *parser.CompilationUnitContext) inter
 
 func (v *Builder) VisitTypeDeclaration(ctx *parser.TypeDeclarationContext) interface{} {
 	classOrInterfaceModifiers := ctx.AllClassOrInterfaceModifier()
-	modifiers := []Node{}
-	annotations := []Node{}
+	modifiers := []*Modifier{}
+	annotations := []*Annotation{}
 	for _, classOrInterfaceModifier := range classOrInterfaceModifiers {
 		r := classOrInterfaceModifier.Accept(v)
 		switch n := r.(type) {
@@ -35,8 +35,8 @@ func (v *Builder) VisitTypeDeclaration(ctx *parser.TypeDeclarationContext) inter
 	if n := ctx.ClassDeclaration(); n != nil {
 		cd := n.Accept(v)
 		decl, _ := cd.(*ClassDeclaration)
-		decl.Modifiers = setParentNodes(modifiers, decl)
-		decl.Annotations = setParentNodes(annotations, decl)
+		decl.Modifiers = setParentNodeToModifiers(modifiers, decl)
+		decl.Annotations = setParentNodeToAnnotations(annotations, decl)
 		return decl
 	} else if n := ctx.TriggerDeclaration(); n != nil {
 		return n.Accept(v)
@@ -53,7 +53,7 @@ func (v *Builder) VisitTriggerDeclaration(ctx *parser.TriggerDeclarationContext)
 	n.Name = ctx.ApexIdentifier(0).GetText()
 	n.Object = ctx.ApexIdentifier(1).GetText()
 	n.TriggerTimings = ctx.TriggerTimings().Accept(v).([]Node)
-	n.Statements = ctx.Block().Accept(v).(Node)
+	n.Statements = ctx.Block().Accept(v).(*Block)
 	return n
 }
 
@@ -108,10 +108,10 @@ func (v *Builder) VisitClassDeclaration(ctx *parser.ClassDeclarationContext) int
 		Location: v.newLocation(ctx),
 	}
 	if t := ctx.ApexType(); t != nil {
-		n.SuperClassRef = t.Accept(v).(Node)
+		n.SuperClassRef = t.Accept(v).(*TypeRef)
 	}
 	if tl := ctx.TypeList(); tl != nil {
-		n.ImplementClassRefs = tl.Accept(v).([]Node)
+		n.ImplementClassRefs = tl.Accept(v).([]*TypeRef)
 	}
 	n.Declarations = make([]Node, len(declarations))
 	for i, d := range declarations {
@@ -142,8 +142,8 @@ func (v *Builder) VisitInterfaceDeclaration(ctx *parser.InterfaceDeclarationCont
 		Name:     ctx.ApexIdentifier().GetText(),
 		Location: v.newLocation(ctx),
 	}
-	n.Methods = ctx.InterfaceBody().Accept(v).([]Node)
-	setParentNodes(n.Methods, n)
+	n.Methods = ctx.InterfaceBody().Accept(v).([]*MethodDeclaration)
+	setParentNodeToMethods(n.Methods, n)
 	return n
 }
 
@@ -180,15 +180,15 @@ func (v *Builder) VisitClassBodyDeclaration(ctx *parser.ClassBodyDeclarationCont
 		declaration := memberDeclaration.Accept(v)
 
 		modifiers := ctx.AllModifier()
-		declarationModifiers := []Node{}
-		declarationAnnotations := []Node{}
+		declarationModifiers := []*Modifier{}
+		declarationAnnotations := []*Annotation{}
 		for _, m := range modifiers {
 			n := m.Accept(v)
-			switch n.(type) {
+			switch modifier := n.(type) {
 			case *Modifier:
-				declarationModifiers = append(declarationModifiers, n.(Node))
+				declarationModifiers = append(declarationModifiers, modifier)
 			case *Annotation:
-				declarationAnnotations = append(declarationAnnotations, n.(Node))
+				declarationAnnotations = append(declarationAnnotations, modifier)
 			}
 		}
 		switch decl := declaration.(type) {
@@ -247,19 +247,19 @@ func (v *Builder) VisitMethodDeclaration(ctx *parser.MethodDeclarationContext) i
 	n := &MethodDeclaration{Location: v.newLocation(ctx)}
 	n.Name = ctx.ApexIdentifier().GetText()
 	if ctx.ApexType() != nil {
-		n.ReturnType = ctx.ApexType().Accept(v).(Node)
+		n.ReturnType = ctx.ApexType().Accept(v).(*TypeRef)
 	} else {
 		n.ReturnType = nil
 	}
-	n.Parameters = ctx.FormalParameters().Accept(v).([]Node)
+	n.Parameters = ctx.FormalParameters().Accept(v).([]*Parameter)
 	if ctx.QualifiedNameList() != nil {
 		n.Throws = ctx.QualifiedNameList().Accept(v).([]Node)
-		setParentNodes(n.Throws, n)
+		setParentNodeToNodes(n.Throws, n)
 	} else {
 		n.Throws = []Node{}
 	}
 	if ctx.MethodBody() != nil {
-		n.Statements = ctx.MethodBody().Accept(v).(Node)
+		n.Statements = ctx.MethodBody().Accept(v).(*Block)
 		n.Statements.SetParent(n)
 	} else {
 		n.Statements = &Block{}
@@ -268,14 +268,14 @@ func (v *Builder) VisitMethodDeclaration(ctx *parser.MethodDeclarationContext) i
 }
 
 func (v *Builder) VisitConstructorDeclaration(ctx *parser.ConstructorDeclarationContext) interface{} {
-	parameters := ctx.FormalParameters().Accept(v).([]Node)
+	parameters := ctx.FormalParameters().Accept(v).([]*Parameter)
 	var throws []Node
 	if q := ctx.QualifiedNameList(); q != nil {
 		throws = q.Accept(v).([]Node)
 	} else {
 		throws = []Node{}
 	}
-	body := ctx.ConstructorBody().Accept(v).(Node)
+	body := ctx.ConstructorBody().Accept(v).(*Block)
 	return &ConstructorDeclaration{
 		Parameters: parameters,
 		Throws:     throws,
@@ -288,7 +288,7 @@ func (v *Builder) VisitFieldDeclaration(ctx *parser.FieldDeclarationContext) int
 	t := ctx.ApexType().Accept(v).(*TypeRef)
 	d := ctx.VariableDeclarators().Accept(v).([]Node)
 	return &FieldDeclaration{
-		Type:        t,
+		TypeRef:     t,
 		Declarators: d,
 	}
 }
@@ -298,7 +298,7 @@ func (v *Builder) VisitPropertyDeclaration(ctx *parser.PropertyDeclarationContex
 	d := ctx.VariableDeclaratorId().Accept(v).(string)
 	getterSetters := ctx.PropertyBodyDeclaration().Accept(v).([]Node)
 	return &PropertyDeclaration{
-		Type:          t,
+		TypeRef:       t,
 		Identifier:    d,
 		GetterSetters: getterSetters,
 	}
@@ -319,15 +319,15 @@ func (v *Builder) VisitInterfaceBodyDeclaration(ctx *parser.InterfaceBodyDeclara
 		declaration := memberDeclaration.Accept(v)
 
 		modifiers := ctx.AllModifier()
-		declarationModifiers := []Node{}
-		declarationAnnotations := []Node{}
+		declarationModifiers := []*Modifier{}
+		declarationAnnotations := []*Annotation{}
 		for _, m := range modifiers {
 			n := m.Accept(v)
-			switch n.(type) {
+			switch modifier := n.(type) {
 			case *Modifier:
-				declarationModifiers = append(declarationModifiers, n.(Node))
+				declarationModifiers = append(declarationModifiers, modifier)
 			case *Annotation:
-				declarationAnnotations = append(declarationAnnotations, n.(Node))
+				declarationAnnotations = append(declarationAnnotations, modifier)
 			}
 		}
 		switch decl := declaration.(type) {
@@ -388,11 +388,11 @@ func (v *Builder) VisitInterfaceMethodDeclaration(ctx *parser.InterfaceMethodDec
 	decl.Name = ctx.ApexIdentifier().Accept(v).(string)
 
 	if t := ctx.ApexType(); t != nil {
-		decl.ReturnType = t.Accept(v).(Node)
+		decl.ReturnType = t.Accept(v).(*TypeRef)
 	} else {
 		// TODO: implement void
 	}
-	decl.Parameters = ctx.FormalParameters().Accept(v).([]Node)
+	decl.Parameters = ctx.FormalParameters().Accept(v).([]*Parameter)
 	if q := ctx.QualifiedNameList(); q != nil {
 		decl.Throws = q.Accept(v).([]Node)
 	} else {
@@ -531,11 +531,11 @@ func (v *Builder) VisitFormalParameterList(ctx *parser.FormalParameterListContex
 func (v *Builder) VisitFormalParameter(ctx *parser.FormalParameterContext) interface{} {
 	p := &Parameter{Location: v.newLocation(ctx)}
 	modifiers := ctx.AllVariableModifier()
-	p.Modifiers = make([]Node, len(modifiers))
+	p.Modifiers = make([]*Modifier, len(modifiers))
 	for i, m := range modifiers {
-		p.Modifiers[i] = m.Accept(v).(Node)
+		p.Modifiers[i] = m.Accept(v).(*Modifier)
 	}
-	p.Type = ctx.ApexType().Accept(v).(Node)
+	p.TypeRef = ctx.ApexType().Accept(v).(*TypeRef)
 	p.Name = ctx.VariableDeclaratorId().Accept(v).(string)
 	return p
 }
@@ -640,7 +640,7 @@ func (v *Builder) VisitBlock(ctx *parser.BlockContext) interface{} {
 		s := statement.Accept(v)
 		blk.Statements[i] = s.(Node)
 	}
-	setParentNodes(blk.Statements, blk)
+	setParentNodeToNodes(blk.Statements, blk)
 	return blk
 }
 
@@ -662,11 +662,11 @@ func (v *Builder) VisitLocalVariableDeclarationStatement(ctx *parser.LocalVariab
 func (v *Builder) VisitLocalVariableDeclaration(ctx *parser.LocalVariableDeclarationContext) interface{} {
 	decl := &VariableDeclaration{Location: v.newLocation(ctx)}
 	modifiers := ctx.AllVariableModifier()
-	decl.Modifiers = make([]Node, len(modifiers))
+	decl.Modifiers = make([]*Modifier, len(modifiers))
 	for i, m := range modifiers {
-		decl.Modifiers[i] = m.Accept(v).(Node)
+		decl.Modifiers[i] = m.Accept(v).(*Modifier)
 	}
-	decl.Type = ctx.ApexType().Accept(v).(Node)
+	decl.TypeRef = ctx.ApexType().Accept(v).(*TypeRef)
 	decl.Declarators = ctx.VariableDeclarators().Accept(v).([]Node)
 	return decl
 }
@@ -674,17 +674,17 @@ func (v *Builder) VisitLocalVariableDeclaration(ctx *parser.LocalVariableDeclara
 func (v *Builder) VisitStatement(ctx *parser.StatementContext) interface{} {
 	if t := ctx.TRY(); t != nil {
 		try := &Try{Location: v.newLocation(ctx)}
-		try.Block = ctx.Block().Accept(v).(Node)
+		try.Block = ctx.Block().Accept(v).(*Block)
 		if clauses := ctx.AllCatchClause(); len(clauses) != 0 {
-			try.CatchClause = make([]Node, len(clauses))
+			try.CatchClause = make([]*Catch, len(clauses))
 			for i, c := range clauses {
-				try.CatchClause[i] = c.Accept(v).(Node)
+				try.CatchClause[i] = c.Accept(v).(*Catch)
 			}
 		} else {
-			try.CatchClause = []Node{}
+			try.CatchClause = []*Catch{}
 		}
 		if b := ctx.FinallyBlock(); b != nil {
-			try.FinallyBlock = b.Accept(v).(Node)
+			try.FinallyBlock = b.Accept(v).(*Block)
 		}
 		return try
 	} else if t := ctx.IF(); t != nil {
@@ -706,13 +706,13 @@ func (v *Builder) VisitStatement(ctx *parser.StatementContext) interface{} {
 	} else if s := ctx.FOR(); s != nil {
 		n := &For{Location: v.newLocation(ctx)}
 		n.Control = ctx.ForControl().Accept(v).(Node)
-		n.Statements = ctx.Statement(0).Accept(v).(Node)
+		n.Statements = ctx.Statement(0).Accept(v).(*Block)
 		n.Statements.SetParent(n)
 		return n
 	} else if s := ctx.WHILE(); s != nil {
 		n := &While{Location: v.newLocation(ctx)}
 		n.Condition = ctx.ParExpression().Accept(v).(Node)
-		n.Statements = ctx.Statement(0).Accept(v).(Node)
+		n.Statements = ctx.Statement(0).Accept(v).(*Block)
 		n.Statements.SetParent(n)
 		n.IsDo = ctx.DO() != nil
 		return n
@@ -752,9 +752,9 @@ func (v *Builder) VisitPropertyBlock(ctx *parser.PropertyBlockContext) interface
 		n.Type = ctx.Setter().Accept(v).(string)
 	}
 	modifiers := ctx.AllModifier()
-	n.Modifiers = make([]Node, len(modifiers))
+	n.Modifiers = make([]*Modifier, len(modifiers))
 	for i, m := range modifiers {
-		n.Modifiers[i] = m.Accept(v).(Node)
+		n.Modifiers[i] = m.Accept(v).(*Modifier)
 	}
 	return n
 }
@@ -769,14 +769,14 @@ func (v *Builder) VisitSetter(ctx *parser.SetterContext) interface{} {
 
 func (v *Builder) VisitCatchClause(ctx *parser.CatchClauseContext) interface{} {
 	c := &Catch{Location: v.newLocation(ctx)}
-	c.Type = ctx.CatchType().Accept(v).(Node)
+	c.TypeRef = ctx.CatchType().Accept(v).(*TypeRef)
 	c.Identifier = ctx.ApexIdentifier().GetText()
 	modifiers := ctx.AllVariableModifier()
-	c.Modifiers = make([]Node, len(modifiers))
+	c.Modifiers = make([]*Modifier, len(modifiers))
 	for i, m := range modifiers {
-		c.Modifiers[i] = m.Accept(v).(Node)
+		c.Modifiers[i] = m.Accept(v).(*Modifier)
 	}
-	c.Block = ctx.Block().Accept(v).(Node)
+	c.Block = ctx.Block().Accept(v).(*Block)
 	return c
 }
 
@@ -801,7 +801,7 @@ func (v *Builder) VisitWhenStatements(ctx *parser.WhenStatementsContext) interfa
 func (v *Builder) VisitWhenStatement(ctx *parser.WhenStatementContext) interface{} {
 	n := &When{Location: v.newLocation(ctx)}
 	n.Condition = ctx.WhenExpression().Accept(v).([]Node)
-	n.Statements = ctx.Block().Accept(v).(Node)
+	n.Statements = ctx.Block().Accept(v).(*Block)
 	return n
 }
 
@@ -814,7 +814,7 @@ func (v *Builder) VisitWhenExpression(ctx *parser.WhenExpressionContext) interfa
 		return expressions
 	}
 	n := &WhenType{Location: v.newLocation(ctx)}
-	n.Type = ctx.ApexType().Accept(v).(Node)
+	n.TypeRef = ctx.ApexType().Accept(v).(*TypeRef)
 	n.Identifier = ctx.ApexIdentifier().GetText()
 	return []Node{n}
 }
@@ -851,13 +851,13 @@ func (v *Builder) VisitForInit(ctx *parser.ForInitContext) interface{} {
 
 func (v *Builder) VisitEnhancedForControl(ctx *parser.EnhancedForControlContext) interface{} {
 	n := &EnhancedForControl{Location: v.newLocation(ctx)}
-	n.Type = ctx.ApexType().Accept(v).(Node)
+	n.TypeRef = ctx.ApexType().Accept(v).(*TypeRef)
 	n.VariableDeclaratorId = ctx.VariableDeclaratorId().Accept(v).(string)
 	n.Expression = ctx.Expression().Accept(v).(Node)
 	modifiers := ctx.AllVariableModifier()
-	n.Modifiers = make([]Node, len(modifiers))
+	n.Modifiers = make([]*Modifier, len(modifiers))
 	for i, m := range modifiers {
-		n.Modifiers[i] = m.Accept(v).(Node)
+		n.Modifiers[i] = m.Accept(v).(*Modifier)
 	}
 	return n
 }
@@ -968,7 +968,7 @@ func (v *Builder) VisitMethodInvocation(ctx *parser.MethodInvocationContext) int
 
 func (v *Builder) VisitCastExpression(ctx *parser.CastExpressionContext) interface{} {
 	n := &CastExpression{Location: v.newLocation(ctx)}
-	n.CastType = ctx.ApexType().Accept(v).(Node)
+	n.CastTypeRef = ctx.ApexType().Accept(v).(*TypeRef)
 	n.Expression = ctx.Expression().Accept(v).(Node)
 	return n
 }
@@ -1052,11 +1052,11 @@ func (v *Builder) VisitPrimary(ctx *parser.PrimaryContext) interface{} {
 }
 
 func (v *Builder) VisitCreator(ctx *parser.CreatorContext) interface{} {
-	classType := ctx.CreatedName().Accept(v).(Node)
+	classType := ctx.CreatedName().Accept(v).(*TypeRef)
 	if r := ctx.ArrayCreatorRest(); r != nil {
 		init := r.Accept(v).(*Init)
 		return &New{
-			Type: &TypeRef{
+			TypeRef: &TypeRef{
 				Name:       []string{"List"},
 				Parameters: []Node{classType},
 			},
@@ -1069,7 +1069,7 @@ func (v *Builder) VisitCreator(ctx *parser.CreatorContext) interface{} {
 	if r := ctx.ClassCreatorRest(); r != nil {
 		parameters := r.Accept(v)
 		return &New{
-			Type:       classType,
+			TypeRef:    classType,
 			Parameters: parameters.([]Node),
 			Init:       nil,
 			Location:   v.newLocation(ctx),
@@ -1079,7 +1079,7 @@ func (v *Builder) VisitCreator(ctx *parser.CreatorContext) interface{} {
 	if r := ctx.MapCreatorRest(); r != nil {
 		init := r.Accept(v)
 		return &New{
-			Type:       classType,
+			TypeRef:    classType,
 			Parameters: []Node{},
 			Init:       init.(*Init),
 			Location:   v.newLocation(ctx),
@@ -1088,7 +1088,7 @@ func (v *Builder) VisitCreator(ctx *parser.CreatorContext) interface{} {
 
 	init := ctx.SetCreatorRest().Accept(v)
 	return &New{
-		Type:       classType,
+		TypeRef:    classType,
 		Parameters: []Node{},
 		Init:       init.(*Init),
 		Location:   v.newLocation(ctx),
@@ -1487,9 +1487,36 @@ func (v *Builder) newLocation(ctx LocationContext) *Location {
 	}
 }
 
-func setParentNodes(nodes []Node, parent Node) []Node {
-	for _, n := range nodes {
-		n.SetParent(parent)
+func setParentNodeToModifiers(modifiers []*Modifier, parent Node) []*Modifier {
+	for _, modifier := range modifiers {
+		modifier.SetParent(parent)
+	}
+	return modifiers
+}
+
+func setParentNodeToAnnotations(annotations []*Annotation, parent Node) []*Annotation {
+	for _, annotation := range annotations {
+		annotation.SetParent(parent)
+	}
+	return annotations
+}
+
+func setParentNodeToMethods(methods []*MethodDeclaration, parent Node) []*MethodDeclaration {
+	for _, method := range methods {
+		method.SetParent(parent)
+	}
+	return methods
+}
+
+func setParentNodeToThrows(throws []*Throw, parent Node) []*Throw {
+	for _, throw := range throws {
+		throw.SetParent(parent)
+	}
+	return throws
+}
+func setParentNodeToNodes(nodes []Node, parent Node) []Node {
+	for _, node := range nodes {
+		node.SetParent(parent)
 	}
 	return nodes
 }

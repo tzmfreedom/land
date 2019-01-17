@@ -3,19 +3,15 @@ package builtin
 import "github.com/tzmfreedom/goland/ast"
 
 func init() {
-	instanceMethods := NewMethodMap()
+	instanceMethods := ast.NewMethodMap()
 
-	singleEmailMessageType := CreateClass(
+	singleEmailMessageType := ast.CreateClass(
 		"SingleEmailMessage",
-		[]*Method{
+		[]*ast.Method{
 			{
-				Modifiers: []ast.Node{
-					&ast.Modifier{
-						Name: "public",
-					},
-				},
-				Parameters: []ast.Node{},
-				NativeFunction: func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				Modifiers:  []*ast.Modifier{ast.PublicModifier()},
+				Parameters: []*ast.Parameter{},
+				NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return nil
 				},
 			},
@@ -25,83 +21,79 @@ func init() {
 	)
 	singleEmailMessageType.InstanceFields.Set(
 		"toAddresses",
-		CreateField("toAddresses", CreateListType(StringType)),
+		ast.CreateField("toAddresses", CreateListType(StringType)),
 	)
 	singleEmailMessageType.InstanceFields.Set(
 		"subject",
-		CreateField("subject", StringType),
+		ast.CreateField("subject", StringType),
 	)
 	singleEmailMessageType.InstanceFields.Set(
 		"plainTextBody",
-		CreateField("plainTextBody", StringType),
+		ast.CreateField("plainTextBody", StringType),
 	)
 	singleEmailMessageType.InstanceFields.Set(
 		"htmlBody",
-		CreateField("htmlBody", StringType),
+		ast.CreateField("htmlBody", StringType),
 	)
 
-	sendMailResultType := CreateClass(
+	sendMailResultType := ast.CreateClass(
 		"SendEmailResult",
-		[]*Method{
+		[]*ast.Method{
 			{
-				Modifiers: []ast.Node{
-					&ast.Modifier{
-						Name: "public",
-					},
-				},
-				Parameters: []ast.Node{},
-				NativeFunction: func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				Modifiers:  []*ast.Modifier{ast.PublicModifier()},
+				Parameters: []*ast.Parameter{},
+				NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return nil
 				},
 			},
 		},
-		NewMethodMap(),
+		ast.NewMethodMap(),
 		nil,
 	)
 	sendMailResultType.InstanceFields.Set(
 		"success",
-		CreateField("success", BooleanType),
+		ast.CreateField("success", BooleanType),
 	)
 	singleEmailMessageType.InstanceFields.Set(
 		"errors",
-		CreateField("errors", CreateListType(StringType)),
+		ast.CreateField("errors", CreateListType(StringType)),
 	)
 
-	classMap := NewClassMap()
+	classMap := ast.NewClassMap()
 	classMap.Set("SingleEmailMessage", singleEmailMessageType)
 	classMap.Set("SendEmailResult", sendMailResultType)
 
 	nameSpaceStore.Set("Messaging", classMap)
 
-	staticMethods := NewMethodMap()
+	staticMethods := ast.NewMethodMap()
 	staticMethods.Set(
 		"sendEmail",
-		[]*Method{
-			CreateMethod(
+		[]*ast.Method{
+			ast.CreateMethod(
 				"sendEmail",
 				CreateListTypeRef(&ast.TypeRef{
 					Name:       []string{"Messaging", "SendEmailResult"},
 					Parameters: []ast.Node{},
 				}),
-				[]ast.Node{
+				[]*ast.Parameter{
 					CreateListTypeParameter(&ast.TypeRef{
 						// Name:       []string{"Messaging", "Email"},
 						Name:       []string{"Messaging", "SingleEmailMessage"}, // TODO: implement
 						Parameters: []ast.Node{},
 					}),
 				},
-				func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					// TODO: implment
-					obj := CreateObject(singleEmailMessageType)
+					obj := ast.CreateObject(singleEmailMessageType)
 					obj.InstanceFields.Set("errors", NewString("hoge"))
 					obj.InstanceFields.Set("success", NewBoolean(true))
-					listObj := CreateListObject(ListType, []*Object{obj})
+					listObj := CreateListObject(ListType, []*ast.Object{obj})
 					return listObj
 				},
 			),
 		},
 	)
-	messagingClass := CreateClass(
+	messagingClass := ast.CreateClass(
 		"Messaging",
 		nil,
 		nil,

@@ -20,7 +20,7 @@ import (
 )
 
 type Server struct {
-	ClassTypes []*builtin.ClassType
+	ClassTypes []*ast.ClassType
 }
 
 func (s *Server) Run() {
@@ -69,7 +69,7 @@ func (s *Server) Run() {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Fprintf(w, builtin.String(res.(*builtin.Object)))
+		fmt.Fprintf(w, builtin.String(res.(*ast.Object)))
 		fmt.Fprintln(w)
 	})
 	port := getServerPort()
@@ -204,7 +204,7 @@ func (s *EvalServer) Run() {
 }
 
 func eval(w http.ResponseWriter, r *http.Request) {
-	classMap := builtin.NewClassMapWithPrimivie([]*builtin.ClassType{})
+	classMap := builtin.NewClassMapWithPrimivie([]*ast.ClassType{})
 
 	req := &EvalRequest{}
 	buf := new(bytes.Buffer)
@@ -229,7 +229,7 @@ func eval(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error")
 	}
-	classType := t.(*builtin.ClassType)
+	classType := t.(*ast.ClassType)
 	classMap.Set(classType.Name, classType)
 	typeChecker := compiler.NewTypeChecker()
 	typeChecker.Context.ClassTypes = classMap
@@ -297,7 +297,7 @@ func generateId() string {
 	return base64.URLEncoding.EncodeToString(b)
 }
 
-func Run(classTypes []*builtin.ClassType) {
+func Run(classTypes []*ast.ClassType) {
 	server := &Server{ClassTypes: classTypes}
 	server.Run()
 }

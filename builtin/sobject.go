@@ -39,7 +39,7 @@ func NewSoapClient() *soapforce.Client {
 	return soapClient
 }
 
-var typeMapper = map[string]*ClassType{
+var typeMapper = map[string]*ast.ClassType{
 	"string":        StringType,
 	"picklist":      StringType,
 	"multipicklist": StringType,
@@ -80,21 +80,17 @@ func Load(src string) {
 		panic(err)
 	}
 	for name, sobj := range sObjects {
-		fields := NewFieldMap()
+		fields := ast.NewFieldMap()
 		for _, f := range sobj.Fields {
-			fields.Set(f.Name, &Field{
-				Type: typeMapper[f.Type],
-				Name: f.Name,
-				Modifiers: []ast.Node{
-					&ast.Modifier{
-						Name: "public",
-					},
-				},
+			fields.Set(f.Name, &ast.Field{
+				Type:      typeMapper[f.Type],
+				Name:      f.Name,
+				Modifiers: []*ast.Modifier{ast.PublicModifier()},
 			})
 		}
-		primitiveClassMap.Set(name, &ClassType{
+		primitiveClassMap.Set(name, &ast.ClassType{
 			Name:           sobj.Name,
-			Constructors:   []*Method{},
+			Constructors:   []*ast.Method{},
 			InstanceFields: fields,
 		})
 	}

@@ -11,13 +11,13 @@ type Location struct {
 }
 
 type ClassDeclaration struct {
-	Annotations        []Node
-	Modifiers          []Node
+	Annotations        []*Annotation
+	Modifiers          []*Modifier
 	Name               string
-	SuperClassRef      Node
-	ImplementClassRefs []Node
+	SuperClassRef      *TypeRef
+	ImplementClassRefs []*TypeRef
 	Declarations       []Node
-	InnerClasses       []Node
+	InnerClasses       []*ClassDeclaration
 	Location           *Location
 	Parent             Node
 }
@@ -36,10 +36,10 @@ type Annotation struct {
 }
 
 type InterfaceDeclaration struct {
-	Annotations []Node
-	Modifiers   []Node
+	Annotations []*Annotation
+	Modifiers   []*Modifier
 	Name        string
-	Methods     []Node
+	Methods     []*MethodDeclaration
 	Location    *Location
 	Parent      Node
 }
@@ -51,8 +51,9 @@ type IntegerLiteral struct {
 }
 
 type Parameter struct {
-	Modifiers []Node
-	Type      Node
+	Modifiers []*Modifier
+	TypeRef   *TypeRef
+	Type      *ClassType
 	Name      string
 	Location  *Location
 	Parent    Node
@@ -96,40 +97,42 @@ type DoubleLiteral struct {
 }
 
 type FieldDeclaration struct {
-	Type        *TypeRef
-	Modifiers   []Node
-	Annotations []Node
+	TypeRef     *TypeRef
+	Type        *ClassType
+	Modifiers   []*Modifier
+	Annotations []*Annotation
 	Declarators []Node
 	Location    *Location
 	Parent      Node
 }
 
 type Try struct {
-	Block        Node
-	CatchClause  []Node
-	FinallyBlock Node
+	Block        *Block
+	CatchClause  []*Catch
+	FinallyBlock *Block
 	Location     *Location
 	Parent       Node
 }
 
 type Catch struct {
-	Modifiers  []Node
-	Type       Node
+	Modifiers  []*Modifier
+	TypeRef    *TypeRef
+	Type       *ClassType
 	Identifier string
-	Block      Node
+	Block      *Block
 	Location   *Location
 	Parent     Node
 }
 
 type Finally struct {
-	Block    Node
+	Block    *Block
 	Location *Location
 	Parent   Node
 }
 
 type For struct {
 	Control    Node
-	Statements Node
+	Statements *Block
 	Location   *Location
 	Parent     Node
 }
@@ -143,8 +146,9 @@ type ForControl struct {
 }
 
 type EnhancedForControl struct {
-	Modifiers            []Node
-	Type                 Node
+	Modifiers            []*Modifier
+	TypeRef              *TypeRef
+	Type                 *ClassType
 	VariableDeclaratorId string
 	Expression           Node
 	Location             *Location
@@ -161,12 +165,12 @@ type If struct {
 
 type MethodDeclaration struct {
 	Name        string
-	Annotations []Node
-	Modifiers   []Node
-	ReturnType  Node
-	Parameters  []Node
+	Annotations []*Annotation
+	Modifiers   []*Modifier
+	ReturnType  *TypeRef
+	Parameters  []*Parameter
 	Throws      []Node
-	Statements  Node
+	Statements  *Block
 	Location    *Location
 	Parent      Node
 }
@@ -179,7 +183,8 @@ type MethodInvocation struct {
 }
 
 type New struct {
-	Type       Node
+	TypeRef    *TypeRef
+	Type       *ClassType
 	Parameters []Node
 	Init       *Init
 	Location   *Location
@@ -312,7 +317,7 @@ type Trigger struct {
 	Name           string
 	Object         string
 	TriggerTimings []Node
-	Statements     Node
+	Statements     *Block
 	Location       *Location
 	Parent         Node
 }
@@ -325,8 +330,9 @@ type TriggerTiming struct {
 }
 
 type VariableDeclaration struct {
-	Modifiers   []Node
-	Type        Node
+	Modifiers   []*Modifier
+	TypeRef     *TypeRef
+	Type        *ClassType
 	Declarators []Node
 	Location    *Location
 	Parent      Node
@@ -341,13 +347,14 @@ type VariableDeclarator struct {
 
 type When struct {
 	Condition  []Node
-	Statements Node
+	Statements *Block
 	Location   *Location
 	Parent     Node
 }
 
 type WhenType struct {
-	Type       Node
+	TypeRef    *TypeRef
+	Type       *ClassType
 	Identifier string
 	Location   *Location
 	Parent     Node
@@ -355,7 +362,7 @@ type WhenType struct {
 
 type While struct {
 	Condition  Node
-	Statements Node
+	Statements *Block
 	IsDo       bool
 	Location   *Location
 	Parent     Node
@@ -368,10 +375,11 @@ type NothingStatement struct {
 }
 
 type CastExpression struct {
-	CastType   Node
-	Expression Node
-	Location   *Location
-	Parent     Node
+	CastTypeRef *TypeRef
+	CastType    *ClassType
+	Expression  Node
+	Location    *Location
+	Parent      Node
 }
 
 type FieldAccess struct {
@@ -397,16 +405,17 @@ type Block struct {
 
 type GetterSetter struct {
 	Type       string
-	Modifiers  []Node
+	Modifiers  []*Modifier
 	MethodBody Node
 	Location   *Location
 	Parent     Node
 }
 
 type PropertyDeclaration struct {
-	Modifiers     []Node
-	Annotations   []Node
-	Type          *TypeRef
+	Modifiers     []*Modifier
+	Annotations   []*Annotation
+	TypeRef       *TypeRef
+	Type          *ClassType
 	Identifier    string
 	GetterSetters []Node
 	Location      *Location
@@ -464,12 +473,12 @@ type Name struct {
 }
 
 type ConstructorDeclaration struct {
-	Modifiers   []Node
-	Annotations []Node
+	Modifiers   []*Modifier
+	Annotations []*Annotation
 	ReturnType  Node
-	Parameters  []Node
+	Parameters  []*Parameter
 	Throws      []Node
-	Statements  Node
+	Statements  *Block
 	Location    *Location
 	Parent      Node
 }
@@ -672,14 +681,14 @@ func (n *FieldDeclaration) Accept(v Visitor) (interface{}, error) {
 
 func (n *FieldDeclaration) GetChildren() []interface{} {
 	return []interface{}{
-		n.Type,
+		n.TypeRef,
 		n.Declarators,
 	}
 }
 
 func (n *FieldDeclaration) IsStatic() bool {
 	for _, m := range n.Modifiers {
-		if m.(*Modifier).Name == "static" {
+		if m.Name == "static" {
 			return true
 		}
 	}
@@ -704,7 +713,7 @@ func (n *Catch) Accept(v Visitor) (interface{}, error) {
 
 func (n *Catch) GetChildren() []interface{} {
 	return []interface{}{
-		n.Type,
+		n.TypeRef,
 		n.Identifier,
 		n.Modifiers,
 		n.Block,
@@ -784,7 +793,7 @@ func (n *MethodDeclaration) GetChildren() []interface{} {
 
 func (n *MethodDeclaration) IsStatic() bool {
 	for _, m := range n.Modifiers {
-		if m.(*Modifier).Name == "static" {
+		if m.Name == "static" {
 			return true
 		}
 	}
@@ -1074,7 +1083,7 @@ func (n *GetterSetter) IsSet() bool {
 
 func (n *GetterSetter) Is(modifier string) bool {
 	for _, m := range n.Modifiers {
-		if m.(*Modifier).Name == modifier {
+		if m.Name == modifier {
 			return true
 		}
 	}
@@ -1100,7 +1109,7 @@ func (n *PropertyDeclaration) GetChildren() []interface{} {
 
 func (n *PropertyDeclaration) IsStatic() bool {
 	for _, m := range n.Modifiers {
-		if m.(*Modifier).Name == "static" {
+		if m.Name == "static" {
 			return true
 		}
 	}

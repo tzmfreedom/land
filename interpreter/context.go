@@ -10,35 +10,35 @@ import (
 type Context struct {
 	Env         *Env
 	StaticField *StaticFieldMap
-	ClassTypes  *builtin.ClassMap       // loaded User Class
+	ClassTypes  *ast.ClassMap           // loaded User Class
 	NameSpaces  *builtin.NameSpaceStore // NameSpaces and Related Classes
 
 	CurrentMethod *ast.MethodDeclaration
-	CurrentClass  *builtin.ClassType
+	CurrentClass  *ast.ClassType
 }
 
 func NewContext() *Context {
 	ctx := &Context{}
 	ctx.StaticField = NewStaticFieldMap()
-	ctx.ClassTypes = builtin.NewClassMap()
+	ctx.ClassTypes = ast.NewClassMap()
 	ctx.NameSpaces = builtin.NewNameSpaceStore()
 	ctx.Env = NewEnv(nil)
 	return ctx
 }
 
 type Env struct {
-	Data   *builtin.ObjectMap
+	Data   *ast.ObjectMap
 	Parent *Env
 }
 
 func NewEnv(p *Env) *Env {
 	return &Env{
-		Data:   builtin.NewObjectMap(),
+		Data:   ast.NewObjectMap(),
 		Parent: p,
 	}
 }
 
-func (e *Env) Get(k string) (*builtin.Object, bool) {
+func (e *Env) Get(k string) (*ast.Object, bool) {
 	n, ok := e.Data.Get(k)
 	if ok {
 		return n, true
@@ -49,7 +49,7 @@ func (e *Env) Get(k string) (*builtin.Object, bool) {
 	return nil, false
 }
 
-func (e *Env) Update(k string, n *builtin.Object) {
+func (e *Env) Update(k string, n *ast.Object) {
 	env := e.FindEnv(k)
 	if env == nil {
 		panic("field not found: " + k)
@@ -57,7 +57,7 @@ func (e *Env) Update(k string, n *builtin.Object) {
 	env.Data.Set(k, n)
 }
 
-func (e *Env) Define(k string, n *builtin.Object) {
+func (e *Env) Define(k string, n *ast.Object) {
 	e.Data.Set(k, n)
 }
 
@@ -76,30 +76,30 @@ func (e *Env) FindEnv(k string) *Env {
  * StaticFieldMap
  */
 type StaticFieldMap struct {
-	Data map[string]map[string]*builtin.ObjectMap
+	Data map[string]map[string]*ast.ObjectMap
 }
 
 func NewStaticFieldMap() *StaticFieldMap {
 	return &StaticFieldMap{
-		Data: map[string]map[string]*builtin.ObjectMap{},
+		Data: map[string]map[string]*ast.ObjectMap{},
 	}
 }
 
-func (m *StaticFieldMap) Add(ns, k, f string, n *builtin.Object) {
+func (m *StaticFieldMap) Add(ns, k, f string, n *ast.Object) {
 	objMap, _ := m.Get(ns, k)
 	objMap.Set(f, n)
 }
 
-func (m *StaticFieldMap) Set(ns, k string, n *builtin.ObjectMap) {
+func (m *StaticFieldMap) Set(ns, k string, n *ast.ObjectMap) {
 	ns = strings.ToLower(ns)
 	k = strings.ToLower(k)
 	if _, ok := m.Data[ns]; !ok {
-		m.Data[ns] = map[string]*builtin.ObjectMap{}
+		m.Data[ns] = map[string]*ast.ObjectMap{}
 	}
 	m.Data[ns][k] = n
 }
 
-func (m *StaticFieldMap) Get(ns, k string) (*builtin.ObjectMap, bool) {
+func (m *StaticFieldMap) Get(ns, k string) (*ast.ObjectMap, bool) {
 	ns = strings.ToLower(ns)
 	k = strings.ToLower(k)
 	if objMap, ok := m.Data[ns]; ok {

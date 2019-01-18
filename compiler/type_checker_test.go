@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/goland/builtin"
 )
 
 func TestTypeChecker(t *testing.T) {
@@ -21,8 +22,8 @@ func TestTypeChecker(t *testing.T) {
 				&ast.ArrayAccess{
 					Receiver: &ast.TypeRef{
 						Name: []string{"List"},
-						Parameters: []ast.Node{
-							&ast.TypeRef{
+						Parameters: []*ast.TypeRef{
+							{
 								Name: []string{"Integer"},
 							},
 						},
@@ -32,8 +33,8 @@ func TestTypeChecker(t *testing.T) {
 				&ast.ArrayAccess{
 					Receiver: &ast.TypeRef{
 						Name: []string{"List"},
-						Parameters: []ast.Node{
-							&ast.TypeRef{
+						Parameters: []*ast.TypeRef{
+							{
 								Name: []string{"Integer"},
 							},
 						},
@@ -43,8 +44,8 @@ func TestTypeChecker(t *testing.T) {
 				&ast.ArrayAccess{
 					Receiver: &ast.TypeRef{
 						Name: []string{"List"},
-						Parameters: []ast.Node{
-							&ast.TypeRef{
+						Parameters: []*ast.TypeRef{
+							{
 								Name: []string{"Integer"},
 							},
 						},
@@ -173,7 +174,7 @@ func TestTypeChecker(t *testing.T) {
 					Data: map[string][]*ast.Method{
 						"foo": {
 							&ast.Method{
-								ReturnType: &ast.TypeRef{Name: []string{"Integer"}},
+								ReturnTypeRef: &ast.TypeRef{Name: []string{"Integer"}},
 								Statements: &ast.Block{
 									Statements: []ast.Node{
 										&ast.Return{
@@ -188,7 +189,7 @@ func TestTypeChecker(t *testing.T) {
 						},
 						"bar": {
 							&ast.Method{
-								ReturnType: &ast.TypeRef{Name: []string{"Integer"}},
+								ReturnTypeRef: &ast.TypeRef{Name: []string{"Integer"}},
 								Statements: &ast.Block{
 									Statements: []ast.Node{
 										&ast.Return{
@@ -203,7 +204,7 @@ func TestTypeChecker(t *testing.T) {
 						},
 						"baz": {
 							&ast.Method{
-								ReturnType: &ast.TypeRef{Name: []string{"Integer"}},
+								ReturnTypeRef: &ast.TypeRef{Name: []string{"Integer"}},
 								Statements: &ast.Block{
 									Statements: []ast.Node{
 										&ast.Return{
@@ -218,7 +219,7 @@ func TestTypeChecker(t *testing.T) {
 						},
 						"qux": {
 							&ast.Method{
-								ReturnType: &ast.TypeRef{Name: []string{"Integer"}},
+								ReturnTypeRef: &ast.TypeRef{Name: []string{"Integer"}},
 								Statements: &ast.Block{
 									Statements: []ast.Node{
 										&ast.Return{
@@ -341,18 +342,18 @@ func TestTypeChecker(t *testing.T) {
 								Statements: &ast.Block{
 									Statements: []ast.Node{
 										&ast.VariableDeclaration{
-											Type: &ast.TypeRef{Name: []string{"Integer"}},
-											Declarators: []ast.Node{
-												&ast.VariableDeclarator{
+											TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
+											Declarators: []*ast.VariableDeclarator{
+												{
 													Name:       "i",
 													Expression: &ast.IntegerLiteral{},
 												},
 											},
 										},
 										&ast.VariableDeclaration{
-											Type: &ast.TypeRef{Name: []string{"String"}},
-											Declarators: []ast.Node{
-												&ast.VariableDeclarator{
+											TypeRef: &ast.TypeRef{Name: []string{"String"}},
+											Declarators: []*ast.VariableDeclarator{
+												{
 													Name:       "j",
 													Expression: &ast.IntegerLiteral{},
 												},
@@ -482,7 +483,7 @@ func TestTypeChecker(t *testing.T) {
 	for i, testCase := range testCases {
 		checker := NewTypeChecker()
 		checker.Context = &Context{}
-		checker.Context.ClassTypes = ast.NewClassMapWithPrimivie([]*ast.ClassType{testCase.Input})
+		checker.Context.ClassTypes = builtin.NewClassMapWithPrimivie([]*ast.ClassType{testCase.Input})
 		checker.VisitClassType(testCase.Input) // TODO: test error
 
 		messages := make([]string, len(checker.Errors))
@@ -520,11 +521,11 @@ func TestModifier(t *testing.T) {
 					Data: map[string][]*ast.Method{
 						"private_method": {
 							&ast.Method{
-								Modifiers: []ast.Node{
+								Modifiers: []*ast.Modifier{
 									&ast.Modifier{Name: "private"},
 								},
-								ReturnType: nil,
-								Statements: &ast.Block{},
+								ReturnTypeRef: nil,
+								Statements:    &ast.Block{},
 								Parent: &ast.ClassDeclaration{
 									Name: "klass",
 								},
@@ -532,7 +533,7 @@ func TestModifier(t *testing.T) {
 						},
 						"caller": {
 							&ast.Method{
-								ReturnType: nil,
+								ReturnTypeRef: nil,
 								Statements: &ast.Block{
 									Statements: []ast.Node{
 										&ast.MethodInvocation{
@@ -559,11 +560,11 @@ func TestModifier(t *testing.T) {
 					Data: map[string][]*ast.Method{
 						"protected_method": {
 							&ast.Method{
-								Modifiers: []ast.Node{
+								Modifiers: []*ast.Modifier{
 									&ast.Modifier{Name: "protected"},
 								},
-								ReturnType: nil,
-								Statements: &ast.Block{},
+								ReturnTypeRef: nil,
+								Statements:    &ast.Block{},
 								Parent: &ast.ClassDeclaration{
 									Name: "klass",
 								},
@@ -571,17 +572,17 @@ func TestModifier(t *testing.T) {
 						},
 						"caller": {
 							&ast.Method{
-								ReturnType: nil,
+								ReturnTypeRef: nil,
 								Statements: &ast.Block{
 									Statements: []ast.Node{
 										&ast.MethodInvocation{
 											NameOrExpression: &ast.FieldAccess{
 												Expression: &ast.New{
-													Type: &ast.TypeRef{Name: []string{"klass"}},
+													TypeRef: &ast.TypeRef{Name: []string{"klass"}},
 												},
 												FieldName: "protected_method",
 											},
-											Parameters: []*ast.TypeRef{},
+											Parameters: []ast.Node{},
 										},
 									},
 								},
@@ -602,11 +603,11 @@ func TestModifier(t *testing.T) {
 					Data: map[string][]*ast.Method{
 						"public_method": {
 							&ast.Method{
-								Modifiers: []ast.Node{
-									&ast.Modifier{Name: "public"},
+								Modifiers: []*ast.Modifier{
+									{Name: "public"},
 								},
-								ReturnType: nil,
-								Statements: &ast.Block{},
+								ReturnTypeRef: nil,
+								Statements:    &ast.Block{},
 								Parent: &ast.ClassDeclaration{
 									Name: "klass",
 								},
@@ -614,17 +615,17 @@ func TestModifier(t *testing.T) {
 						},
 						"caller": {
 							&ast.Method{
-								ReturnType: nil,
+								ReturnTypeRef: nil,
 								Statements: &ast.Block{
 									Statements: []ast.Node{
 										&ast.MethodInvocation{
 											NameOrExpression: &ast.FieldAccess{
 												Expression: &ast.New{
-													Type: &ast.TypeRef{Name: []string{"klass"}},
+													TypeRef: &ast.TypeRef{Name: []string{"klass"}},
 												},
 												FieldName: "public_method",
 											},
-											Parameters: []*ast.TypeRef{},
+											Parameters: []ast.Node{},
 										},
 									},
 								},
@@ -642,7 +643,7 @@ func TestModifier(t *testing.T) {
 	for i, testCase := range testCases {
 		checker := NewTypeChecker()
 		checker.Context = &Context{}
-		checker.Context.ClassTypes = ast.NewClassMapWithPrimivie([]*ast.ClassType{testCase.Input})
+		checker.Context.ClassTypes = builtin.NewClassMapWithPrimivie([]*ast.ClassType{testCase.Input})
 		_, err := checker.VisitClassType(testCase.Input)
 
 		expected := testCase.ExpectError

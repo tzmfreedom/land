@@ -21,7 +21,7 @@ func TestResolveVariable(t *testing.T) {
 		{
 			[]string{"i"},
 			&Context{
-				ClassTypes: &builtin.ClassMap{
+				ClassTypes: &ast.ClassMap{
 					Data: map[string]*ast.ClassType{
 						"integer": builtin.IntegerType,
 					},
@@ -40,7 +40,7 @@ func TestResolveVariable(t *testing.T) {
 		{
 			[]string{"i"},
 			&Context{
-				ClassTypes: &builtin.ClassMap{
+				ClassTypes: &ast.ClassMap{
 					Data: map[string]*ast.ClassType{
 						"integer": builtin.IntegerType,
 					},
@@ -98,7 +98,7 @@ func TestResolveVariable(t *testing.T) {
 		//		Env: &Env{
 		//			Data: &ast.ObjectMap{},
 		//		},
-		//		ClassTypes: &builtin.ClassMap{
+		//		ClassTypes: &ast.ClassMap{
 		//			Data: map[string]*ast.ClassType{
 		//				"integer": builtin.IntegerType,
 		//				"i": {
@@ -124,7 +124,7 @@ func TestResolveVariable(t *testing.T) {
 		//		Env: &Env{
 		//			Data: &ast.ObjectMap{},
 		//		},
-		//		ClassTypes: &builtin.ClassMap{
+		//		ClassTypes: &ast.ClassMap{
 		//			Data: map[string]*ast.ClassType{
 		//				"integer": builtin.IntegerType,
 		//				"foo": {
@@ -161,7 +161,7 @@ func TestResolveVariable(t *testing.T) {
 		//		Env: &Env{
 		//			Data: &ast.ObjectMap{},
 		//		},
-		//		ClassTypes: &builtin.ClassMap{
+		//		ClassTypes: &ast.ClassMap{
 		//			Data: map[string]*ast.ClassType{
 		//				"integer": builtin.IntegerType,
 		//			},
@@ -223,7 +223,7 @@ func TestResolveMethod(t *testing.T) {
 					Data: &ast.ObjectMap{
 						Data: map[string]*ast.Object{
 							"this": {
-								ClassType: &builtin.ClassType{
+								ClassType: &ast.ClassType{
 									InstanceMethods: &ast.MethodMap{
 										Data: map[string][]*ast.Method{
 											"foo": {
@@ -249,7 +249,7 @@ func TestResolveMethod(t *testing.T) {
 					Data: &ast.ObjectMap{
 						Data: map[string]*ast.Object{
 							"foo": {
-								ClassType: &builtin.ClassType{
+								ClassType: &ast.ClassType{
 									InstanceMethods: &ast.MethodMap{
 										Data: map[string][]*ast.Method{
 											"bar": {
@@ -271,7 +271,7 @@ func TestResolveMethod(t *testing.T) {
 		{
 			[]string{"klass", "foo"},
 			&Context{
-				ClassTypes: &builtin.ClassMap{
+				ClassTypes: &ast.ClassMap{
 					Data: map[string]*ast.ClassType{
 						"klass": {
 							StaticMethods: &ast.MethodMap{
@@ -294,7 +294,7 @@ func TestResolveMethod(t *testing.T) {
 		//{
 		//	[]string{"klass", "foo", "bar"},
 		//	&Context{
-		//		ClassTypes: &builtin.ClassMap{
+		//		ClassTypes: &ast.ClassMap{
 		//			Data: map[string]*ast.ClassType{
 		//				"klass": {
 		//					StaticFields: &builtin.FieldMap{
@@ -358,7 +358,7 @@ func TestResolveMethod(t *testing.T) {
 		//	[]string{"namespace", "klass", "foo", "bar"},
 		//	&Context{
 		//		Env: newTypeEnv(nil),
-		//		ClassTypes: &builtin.ClassMap{
+		//		ClassTypes: &ast.ClassMap{
 		//			Data: map[string]*ast.ClassType{
 		//				"klass2": {
 		//					InstanceMethods: &ast.MethodMap{

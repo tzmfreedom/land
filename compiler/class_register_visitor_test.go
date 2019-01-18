@@ -17,23 +17,23 @@ func TestClassRegister(t *testing.T) {
 	}{
 		{
 			&ast.ClassDeclaration{
-				Modifiers:   []ast.Node{},
-				Annotations: []ast.Node{},
+				Modifiers:   []*ast.Modifier{},
+				Annotations: []*ast.Annotation{},
 				Name:        "Foo",
 				Declarations: []ast.Node{
 					&ast.FieldDeclaration{
-						Type: &ast.TypeRef{
+						TypeRef: &ast.TypeRef{
 							Name: []string{
 								"Integer",
 							},
 							Parameters: []*ast.TypeRef{},
 						},
-						Modifiers: []ast.Node{
-							&ast.Modifier{
+						Modifiers: []*ast.Modifier{
+							{
 								Name: "public",
 							},
 						},
-						Declarators: []ast.Node{
+						Declarators: []*ast.VariableDeclarator{
 							&ast.VariableDeclarator{
 								Name:       "field",
 								Expression: nil,
@@ -41,18 +41,18 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 					&ast.FieldDeclaration{
-						Type: &ast.TypeRef{
+						TypeRef: &ast.TypeRef{
 							Name: []string{
 								"Double",
 							},
 							Parameters: []*ast.TypeRef{},
 						},
-						Modifiers: []ast.Node{
-							&ast.Modifier{
+						Modifiers: []*ast.Modifier{
+							{
 								Name: "public",
 							},
 						},
-						Declarators: []ast.Node{
+						Declarators: []*ast.VariableDeclarator{
 							&ast.VariableDeclarator{
 								Name: "field_with_init",
 								Expression: &ast.IntegerLiteral{
@@ -62,21 +62,21 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 					&ast.FieldDeclaration{
-						Type: &ast.TypeRef{
+						TypeRef: &ast.TypeRef{
 							Name: []string{
 								"String",
 							},
 							Parameters: []*ast.TypeRef{},
 						},
-						Modifiers: []ast.Node{
-							&ast.Modifier{
+						Modifiers: []*ast.Modifier{
+							{
 								Name: "public",
 							},
-							&ast.Modifier{
+							{
 								Name: "static",
 							},
 						},
-						Declarators: []ast.Node{
+						Declarators: []*ast.VariableDeclarator{
 							&ast.VariableDeclarator{
 								Name:       "static_field",
 								Expression: nil,
@@ -84,21 +84,21 @@ func TestClassRegister(t *testing.T) {
 						},
 					},
 					&ast.FieldDeclaration{
-						Type: &ast.TypeRef{
+						TypeRef: &ast.TypeRef{
 							Name: []string{
 								"Boolean",
 							},
 							Parameters: []*ast.TypeRef{},
 						},
-						Modifiers: []ast.Node{
-							&ast.Modifier{
+						Modifiers: []*ast.Modifier{
+							{
 								Name: "public",
 							},
-							&ast.Modifier{
+							{
 								Name: "static",
 							},
 						},
-						Declarators: []ast.Node{
+						Declarators: []*ast.VariableDeclarator{
 							&ast.VariableDeclarator{
 								Name: "static_field_with_init",
 								Expression: &ast.IntegerLiteral{
@@ -109,11 +109,11 @@ func TestClassRegister(t *testing.T) {
 					},
 					&ast.MethodDeclaration{
 						Name: "static_method",
-						Modifiers: []ast.Node{
-							&ast.Modifier{
+						Modifiers: []*ast.Modifier{
+							{
 								Name: "public",
 							},
-							&ast.Modifier{
+							{
 								Name: "static",
 							},
 						},
@@ -123,10 +123,10 @@ func TestClassRegister(t *testing.T) {
 							},
 							Parameters: []*ast.TypeRef{},
 						},
-						Parameters: []ast.Node{
-							&ast.Parameter{
-								Modifiers: []ast.Node{},
-								Type: &ast.TypeRef{
+						Parameters: []*ast.Parameter{
+							{
+								Modifiers: []*ast.Modifier{},
+								TypeRef: &ast.TypeRef{
 									Name: []string{
 										"Boolean",
 									},
@@ -142,13 +142,13 @@ func TestClassRegister(t *testing.T) {
 					},
 					&ast.MethodDeclaration{
 						Name: "method",
-						Modifiers: []ast.Node{
-							&ast.Modifier{
+						Modifiers: []*ast.Modifier{
+							{
 								Name: "public",
 							},
 						},
 						ReturnType: nil,
-						Parameters: []*ast.TypeRef{},
+						Parameters: []*ast.Parameter{},
 						Throws:     []ast.Node{},
 						Statements: &ast.Block{
 							Statements: []ast.Node{},
@@ -157,8 +157,8 @@ func TestClassRegister(t *testing.T) {
 				},
 			},
 			&ast.ClassType{
-				Modifiers:    []ast.Node{},
-				Annotations:  []ast.Node{},
+				Modifiers:    []*ast.Modifier{},
+				Annotations:  []*ast.Annotation{},
 				Name:         "Foo",
 				InnerClasses: ast.NewClassMap(),
 				Constructors: []*ast.Method{},
@@ -167,14 +167,14 @@ func TestClassRegister(t *testing.T) {
 						"method": {
 							&ast.Method{
 								Name: "method",
-								Modifiers: []ast.Node{
-									&ast.Modifier{
+								Modifiers: []*ast.Modifier{
+									{
 										Name: "public",
 									},
 								},
-								ReturnType: nil,
-								Parameters: []*ast.TypeRef{},
-								Throws:     []ast.Node{},
+								ReturnTypeRef: nil,
+								Parameters:    []*ast.Parameter{},
+								Throws:        []ast.Node{},
 								Statements: &ast.Block{
 									Statements: []ast.Node{},
 								},
@@ -187,24 +187,24 @@ func TestClassRegister(t *testing.T) {
 						"static_method": {
 							&ast.Method{
 								Name: "static_method",
-								Modifiers: []ast.Node{
-									&ast.Modifier{
+								Modifiers: []*ast.Modifier{
+									{
 										Name: "public",
 									},
-									&ast.Modifier{
+									{
 										Name: "static",
 									},
 								},
-								ReturnType: &ast.TypeRef{
+								ReturnTypeRef: &ast.TypeRef{
 									Name: []string{
 										"String",
 									},
 									Parameters: []*ast.TypeRef{},
 								},
-								Parameters: []ast.Node{
-									&ast.Parameter{
-										Modifiers: []ast.Node{},
-										Type: &ast.TypeRef{
+								Parameters: []*ast.Parameter{
+									{
+										Modifiers: []*ast.Modifier{},
+										TypeRef: &ast.TypeRef{
 											Name: []string{
 												"Boolean",
 											},
@@ -224,14 +224,14 @@ func TestClassRegister(t *testing.T) {
 				InstanceFields: &ast.FieldMap{
 					Data: map[string]*ast.Field{
 						"field": {
-							Type: &ast.TypeRef{
+							TypeRef: &ast.TypeRef{
 								Name: []string{
 									"Integer",
 								},
 								Parameters: []*ast.TypeRef{},
 							},
-							Modifiers: []ast.Node{
-								&ast.Modifier{
+							Modifiers: []*ast.Modifier{
+								{
 									Name: "public",
 								},
 							},
@@ -239,14 +239,14 @@ func TestClassRegister(t *testing.T) {
 							Expression: nil,
 						},
 						"field_with_init": {
-							Type: &ast.TypeRef{
+							TypeRef: &ast.TypeRef{
 								Name: []string{
 									"Double",
 								},
 								Parameters: []*ast.TypeRef{},
 							},
-							Modifiers: []ast.Node{
-								&ast.Modifier{
+							Modifiers: []*ast.Modifier{
+								{
 									Name: "public",
 								},
 							},
@@ -260,17 +260,17 @@ func TestClassRegister(t *testing.T) {
 				StaticFields: &ast.FieldMap{
 					Data: map[string]*ast.Field{
 						"static_field": {
-							Type: &ast.TypeRef{
+							TypeRef: &ast.TypeRef{
 								Name: []string{
 									"String",
 								},
 								Parameters: []*ast.TypeRef{},
 							},
-							Modifiers: []ast.Node{
-								&ast.Modifier{
+							Modifiers: []*ast.Modifier{
+								{
 									Name: "public",
 								},
-								&ast.Modifier{
+								{
 									Name: "static",
 								},
 							},
@@ -278,17 +278,17 @@ func TestClassRegister(t *testing.T) {
 							Expression: nil,
 						},
 						"static_field_with_init": {
-							Type: &ast.TypeRef{
+							TypeRef: &ast.TypeRef{
 								Name: []string{
 									"Boolean",
 								},
 								Parameters: []*ast.TypeRef{},
 							},
-							Modifiers: []ast.Node{
-								&ast.Modifier{
+							Modifiers: []*ast.Modifier{
+								{
 									Name: "public",
 								},
-								&ast.Modifier{
+								{
 									Name: "static",
 								},
 							},
@@ -323,24 +323,24 @@ func equalNode(t *testing.T, expected *ast.ClassType, actual *ast.ClassType) {
 
 func TestClassRegisterDuplicateClass(t *testing.T) {
 	classNode := &ast.ClassDeclaration{
-		Modifiers:   []ast.Node{},
-		Annotations: []ast.Node{},
+		Modifiers:   []*ast.Modifier{},
+		Annotations: []*ast.Annotation{},
 		Name:        "Foo",
 		Declarations: []ast.Node{
 			&ast.ClassDeclaration{
-				Modifiers:    []ast.Node{},
-				Annotations:  []ast.Node{},
+				Modifiers:    []*ast.Modifier{},
+				Annotations:  []*ast.Annotation{},
 				Name:         "Bar",
 				Declarations: []ast.Node{},
 			},
 			&ast.ClassDeclaration{
-				Modifiers:    []ast.Node{},
-				Annotations:  []ast.Node{},
+				Modifiers:    []*ast.Modifier{},
+				Annotations:  []*ast.Annotation{},
 				Name:         "Bar",
 				Declarations: []ast.Node{},
 			},
 		},
-		InnerClasses: []ast.Node{},
+		InnerClasses: []*ast.ClassDeclaration{},
 	}
 	classRegister := &ClassRegisterVisitor{}
 	classNode.Accept(classRegister)
@@ -362,18 +362,18 @@ func TestClassRegisterError(t *testing.T) {
 	}{
 		{
 			&ast.ClassDeclaration{
-				Modifiers:   []ast.Node{},
-				Annotations: []ast.Node{},
+				Modifiers:   []*ast.Modifier{},
+				Annotations: []*ast.Annotation{},
 				Name:        "Foo",
 				Declarations: []ast.Node{
 					&ast.FieldDeclaration{
-						Type: &ast.TypeRef{
+						TypeRef: &ast.TypeRef{
 							Name: []string{
 								"Integer",
 							},
 							Parameters: []*ast.TypeRef{},
 						},
-						Declarators: []ast.Node{
+						Declarators: []*ast.VariableDeclarator{
 							&ast.VariableDeclarator{
 								Name:       "f",
 								Expression: nil,
@@ -381,14 +381,14 @@ func TestClassRegisterError(t *testing.T) {
 						},
 					},
 					&ast.FieldDeclaration{
-						Type: &ast.TypeRef{
+						TypeRef: &ast.TypeRef{
 							Name: []string{
 								"Double",
 							},
 							Parameters: []*ast.TypeRef{},
 						},
-						Declarators: []ast.Node{
-							&ast.VariableDeclarator{
+						Declarators: []*ast.VariableDeclarator{
+							{
 								Name: "f",
 								Expression: &ast.IntegerLiteral{
 									Value: 2,
@@ -402,43 +402,43 @@ func TestClassRegisterError(t *testing.T) {
 		},
 		{
 			&ast.ClassDeclaration{
-				Modifiers:   []ast.Node{},
-				Annotations: []ast.Node{},
+				Modifiers:   []*ast.Modifier{},
+				Annotations: []*ast.Annotation{},
 				Name:        "Foo",
 				Declarations: []ast.Node{
 					&ast.FieldDeclaration{
-						Type: &ast.TypeRef{
+						TypeRef: &ast.TypeRef{
 							Name: []string{
 								"Integer",
 							},
 							Parameters: []*ast.TypeRef{},
 						},
-						Modifiers: []ast.Node{
-							&ast.Modifier{
+						Modifiers: []*ast.Modifier{
+							{
 								Name: "static",
 							},
 						},
-						Declarators: []ast.Node{
-							&ast.VariableDeclarator{
+						Declarators: []*ast.VariableDeclarator{
+							{
 								Name:       "f",
 								Expression: nil,
 							},
 						},
 					},
 					&ast.FieldDeclaration{
-						Type: &ast.TypeRef{
+						TypeRef: &ast.TypeRef{
 							Name: []string{
 								"Double",
 							},
 							Parameters: []*ast.TypeRef{},
 						},
-						Modifiers: []ast.Node{
-							&ast.Modifier{
+						Modifiers: []*ast.Modifier{
+							{
 								Name: "static",
 							},
 						},
-						Declarators: []ast.Node{
-							&ast.VariableDeclarator{
+						Declarators: []*ast.VariableDeclarator{
+							{
 								Name: "f",
 								Expression: &ast.IntegerLiteral{
 									Value: 2,
@@ -452,38 +452,38 @@ func TestClassRegisterError(t *testing.T) {
 		},
 		{
 			&ast.ClassDeclaration{
-				Modifiers:   []ast.Node{},
-				Annotations: []ast.Node{},
+				Modifiers:   []*ast.Modifier{},
+				Annotations: []*ast.Annotation{},
 				Name:        "Foo",
 				Declarations: []ast.Node{
 					&ast.FieldDeclaration{
-						Type: &ast.TypeRef{
+						TypeRef: &ast.TypeRef{
 							Name: []string{
 								"Integer",
 							},
 							Parameters: []*ast.TypeRef{},
 						},
-						Modifiers: []ast.Node{
-							&ast.Modifier{
+						Modifiers: []*ast.Modifier{
+							{
 								Name: "static",
 							},
 						},
-						Declarators: []ast.Node{
-							&ast.VariableDeclarator{
+						Declarators: []*ast.VariableDeclarator{
+							{
 								Name:       "f",
 								Expression: nil,
 							},
 						},
 					},
 					&ast.FieldDeclaration{
-						Type: &ast.TypeRef{
+						TypeRef: &ast.TypeRef{
 							Name: []string{
 								"Double",
 							},
 							Parameters: []*ast.TypeRef{},
 						},
-						Declarators: []ast.Node{
-							&ast.VariableDeclarator{
+						Declarators: []*ast.VariableDeclarator{
+							{
 								Name: "f",
 								Expression: &ast.IntegerLiteral{
 									Value: 2,

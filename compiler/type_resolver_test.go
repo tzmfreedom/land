@@ -69,10 +69,10 @@ func TestResolveVariable(t *testing.T) {
 								InstanceFields: &ast.FieldMap{
 									Data: map[string]*ast.Field{
 										"instance_field": {
-											Type: &ast.TypeRef{
+											TypeRef: &ast.TypeRef{
 												Name: []string{"Integer"},
 											},
-											Modifiers: []ast.Node{
+											Modifiers: []*ast.Modifier{
 												&ast.Modifier{
 													Name: "public",
 												},
@@ -124,10 +124,10 @@ func TestResolveVariable(t *testing.T) {
 							StaticFields: &ast.FieldMap{
 								Data: map[string]*ast.Field{
 									"static_field": {
-										Type: &ast.TypeRef{
+										TypeRef: &ast.TypeRef{
 											Name: []string{"Integer"},
 										},
-										Modifiers: []ast.Node{
+										Modifiers: []*ast.Modifier{
 											&ast.Modifier{
 												Name: "public",
 											},
@@ -155,10 +155,10 @@ func TestResolveVariable(t *testing.T) {
 							InstanceFields: &ast.FieldMap{
 								Data: map[string]*ast.Field{
 									"instance_field": {
-										Type: &ast.TypeRef{
+										TypeRef: &ast.TypeRef{
 											Name: []string{"Integer"},
 										},
-										Modifiers: []ast.Node{
+										Modifiers: []*ast.Modifier{
 											&ast.Modifier{
 												Name: "public",
 											},
@@ -171,10 +171,10 @@ func TestResolveVariable(t *testing.T) {
 							StaticFields: &ast.FieldMap{
 								Data: map[string]*ast.Field{
 									"static_field": {
-										Type: &ast.TypeRef{
+										TypeRef: &ast.TypeRef{
 											Name: []string{"class2"},
 										},
-										Modifiers: []ast.Node{
+										Modifiers: []*ast.Modifier{
 											&ast.Modifier{
 												Name: "public",
 											},
@@ -208,10 +208,10 @@ func TestResolveVariable(t *testing.T) {
 									StaticFields: &ast.FieldMap{
 										Data: map[string]*ast.Field{
 											"static_field": {
-												Type: &ast.TypeRef{
+												TypeRef: &ast.TypeRef{
 													Name: []string{"Integer"},
 												},
-												Modifiers: []ast.Node{
+												Modifiers: []*ast.Modifier{
 													&ast.Modifier{
 														Name: "public",
 													},
@@ -244,10 +244,10 @@ func TestResolveVariable(t *testing.T) {
 								InstanceFields: &ast.FieldMap{
 									Data: map[string]*ast.Field{
 										"instance_field_protected": {
-											Type: &ast.TypeRef{
+											TypeRef: &ast.TypeRef{
 												Name: []string{"Integer"},
 											},
-											Modifiers: []ast.Node{
+											Modifiers: []*ast.Modifier{
 												&ast.Modifier{
 													Name: "protected",
 												},
@@ -278,10 +278,10 @@ func TestResolveVariable(t *testing.T) {
 								InstanceFields: &ast.FieldMap{
 									Data: map[string]*ast.Field{
 										"instance_field_private": {
-											Type: &ast.TypeRef{
+											TypeRef: &ast.TypeRef{
 												Name: []string{"Integer"},
 											},
-											Modifiers: []ast.Node{
+											Modifiers: []*ast.Modifier{
 												&ast.Modifier{
 													Name: "private",
 												},
@@ -310,10 +310,10 @@ func TestResolveVariable(t *testing.T) {
 							StaticFields: &ast.FieldMap{
 								Data: map[string]*ast.Field{
 									"static_field_protected": {
-										Type: &ast.TypeRef{
+										TypeRef: &ast.TypeRef{
 											Name: []string{"Integer"},
 										},
-										Modifiers: []ast.Node{
+										Modifiers: []*ast.Modifier{
 											&ast.Modifier{
 												Name: "protected",
 											},
@@ -341,10 +341,10 @@ func TestResolveVariable(t *testing.T) {
 							StaticFields: &ast.FieldMap{
 								Data: map[string]*ast.Field{
 									"static_field_private": {
-										Type: &ast.TypeRef{
+										TypeRef: &ast.TypeRef{
 											Name: []string{"Integer"},
 										},
-										Modifiers: []ast.Node{
+										Modifiers: []*ast.Modifier{
 											&ast.Modifier{
 												Name: "private",
 											},
@@ -372,10 +372,10 @@ func TestResolveVariable(t *testing.T) {
 		//					InstanceFields: &ast.FieldMap{
 		//						Data: map[string]*ast.Field{
 		//							"instance_field": {
-		//								Type: &ast.TypeRef{
+		//								TypeRef: &ast.TypeRef{
 		//									Name: []string{"Integer"},
 		//								},
-		//								Modifiers: []ast.Node{
+		//								Modifiers: []*ast.Modifier{
 		//									&ast.Modifier{
 		//										Name: "public",
 		//									},
@@ -388,10 +388,10 @@ func TestResolveVariable(t *testing.T) {
 		//					StaticFields: &ast.FieldMap{
 		//						Data: map[string]*ast.Field{
 		//							"static_field": {
-		//								Type: &ast.TypeRef{
+		//								TypeRef: &ast.TypeRef{
 		//									Name: []string{"class2"},
 		//								},
-		//								Modifiers: []ast.Node{
+		//								Modifiers: []*ast.Modifier{
 		//									&ast.Modifier{
 		//										Name: "protected",
 		//									},
@@ -419,10 +419,10 @@ func TestResolveVariable(t *testing.T) {
 		//					InstanceFields: &ast.FieldMap{
 		//						Data: map[string]*ast.Field{
 		//							"instance_field": {
-		//								Type: &ast.TypeRef{
+		//								TypeRef: &ast.TypeRef{
 		//									Name: []string{"Integer"},
 		//								},
-		//								Modifiers: []ast.Node{
+		//								Modifiers: []*ast.Modifier{
 		//									&ast.Modifier{
 		//										Name: "public",
 		//									},
@@ -435,10 +435,10 @@ func TestResolveVariable(t *testing.T) {
 		//					StaticFields: &ast.FieldMap{
 		//						Data: map[string]*ast.Field{
 		//							"static_field": {
-		//								Type: &ast.TypeRef{
+		//								TypeRef: &ast.TypeRef{
 		//									Name: []string{"class2"},
 		//								},
-		//								Modifiers: []ast.Node{
+		//								Modifiers: []*ast.Modifier{
 		//									&ast.Modifier{
 		//										Name: "private",
 		//									},
@@ -466,10 +466,10 @@ func TestResolveVariable(t *testing.T) {
 							InstanceFields: &ast.FieldMap{
 								Data: map[string]*ast.Field{
 									"instance_field_protected": {
-										Type: &ast.TypeRef{
+										TypeRef: &ast.TypeRef{
 											Name: []string{"Integer"},
 										},
-										Modifiers: []ast.Node{
+										Modifiers: []*ast.Modifier{
 											&ast.Modifier{
 												Name: "protected",
 											},
@@ -482,10 +482,10 @@ func TestResolveVariable(t *testing.T) {
 							StaticFields: &ast.FieldMap{
 								Data: map[string]*ast.Field{
 									"static_field": {
-										Type: &ast.TypeRef{
+										TypeRef: &ast.TypeRef{
 											Name: []string{"class2"},
 										},
-										Modifiers: []ast.Node{
+										Modifiers: []*ast.Modifier{
 											&ast.Modifier{
 												Name: "public",
 											},
@@ -513,10 +513,10 @@ func TestResolveVariable(t *testing.T) {
 							InstanceFields: &ast.FieldMap{
 								Data: map[string]*ast.Field{
 									"instance_field_private": {
-										Type: &ast.TypeRef{
+										TypeRef: &ast.TypeRef{
 											Name: []string{"Integer"},
 										},
-										Modifiers: []ast.Node{
+										Modifiers: []*ast.Modifier{
 											&ast.Modifier{
 												Name: "private",
 											},
@@ -529,10 +529,10 @@ func TestResolveVariable(t *testing.T) {
 							StaticFields: &ast.FieldMap{
 								Data: map[string]*ast.Field{
 									"static_field": {
-										Type: &ast.TypeRef{
+										TypeRef: &ast.TypeRef{
 											Name: []string{"class2"},
 										},
-										Modifiers: []ast.Node{
+										Modifiers: []*ast.Modifier{
 											&ast.Modifier{
 												Name: "public",
 											},
@@ -566,10 +566,10 @@ func TestResolveVariable(t *testing.T) {
 									StaticFields: &ast.FieldMap{
 										Data: map[string]*ast.Field{
 											"static_field_protected": {
-												Type: &ast.TypeRef{
+												TypeRef: &ast.TypeRef{
 													Name: []string{"Integer"},
 												},
-												Modifiers: []ast.Node{
+												Modifiers: []*ast.Modifier{
 													&ast.Modifier{
 														Name: "protected",
 													},
@@ -605,10 +605,10 @@ func TestResolveVariable(t *testing.T) {
 									StaticFields: &ast.FieldMap{
 										Data: map[string]*ast.Field{
 											"static_field_private": {
-												Type: &ast.TypeRef{
+												TypeRef: &ast.TypeRef{
 													Name: []string{"Integer"},
 												},
-												Modifiers: []ast.Node{
+												Modifiers: []*ast.Modifier{
 													&ast.Modifier{
 														Name: "private",
 													},
@@ -801,7 +801,7 @@ func TestResolveMethod(t *testing.T) {
 										"instance": {
 											{
 												Name: "instance",
-												Modifiers: []ast.Node{
+												Modifiers: []*ast.Modifier{
 													&ast.Modifier{
 														Name: "public",
 													},
@@ -817,7 +817,7 @@ func TestResolveMethod(t *testing.T) {
 			},
 			&ast.Method{
 				Name: "instance",
-				Modifiers: []ast.Node{
+				Modifiers: []*ast.Modifier{
 					&ast.Modifier{
 						Name: "public",
 					},
@@ -838,7 +838,7 @@ func TestResolveMethod(t *testing.T) {
 										"instance": {
 											{
 												Name: "instance",
-												Modifiers: []ast.Node{
+												Modifiers: []*ast.Modifier{
 													&ast.Modifier{
 														Name: "public",
 													},
@@ -854,7 +854,7 @@ func TestResolveMethod(t *testing.T) {
 			},
 			&ast.Method{
 				Name: "instance",
-				Modifiers: []ast.Node{
+				Modifiers: []*ast.Modifier{
 					&ast.Modifier{
 						Name: "public",
 					},
@@ -873,7 +873,7 @@ func TestResolveMethod(t *testing.T) {
 									"static": {
 										{
 											Name: "static",
-											Modifiers: []ast.Node{
+											Modifiers: []*ast.Modifier{
 												&ast.Modifier{
 													Name: "public",
 												},
@@ -889,7 +889,7 @@ func TestResolveMethod(t *testing.T) {
 			},
 			&ast.Method{
 				Name: "static",
-				Modifiers: []ast.Node{
+				Modifiers: []*ast.Modifier{
 					&ast.Modifier{
 						Name: "public",
 					},
@@ -907,12 +907,12 @@ func TestResolveMethod(t *testing.T) {
 								Data: map[string]*ast.Field{
 									"static": {
 										Name: "static",
-										Modifiers: []ast.Node{
+										Modifiers: []*ast.Modifier{
 											&ast.Modifier{
 												Name: "public",
 											},
 										},
-										Type: &ast.TypeRef{
+										TypeRef: &ast.TypeRef{
 											Name: []string{"class2"},
 										},
 									},
@@ -925,7 +925,7 @@ func TestResolveMethod(t *testing.T) {
 									"instance": {
 										{
 											Name: "instance",
-											Modifiers: []ast.Node{
+											Modifiers: []*ast.Modifier{
 												&ast.Modifier{
 													Name: "public",
 												},
@@ -941,7 +941,7 @@ func TestResolveMethod(t *testing.T) {
 			},
 			&ast.Method{
 				Name: "instance",
-				Modifiers: []ast.Node{
+				Modifiers: []*ast.Modifier{
 					&ast.Modifier{
 						Name: "public",
 					},
@@ -964,7 +964,7 @@ func TestResolveMethod(t *testing.T) {
 											"static": {
 												{
 													Name: "static",
-													Modifiers: []ast.Node{
+													Modifiers: []*ast.Modifier{
 														&ast.Modifier{
 															Name: "public",
 														},
@@ -981,7 +981,7 @@ func TestResolveMethod(t *testing.T) {
 			},
 			&ast.Method{
 				Name: "static",
-				Modifiers: []ast.Node{
+				Modifiers: []*ast.Modifier{
 					&ast.Modifier{
 						Name: "public",
 					},
@@ -1001,7 +1001,7 @@ func TestResolveMethod(t *testing.T) {
 									"instance": {
 										{
 											Name: "instance",
-											Modifiers: []ast.Node{
+											Modifiers: []*ast.Modifier{
 												&ast.Modifier{
 													Name: "public",
 												},
@@ -1021,10 +1021,10 @@ func TestResolveMethod(t *testing.T) {
 									StaticFields: &ast.FieldMap{
 										Data: map[string]*ast.Field{
 											"static": {
-												Type: &ast.TypeRef{
+												TypeRef: &ast.TypeRef{
 													Name: []string{"class2"},
 												},
-												Modifiers: []ast.Node{
+												Modifiers: []*ast.Modifier{
 													&ast.Modifier{
 														Name: "public",
 													},
@@ -1041,7 +1041,7 @@ func TestResolveMethod(t *testing.T) {
 			},
 			&ast.Method{
 				Name: "instance",
-				Modifiers: []ast.Node{
+				Modifiers: []*ast.Modifier{
 					&ast.Modifier{
 						Name: "public",
 					},
@@ -1063,7 +1063,7 @@ func TestResolveMethod(t *testing.T) {
 										"instance": {
 											{
 												Name: "instance",
-												Modifiers: []ast.Node{
+												Modifiers: []*ast.Modifier{
 													&ast.Modifier{
 														Name: "protected",
 													},
@@ -1093,7 +1093,7 @@ func TestResolveMethod(t *testing.T) {
 										"instance": {
 											{
 												Name: "instance",
-												Modifiers: []ast.Node{
+												Modifiers: []*ast.Modifier{
 													&ast.Modifier{
 														Name: "private",
 													},
@@ -1121,7 +1121,7 @@ func TestResolveMethod(t *testing.T) {
 									"static": {
 										{
 											Name: "static",
-											Modifiers: []ast.Node{
+											Modifiers: []*ast.Modifier{
 												&ast.Modifier{
 													Name: "protected",
 												},
@@ -1149,7 +1149,7 @@ func TestResolveMethod(t *testing.T) {
 									"static": {
 										{
 											Name: "static",
-											Modifiers: []ast.Node{
+											Modifiers: []*ast.Modifier{
 												&ast.Modifier{
 													Name: "private",
 												},
@@ -1176,12 +1176,12 @@ func TestResolveMethod(t *testing.T) {
 		//						Data: map[string]*ast.Field{
 		//							"static": {
 		//								Name: "static",
-		//								Modifiers: []ast.Node{
+		//								Modifiers: []*ast.Modifier{
 		//									&ast.Modifier{
 		//										Name: "public",
 		//									},
 		//								},
-		//								Type: &ast.TypeRef{
+		//								TypeRef: &ast.TypeRef{
 		//									Name: []string{"class2"},
 		//								},
 		//							},
@@ -1194,7 +1194,7 @@ func TestResolveMethod(t *testing.T) {
 		//							"instance": {
 		//								{
 		//									Name: "instance",
-		//									Modifiers: []ast.Node{
+		//									Modifiers: []*ast.Modifier{
 		//										&ast.Modifier{
 		//											Name: "public",
 		//										},
@@ -1210,7 +1210,7 @@ func TestResolveMethod(t *testing.T) {
 		//	},
 		//	{
 		//		Name: "instance",
-		//		Modifiers: []ast.Node{
+		//		Modifiers: []*ast.Modifier{
 		//			&ast.Modifier{
 		//				Name: "public",
 		//			},
@@ -1228,12 +1228,12 @@ func TestResolveMethod(t *testing.T) {
 		//						Data: map[string]*ast.Field{
 		//							"static": {
 		//								Name: "static",
-		//								Modifiers: []ast.Node{
+		//								Modifiers: []*ast.Modifier{
 		//									&ast.Modifier{
 		//										Name: "public",
 		//									},
 		//								},
-		//								Type: &ast.TypeRef{
+		//								TypeRef: &ast.TypeRef{
 		//									Name: []string{"class2"},
 		//								},
 		//							},
@@ -1246,7 +1246,7 @@ func TestResolveMethod(t *testing.T) {
 		//							"instance": {
 		//								{
 		//									Name: "instance",
-		//									Modifiers: []ast.Node{
+		//									Modifiers: []*ast.Modifier{
 		//										&ast.Modifier{
 		//											Name: "public",
 		//										},
@@ -1262,7 +1262,7 @@ func TestResolveMethod(t *testing.T) {
 		//	},
 		//	{
 		//		Name: "instance",
-		//		Modifiers: []ast.Node{
+		//		Modifiers: []*ast.Modifier{
 		//			&ast.Modifier{
 		//				Name: "public",
 		//			},
@@ -1285,7 +1285,7 @@ func TestResolveMethod(t *testing.T) {
 											"static": {
 												{
 													Name: "static",
-													Modifiers: []ast.Node{
+													Modifiers: []*ast.Modifier{
 														&ast.Modifier{
 															Name: "protected",
 														},
@@ -1318,7 +1318,7 @@ func TestResolveMethod(t *testing.T) {
 											"static": {
 												{
 													Name: "static",
-													Modifiers: []ast.Node{
+													Modifiers: []*ast.Modifier{
 														&ast.Modifier{
 															Name: "private",
 														},
@@ -1348,7 +1348,7 @@ func TestResolveMethod(t *testing.T) {
 									"instance": {
 										{
 											Name: "instance",
-											Modifiers: []ast.Node{
+											Modifiers: []*ast.Modifier{
 												&ast.Modifier{
 													Name: "protected",
 												},
@@ -1368,10 +1368,10 @@ func TestResolveMethod(t *testing.T) {
 									StaticFields: &ast.FieldMap{
 										Data: map[string]*ast.Field{
 											"static": {
-												Type: &ast.TypeRef{
+												TypeRef: &ast.TypeRef{
 													Name: []string{"class2"},
 												},
-												Modifiers: []ast.Node{
+												Modifiers: []*ast.Modifier{
 													&ast.Modifier{
 														Name: "public",
 													},
@@ -1401,7 +1401,7 @@ func TestResolveMethod(t *testing.T) {
 									"instance": {
 										{
 											Name: "instance",
-											Modifiers: []ast.Node{
+											Modifiers: []*ast.Modifier{
 												&ast.Modifier{
 													Name: "private",
 												},
@@ -1421,10 +1421,10 @@ func TestResolveMethod(t *testing.T) {
 									StaticFields: &ast.FieldMap{
 										Data: map[string]*ast.Field{
 											"static": {
-												Type: &ast.TypeRef{
+												TypeRef: &ast.TypeRef{
 													Name: []string{"class2"},
 												},
-												Modifiers: []ast.Node{
+												Modifiers: []*ast.Modifier{
 													&ast.Modifier{
 														Name: "public",
 													},

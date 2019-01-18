@@ -31,11 +31,11 @@ func TestToString(t *testing.T) {
 		},
 		{
 			&VariableDeclaration{
-				Type: &TypeRef{
+				TypeRef: &TypeRef{
 					Name: []string{"String"},
 				},
-				Declarators: []Node{
-					&VariableDeclarator{
+				Declarators: []*VariableDeclarator{
+					{
 						Name:       "s",
 						Expression: nil,
 					},
@@ -45,11 +45,11 @@ func TestToString(t *testing.T) {
 		},
 		{
 			&VariableDeclaration{
-				Type: &TypeRef{
+				TypeRef: &TypeRef{
 					Name: []string{"Integer"},
 				},
-				Declarators: []Node{
-					&VariableDeclarator{
+				Declarators: []*VariableDeclarator{
+					{
 						Name:       "i",
 						Expression: &IntegerLiteral{Value: 1},
 					},
@@ -106,14 +106,14 @@ func TestToString(t *testing.T) {
 			&ClassDeclaration{
 				Name:          "foo",
 				SuperClassRef: &TypeRef{Name: []string{"bar"}},
-				ImplementClassRefs: []Node{
-					&TypeRef{Name: []string{"baz"}},
+				ImplementClassRefs: []*TypeRef{
+					{Name: []string{"baz"}},
 				},
-				Modifiers: []Node{
-					&Modifier{Name: "public"},
+				Modifiers: []*Modifier{
+					{Name: "public"},
 				},
-				Annotations: []Node{
-					&Annotation{Name: "@annotation"},
+				Annotations: []*Annotation{
+					{Name: "@annotation"},
 				},
 			},
 			`@annotation
@@ -124,16 +124,16 @@ public class foo extends bar implements baz {
 			&MethodDeclaration{
 				Name:       "foo",
 				ReturnType: &TypeRef{Name: []string{"Integer"}},
-				Modifiers: []Node{
-					&Modifier{Name: "public"},
+				Modifiers: []*Modifier{
+					{Name: "public"},
 				},
-				Annotations: []Node{
-					&Annotation{Name: "@annotation"},
+				Annotations: []*Annotation{
+					{Name: "@annotation"},
 				},
-				Parameters: []Node{
-					&Parameter{
-						Type: &TypeRef{Name: []string{"String"}},
-						Name: "s",
+				Parameters: []*Parameter{
+					{
+						TypeRef: &TypeRef{Name: []string{"String"}},
+						Name:    "s",
 					},
 				},
 				Statements: &Block{

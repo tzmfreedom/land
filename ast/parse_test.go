@@ -15,16 +15,16 @@ func TestParse(t *testing.T) {
 		{
 			`@foo public without sharing class Foo extends Bar implements Baz {}`,
 			&ClassDeclaration{
-				Modifiers: []Node{
-					&Modifier{
+				Modifiers: []*Modifier{
+					{
 						Name: "public",
 					},
-					&Modifier{
+					{
 						Name: "without sharing",
 					},
 				},
-				Annotations: []Node{
-					&Annotation{
+				Annotations: []*Annotation{
+					{
 						Name: "foo",
 					},
 				},
@@ -33,14 +33,14 @@ func TestParse(t *testing.T) {
 					Name: []string{
 						"Bar",
 					},
-					Parameters: []Node{},
+					Parameters: []*TypeRef{},
 				},
-				ImplementClassRefs: []Node{
-					&TypeRef{
+				ImplementClassRefs: []*TypeRef{
+					{
 						Name: []string{
 							"Baz",
 						},
-						Parameters: []Node{},
+						Parameters: []*TypeRef{},
 					},
 				},
 				Declarations: []Node{},
@@ -56,43 +56,43 @@ public static String static_method(Boolean p1) { }
 public void method(){ }
 }`,
 			&ClassDeclaration{
-				Modifiers:   []Node{},
-				Annotations: []Node{},
+				Modifiers:   []*Modifier{},
+				Annotations: []*Annotation{},
 				Name:        "Foo",
 				Declarations: []Node{
 					&FieldDeclaration{
-						Type: &TypeRef{
+						TypeRef: &TypeRef{
 							Name: []string{
 								"Integer",
 							},
-							Parameters: []Node{},
+							Parameters: []*TypeRef{},
 						},
-						Modifiers: []Node{
-							&Modifier{
+						Modifiers: []*Modifier{
+							{
 								Name: "public",
 							},
 						},
-						Declarators: []Node{
-							&VariableDeclarator{
+						Declarators: []*VariableDeclarator{
+							{
 								Name:       "field",
 								Expression: nil,
 							},
 						},
 					},
 					&FieldDeclaration{
-						Type: &TypeRef{
+						TypeRef: &TypeRef{
 							Name: []string{
 								"Double",
 							},
-							Parameters: []Node{},
+							Parameters: []*TypeRef{},
 						},
-						Modifiers: []Node{
-							&Modifier{
+						Modifiers: []*Modifier{
+							{
 								Name: "public",
 							},
 						},
-						Declarators: []Node{
-							&VariableDeclarator{
+						Declarators: []*VariableDeclarator{
+							{
 								Name: "field_with_init",
 								Expression: &IntegerLiteral{
 									Value: 2,
@@ -101,44 +101,44 @@ public void method(){ }
 						},
 					},
 					&FieldDeclaration{
-						Type: &TypeRef{
+						TypeRef: &TypeRef{
 							Name: []string{
 								"String",
 							},
-							Parameters: []Node{},
+							Parameters: []*TypeRef{},
 						},
-						Modifiers: []Node{
-							&Modifier{
+						Modifiers: []*Modifier{
+							{
 								Name: "public",
 							},
-							&Modifier{
+							{
 								Name: "static",
 							},
 						},
-						Declarators: []Node{
-							&VariableDeclarator{
+						Declarators: []*VariableDeclarator{
+							{
 								Name:       "static_field",
 								Expression: nil,
 							},
 						},
 					},
 					&FieldDeclaration{
-						Type: &TypeRef{
+						TypeRef: &TypeRef{
 							Name: []string{
 								"Boolean",
 							},
-							Parameters: []Node{},
+							Parameters: []*TypeRef{},
 						},
-						Modifiers: []Node{
-							&Modifier{
+						Modifiers: []*Modifier{
+							{
 								Name: "public",
 							},
-							&Modifier{
+							{
 								Name: "static",
 							},
 						},
-						Declarators: []Node{
-							&VariableDeclarator{
+						Declarators: []*VariableDeclarator{
+							{
 								Name: "static_field_with_init",
 								Expression: &IntegerLiteral{
 									Value: 1,
@@ -148,11 +148,11 @@ public void method(){ }
 					},
 					&MethodDeclaration{
 						Name: "static_method",
-						Modifiers: []Node{
-							&Modifier{
+						Modifiers: []*Modifier{
+							{
 								Name: "public",
 							},
-							&Modifier{
+							{
 								Name: "static",
 							},
 						},
@@ -160,16 +160,16 @@ public void method(){ }
 							Name: []string{
 								"String",
 							},
-							Parameters: []Node{},
+							Parameters: []*TypeRef{},
 						},
-						Parameters: []Node{
-							&Parameter{
-								Modifiers: []Node{},
-								Type: &TypeRef{
+						Parameters: []*Parameter{
+							{
+								Modifiers: []*Modifier{},
+								TypeRef: &TypeRef{
 									Name: []string{
 										"Boolean",
 									},
-									Parameters: []Node{},
+									Parameters: []*TypeRef{},
 								},
 								Name: "p1",
 							},
@@ -181,13 +181,13 @@ public void method(){ }
 					},
 					&MethodDeclaration{
 						Name: "method",
-						Modifiers: []Node{
+						Modifiers: []*Modifier{
 							&Modifier{
 								Name: "public",
 							},
 						},
 						ReturnType: nil,
-						Parameters: []Node{},
+						Parameters: []*Parameter{},
 						Throws:     []Node{},
 						Statements: &Block{
 							Statements: []Node{},
@@ -208,15 +208,15 @@ Integer i;
 }`,
 			createExpectedClass([]Node{
 				&VariableDeclaration{
-					Modifiers: []Node{},
-					Type: &TypeRef{
+					Modifiers: []*Modifier{},
+					TypeRef: &TypeRef{
 						Name: []string{
 							"Integer",
 						},
-						Parameters: []Node{},
+						Parameters: []*TypeRef{},
 					},
-					Declarators: []Node{
-						&VariableDeclarator{
+					Declarators: []*VariableDeclarator{
+						{
 							Name: "i",
 							Expression: &IntegerLiteral{
 								Value: 0,
@@ -225,15 +225,15 @@ Integer i;
 					},
 				},
 				&VariableDeclaration{
-					Modifiers: []Node{},
-					Type: &TypeRef{
+					Modifiers: []*Modifier{},
+					TypeRef: &TypeRef{
 						Name: []string{
 							"String",
 						},
-						Parameters: []Node{},
+						Parameters: []*TypeRef{},
 					},
-					Declarators: []Node{
-						&VariableDeclarator{
+					Declarators: []*VariableDeclarator{
+						{
 							Name: "s",
 							Expression: &StringLiteral{
 								Value: "abc",
@@ -242,15 +242,15 @@ Integer i;
 					},
 				},
 				&VariableDeclaration{
-					Modifiers: []Node{},
-					Type: &TypeRef{
+					Modifiers: []*Modifier{},
+					TypeRef: &TypeRef{
 						Name: []string{
 							"Double",
 						},
-						Parameters: []Node{},
+						Parameters: []*TypeRef{},
 					},
-					Declarators: []Node{
-						&VariableDeclarator{
+					Declarators: []*VariableDeclarator{
+						{
 							Name: "d",
 							Expression: &DoubleLiteral{
 								Value: 1.230000,
@@ -259,15 +259,15 @@ Integer i;
 					},
 				},
 				&VariableDeclaration{
-					Modifiers: []Node{},
-					Type: &TypeRef{
+					Modifiers: []*Modifier{},
+					TypeRef: &TypeRef{
 						Name: []string{
 							"Boolean",
 						},
-						Parameters: []Node{},
+						Parameters: []*TypeRef{},
 					},
-					Declarators: []Node{
-						&VariableDeclarator{
+					Declarators: []*VariableDeclarator{
+						{
 							Name: "b",
 							Expression: &BooleanLiteral{
 								Value: true,
@@ -276,15 +276,15 @@ Integer i;
 					},
 				},
 				&VariableDeclaration{
-					Modifiers: []Node{},
-					Type: &TypeRef{
+					Modifiers: []*Modifier{},
+					TypeRef: &TypeRef{
 						Name: []string{
 							"Integer",
 						},
-						Parameters: []Node{},
+						Parameters: []*TypeRef{},
 					},
-					Declarators: []Node{
-						&VariableDeclarator{
+					Declarators: []*VariableDeclarator{
+						{
 							Name:       "i",
 							Expression: nil,
 						},
@@ -523,11 +523,11 @@ public void action(){
 						&When{
 							Condition: []Node{
 								&WhenType{
-									Type: &TypeRef{
+									TypeRef: &TypeRef{
 										Name: []string{
 											"Account",
 										},
-										Parameters: []Node{},
+										Parameters: []*TypeRef{},
 									},
 									Identifier: "a",
 								},
@@ -573,15 +573,15 @@ public void action(){
 					Control: &ForControl{
 						ForInit: []Node{
 							&VariableDeclaration{
-								Modifiers: []Node{},
-								Type: &TypeRef{
+								Modifiers: []*Modifier{},
+								TypeRef: &TypeRef{
 									Name: []string{
 										"Integer",
 									},
-									Parameters: []Node{},
+									Parameters: []*TypeRef{},
 								},
-								Declarators: []Node{
-									&VariableDeclarator{
+								Declarators: []*VariableDeclarator{
+									{
 										Name: "i",
 										Expression: &IntegerLiteral{
 											Value: 0,
@@ -641,12 +641,12 @@ public void action(){
 				},
 				&For{
 					Control: &EnhancedForControl{
-						Modifiers: []Node{},
-						Type: &TypeRef{
+						Modifiers: []*Modifier{},
+						TypeRef: &TypeRef{
 							Name: []string{
 								"Account",
 							},
-							Parameters: []Node{},
+							Parameters: []*TypeRef{},
 						},
 						VariableDeclaratorId: "acc",
 						Expression: &Name{
@@ -688,10 +688,10 @@ try {
 							},
 						},
 					},
-					CatchClause: []Node{
-						&Catch{
-							Modifiers: []Node{},
-							Type: &TypeRef{
+					CatchClause: []*Catch{
+						{
+							Modifiers: []*Modifier{},
+							TypeRef: &TypeRef{
 								Name: []string{
 									"Exception",
 								},
@@ -874,19 +874,19 @@ func equalNode(t *testing.T, expected Node, actual Node) {
 
 func createExpectedClass(statements []Node) *ClassDeclaration {
 	return &ClassDeclaration{
-		Modifiers:   []Node{},
-		Annotations: []Node{},
+		Modifiers:   []*Modifier{},
+		Annotations: []*Annotation{},
 		Name:        "Foo",
 		Declarations: []Node{
 			&MethodDeclaration{
 				Name: "action",
-				Modifiers: []Node{
-					&Modifier{
+				Modifiers: []*Modifier{
+					{
 						Name: "public",
 					},
 				},
 				ReturnType: nil,
-				Parameters: []Node{},
+				Parameters: []*Parameter{},
 				Throws:     []Node{},
 				Statements: &Block{
 					Statements: statements,

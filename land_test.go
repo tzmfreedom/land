@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/tzmfreedom/goland/builtin"
+	"github.com/tzmfreedom/goland/ast"
 	"os"
 )
 
 func setup() {
-	classMap = builtin.NewClassMap()
+	classMap = ast.NewClassMap()
 }
 
 // Arithmetic

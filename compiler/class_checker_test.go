@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/goland/builtin"
 )
 
 func TestClassChecker(t *testing.T) {
@@ -16,8 +17,8 @@ func TestClassChecker(t *testing.T) {
 		// difference parameter type
 		{
 			&ast.ClassType{
-				Modifiers:      []ast.Node{},
-				Annotations:    []ast.Node{},
+				Modifiers:      []*ast.Modifier{},
+				Annotations:    []*ast.Annotation{},
 				Name:           "Foo",
 				SuperClassRef:  nil,
 				InstanceFields: ast.NewFieldMap(),
@@ -27,41 +28,41 @@ func TestClassChecker(t *testing.T) {
 						"bar": {
 							&ast.Method{
 								Name: "bar",
-								ReturnType: &ast.TypeRef{
+								ReturnTypeRef: &ast.TypeRef{
 									Name: []string{
 										"Integer",
 									},
 									Parameters: []*ast.TypeRef{},
 								},
-								Modifiers: []ast.Node{
-									&ast.Modifier{
+								Modifiers: []*ast.Modifier{
+									{
 										Name: "public",
 									},
 								},
-								Parameters: []ast.Node{
-									&ast.Parameter{
-										Type: &ast.TypeRef{Name: []string{"Integer"}},
-										Name: "a",
+								Parameters: []*ast.Parameter{
+									{
+										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
+										Name:    "a",
 									},
 								},
 							},
 							&ast.Method{
 								Name: "bar",
-								ReturnType: &ast.TypeRef{
+								ReturnTypeRef: &ast.TypeRef{
 									Name: []string{
 										"Integer",
 									},
 									Parameters: []*ast.TypeRef{},
 								},
-								Modifiers: []ast.Node{
-									&ast.Modifier{
+								Modifiers: []*ast.Modifier{
+									{
 										Name: "public",
 									},
 								},
-								Parameters: []ast.Node{
-									&ast.Parameter{
-										Type: &ast.TypeRef{Name: []string{"String"}},
-										Name: "a",
+								Parameters: []*ast.Parameter{
+									{
+										TypeRef: &ast.TypeRef{Name: []string{"String"}},
+										Name:    "a",
 									},
 								},
 							},
@@ -75,8 +76,8 @@ func TestClassChecker(t *testing.T) {
 		// same parameter and name signature, difference return type
 		{
 			&ast.ClassType{
-				Modifiers:      []ast.Node{},
-				Annotations:    []ast.Node{},
+				Modifiers:      []*ast.Modifier{},
+				Annotations:    []*ast.Annotation{},
 				Name:           "Foo",
 				SuperClassRef:  nil,
 				InstanceFields: ast.NewFieldMap(),
@@ -86,41 +87,41 @@ func TestClassChecker(t *testing.T) {
 						"bar": {
 							&ast.Method{
 								Name: "bar",
-								ReturnType: &ast.TypeRef{
+								ReturnTypeRef: &ast.TypeRef{
 									Name: []string{
 										"Integer",
 									},
 									Parameters: []*ast.TypeRef{},
 								},
-								Modifiers: []ast.Node{
-									&ast.Modifier{
+								Modifiers: []*ast.Modifier{
+									{
 										Name: "public",
 									},
 								},
-								Parameters: []ast.Node{
-									&ast.Parameter{
-										Type: &ast.TypeRef{Name: []string{"Integer"}},
-										Name: "a",
+								Parameters: []*ast.Parameter{
+									{
+										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
+										Name:    "a",
 									},
 								},
 							},
 							&ast.Method{
 								Name: "bar",
-								ReturnType: &ast.TypeRef{
+								ReturnTypeRef: &ast.TypeRef{
 									Name: []string{
 										"String",
 									},
 									Parameters: []*ast.TypeRef{},
 								},
-								Modifiers: []ast.Node{
+								Modifiers: []*ast.Modifier{
 									&ast.Modifier{
 										Name: "public",
 									},
 								},
-								Parameters: []ast.Node{
+								Parameters: []*ast.Parameter{
 									&ast.Parameter{
-										Type: &ast.TypeRef{Name: []string{"Integer"}},
-										Name: "a",
+										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
+										Name:    "a",
 									},
 								},
 							},
@@ -134,8 +135,8 @@ func TestClassChecker(t *testing.T) {
 		// different parameter number
 		{
 			&ast.ClassType{
-				Modifiers:      []ast.Node{},
-				Annotations:    []ast.Node{},
+				Modifiers:      []*ast.Modifier{},
+				Annotations:    []*ast.Annotation{},
 				Name:           "Foo",
 				SuperClassRef:  nil,
 				InstanceFields: ast.NewFieldMap(),
@@ -145,45 +146,45 @@ func TestClassChecker(t *testing.T) {
 						"bar": {
 							&ast.Method{
 								Name: "bar",
-								ReturnType: &ast.TypeRef{
+								ReturnTypeRef: &ast.TypeRef{
 									Name: []string{
 										"Integer",
 									},
 									Parameters: []*ast.TypeRef{},
 								},
-								Modifiers: []ast.Node{
+								Modifiers: []*ast.Modifier{
 									&ast.Modifier{
 										Name: "public",
 									},
 								},
-								Parameters: []ast.Node{
+								Parameters: []*ast.Parameter{
 									&ast.Parameter{
-										Type: &ast.TypeRef{Name: []string{"Integer"}},
-										Name: "a",
+										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
+										Name:    "a",
 									},
 								},
 							},
 							&ast.Method{
 								Name: "bar",
-								ReturnType: &ast.TypeRef{
+								ReturnTypeRef: &ast.TypeRef{
 									Name: []string{
 										"Integer",
 									},
 									Parameters: []*ast.TypeRef{},
 								},
-								Modifiers: []ast.Node{
+								Modifiers: []*ast.Modifier{
 									&ast.Modifier{
 										Name: "public",
 									},
 								},
-								Parameters: []ast.Node{
+								Parameters: []*ast.Parameter{
 									&ast.Parameter{
-										Type: &ast.TypeRef{Name: []string{"Integer"}},
-										Name: "a",
+										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
+										Name:    "a",
 									},
 									&ast.Parameter{
-										Type: &ast.TypeRef{Name: []string{"Integer"}},
-										Name: "b",
+										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
+										Name:    "b",
 									},
 								},
 							},
@@ -197,8 +198,8 @@ func TestClassChecker(t *testing.T) {
 		// same parameter name
 		{
 			&ast.ClassType{
-				Modifiers:      []ast.Node{},
-				Annotations:    []ast.Node{},
+				Modifiers:      []*ast.Modifier{},
+				Annotations:    []*ast.Annotation{},
 				Name:           "Foo",
 				SuperClassRef:  nil,
 				InstanceFields: ast.NewFieldMap(),
@@ -208,25 +209,25 @@ func TestClassChecker(t *testing.T) {
 						"bar": {
 							&ast.Method{
 								Name: "bar",
-								ReturnType: &ast.TypeRef{
+								ReturnTypeRef: &ast.TypeRef{
 									Name: []string{
 										"Integer",
 									},
 									Parameters: []*ast.TypeRef{},
 								},
-								Modifiers: []ast.Node{
+								Modifiers: []*ast.Modifier{
 									&ast.Modifier{
 										Name: "public",
 									},
 								},
-								Parameters: []ast.Node{
+								Parameters: []*ast.Parameter{
 									&ast.Parameter{
-										Type: &ast.TypeRef{Name: []string{"Integer"}},
-										Name: "a",
+										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
+										Name:    "a",
 									},
 									&ast.Parameter{
-										Type: &ast.TypeRef{Name: []string{"Integer"}},
-										Name: "a",
+										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
+										Name:    "a",
 									},
 								},
 							},
@@ -241,7 +242,7 @@ func TestClassChecker(t *testing.T) {
 	for _, testCase := range testCases {
 		checker := &ClassChecker{}
 		checker.Context = &Context{}
-		checker.Context.ClassTypes = ast.NewClassMapWithPrimivie(nil)
+		checker.Context.ClassTypes = builtin.NewClassMapWithPrimivie(nil)
 		err := checker.Check(testCase.Input)
 		if testCase.ExpectedError == nil {
 			if err != nil {

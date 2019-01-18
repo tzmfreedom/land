@@ -77,12 +77,12 @@ func Equals(t, other *ast.ClassType) bool {
 	if other == NullType {
 		return true
 	}
-	if t.IsGeneric() && other.IsGeneric() {
+	if t.IsGenerics() && other.IsGenerics() {
 		if t.Name != other.Name {
 			return false
 		}
-		types := t.Extra["generics"].([]*ast.ClassType)
-		otherTypes := other.Extra["generics"].([]*ast.ClassType)
+		types := t.Generics
+		otherTypes := other.Generics
 		if len(types) != len(otherTypes) {
 			return false
 		}
@@ -93,7 +93,7 @@ func Equals(t, other *ast.ClassType) bool {
 		}
 		return true
 	}
-	if !t.IsGeneric() && !other.IsGeneric() {
+	if !t.IsGenerics() && !other.IsGenerics() {
 		if t == other {
 			return true
 		}

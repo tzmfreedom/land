@@ -10,7 +10,7 @@ func init() {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"currentPage",
-				pageReferenceTypeRef,
+				pageReferenceType,
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return extra["current_page"]
@@ -28,13 +28,14 @@ func init() {
 
 	primitiveClassMap.Set("ApexPages", classType)
 
+	account, _ := PrimitiveClassMap().Get("Account")
 	instanceMethods = ast.NewMethodMap()
 	instanceMethods.Set(
 		"getRecord",
 		[]*ast.Method{
 			ast.CreateMethod(
 				"getRecord",
-				&ast.TypeRef{Name: []string{"Account"}}, // TODO: SObject
+				account, // TODO: SObject
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return this.Extra["record"]
@@ -47,7 +48,7 @@ func init() {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"getId",
-				stringTypeRef, // TODO: SObject
+				StringType, // TODO: SObject
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					record := this.Extra["record"].(*ast.Object)
@@ -57,6 +58,7 @@ func init() {
 			),
 		},
 	)
+	accountType, _ := PrimitiveClassMap().Get("Account")
 
 	staticMethods = ast.NewMethodMap()
 	classType = ast.CreateClass(
@@ -66,10 +68,7 @@ func init() {
 				Modifiers: []*ast.Modifier{ast.PublicModifier()},
 				Parameters: []*ast.Parameter{
 					{
-						TypeRef: &ast.TypeRef{
-							Name:       []string{"Account"}, // TODO: Sobject
-							Parameters: []ast.Node{},
-						},
+						Type: accountType, // TODO: sobject
 						Name: "_",
 					},
 				},

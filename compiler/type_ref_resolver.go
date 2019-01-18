@@ -44,11 +44,13 @@ func (v *TypeRefResolver) Resolve(n *ast.ClassType) (*ast.ClassType, error) {
 		}
 	}
 
+	v.resolver.CurrentClass = n
 	for _, f := range n.InstanceFields.Data {
-		f.Type, err = v.resolver.ResolveType(f.TypeRef.Name)
+		classType, err := f.TypeRef.Accept(v)
 		if err != nil {
 			return nil, err
 		}
+		f.Type = classType.(*ast.ClassType)
 	}
 
 	for _, f := range n.StaticFields.Data {
@@ -56,6 +58,20 @@ func (v *TypeRefResolver) Resolve(n *ast.ClassType) (*ast.ClassType, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	for _, m := range n.Constructors {
+		if m.ReturnTypeRef != nil {
+			retType, err := m.ReturnTypeRef.Accept(v)
+			m.ReturnType = retType.(*ast.ClassType)
+			if err != nil {
+				return nil, err
+			}
+		}
+		for _, param := range m.Parameters {
+			param.Accept(v)
+		}
+		m.Statements.Accept(v)
 	}
 
 	for _, methods := range n.InstanceMethods.All() {
@@ -66,6 +82,9 @@ func (v *TypeRefResolver) Resolve(n *ast.ClassType) (*ast.ClassType, error) {
 				if err != nil {
 					return nil, err
 				}
+			}
+			for _, param := range m.Parameters {
+				param.Accept(v)
 			}
 			m.Statements.Accept(v)
 		}
@@ -79,6 +98,9 @@ func (v *TypeRefResolver) Resolve(n *ast.ClassType) (*ast.ClassType, error) {
 				if err != nil {
 					return nil, err
 				}
+			}
+			for _, param := range m.Parameters {
+				param.Accept(v)
 			}
 			m.Statements.Accept(v)
 		}
@@ -142,10 +164,13 @@ func (v *TypeRefResolver) VisitDoubleLiteral(n *ast.DoubleLiteral) (interface{},
 }
 
 func (v *TypeRefResolver) VisitFieldDeclaration(n *ast.FieldDeclaration) (interface{}, error) {
-	var err error
-	n.Type, err = v.resolver.ResolveType(n.TypeRef.Name)
+	classType, err := n.TypeRef.Accept(v)
 	if err != nil {
 		return nil, err
+	}
+	n.Type = classType.(*ast.ClassType)
+	for _, d := range n.Declarators {
+		d.Accept(v)
 	}
 	return nil, nil
 }
@@ -348,7 +373,43 @@ func (v *TypeRefResolver) VisitFieldAccess(n *ast.FieldAccess) (interface{}, err
 }
 
 func (v *TypeRefResolver) VisitType(n *ast.TypeRef) (interface{}, error) {
-	return v.resolver.ResolveType(n.Name)
+	for n.Dimmension > 0 {
+		name := n.Name
+		params := n.Parameters
+		n.Name = []string{"List"}
+		n.Parameters = []*ast.TypeRef{
+			{
+				Name:       name,
+				Parameters: params,
+			},
+		}
+		n.Dimmension--
+	}
+
+	classType, err := v.resolver.ResolveType(n.Name)
+	if err != nil {
+		return nil, err
+	}
+	if classType == builtin.ListType || classType == builtin.MapType {
+		paramTypes := make([]*ast.ClassType, len(n.Parameters))
+		for i, param := range n.Parameters {
+			paramType, err := param.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+			paramTypes[i] = paramType.(*ast.ClassType)
+		}
+		return &ast.ClassType{
+			Name:            classType.Name,
+			Constructors:    classType.Constructors,
+			InstanceFields:  classType.InstanceFields,
+			StaticFields:    classType.StaticFields,
+			InstanceMethods: classType.InstanceMethods,
+			StaticMethods:   classType.StaticMethods,
+			Generics:        paramTypes,
+		}, nil
+	}
+	return classType, nil
 }
 
 func (v *TypeRefResolver) VisitBlock(n *ast.Block) (interface{}, error) {

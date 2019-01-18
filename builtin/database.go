@@ -12,7 +12,7 @@ func init() {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"getErrors",
-				CreateListTypeRef(&ast.TypeRef{Name: []string{"Error"}}),
+				CreateListType(StringType),
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return this.Extra["errors"]
@@ -25,7 +25,7 @@ func init() {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"getId",
-				stringTypeRef,
+				StringType,
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return this.Extra["id"]
@@ -38,7 +38,7 @@ func init() {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"isSuccess",
-				booleanTypeRef,
+				BooleanType,
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return this.Extra["isSuccess"]
@@ -60,7 +60,7 @@ func init() {
 	staticMethods := ast.NewMethodMap()
 	method := ast.CreateMethod(
 		"insert",
-		&ast.TypeRef{Name: []string{"Database", "SaveResult"}},
+		saveResult,
 		[]*ast.Parameter{objectTypeParameter}, // TODO: SObject or List<SObject>
 		func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 			sobj := params[0]
@@ -89,7 +89,7 @@ func init() {
 	staticMethods.Set("insert", []*ast.Method{method})
 	method = ast.CreateMethod(
 		"setSavePoint",
-		&ast.TypeRef{Name: []string{"Database", "SavePoint"}},
+		saveResult, // TODO: implement
 		[]*ast.Parameter{},
 		func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 			return Null

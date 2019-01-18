@@ -149,11 +149,10 @@ func (v *Interpreter) VisitTry(n *ast.Try) (interface{}, error) {
 			return obj, nil
 		case builtin.RaiseType:
 			// TODO: implement
-			var c *ast.Catch
 			for _, catch := range n.CatchClause {
 				raiseValue := obj.Value().(*ast.Object)
 				if builtin.Equals(catch.Type, raiseValue.ClassType) {
-					v.Context.Env.Define(c.Identifier, raiseValue)
+					v.Context.Env.Define(catch.Identifier, raiseValue)
 					_, err := catch.Accept(v)
 					if err != nil {
 						return nil, err
@@ -371,21 +370,11 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 }
 
 func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
-	var err error
-	resolver := NewTypeResolver(v.Context)
-	typeParameters := n.TypeRef.Parameters
-	genericType := make([]*ast.ClassType, len(typeParameters))
-	for i, p := range typeParameters {
-		genericType[i], err = resolver.ConvertType(p.(*ast.TypeRef))
-		if err != nil {
-			return nil, err
-		}
-	}
 	classType := n.Type
 	newObj := &ast.Object{
 		ClassType:      classType,
 		InstanceFields: ast.NewObjectMap(),
-		GenericType:    genericType,
+		GenericType:    n.Type.Generics,
 		Extra:          map[string]interface{}{},
 	}
 	for _, f := range classType.InstanceFields.Data {
@@ -934,15 +923,14 @@ func (v *Interpreter) VisitTriggerTiming(n *ast.TriggerTiming) (interface{}, err
 
 func (v *Interpreter) VisitVariableDeclaration(n *ast.VariableDeclaration) (interface{}, error) {
 	for _, declarator := range n.Declarators {
-		d := declarator.(*ast.VariableDeclarator)
-		if d.Expression != nil {
-			val, err := d.Expression.Accept(v)
+		if declarator.Expression != nil {
+			val, err := declarator.Expression.Accept(v)
 			if err != nil {
 				panic(err)
 			}
-			v.Context.Env.Define(d.Name, val.(*ast.Object))
+			v.Context.Env.Define(declarator.Name, val.(*ast.Object))
 		} else {
-			v.Context.Env.Define(d.Name, builtin.Null)
+			v.Context.Env.Define(declarator.Name, builtin.Null)
 		}
 	}
 	return nil, nil

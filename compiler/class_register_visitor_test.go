@@ -26,7 +26,7 @@ func TestClassRegister(t *testing.T) {
 							Name: []string{
 								"Integer",
 							},
-							Parameters: []ast.Node{},
+							Parameters: []*ast.TypeRef{},
 						},
 						Modifiers: []ast.Node{
 							&ast.Modifier{
@@ -45,7 +45,7 @@ func TestClassRegister(t *testing.T) {
 							Name: []string{
 								"Double",
 							},
-							Parameters: []ast.Node{},
+							Parameters: []*ast.TypeRef{},
 						},
 						Modifiers: []ast.Node{
 							&ast.Modifier{
@@ -66,7 +66,7 @@ func TestClassRegister(t *testing.T) {
 							Name: []string{
 								"String",
 							},
-							Parameters: []ast.Node{},
+							Parameters: []*ast.TypeRef{},
 						},
 						Modifiers: []ast.Node{
 							&ast.Modifier{
@@ -88,7 +88,7 @@ func TestClassRegister(t *testing.T) {
 							Name: []string{
 								"Boolean",
 							},
-							Parameters: []ast.Node{},
+							Parameters: []*ast.TypeRef{},
 						},
 						Modifiers: []ast.Node{
 							&ast.Modifier{
@@ -121,7 +121,7 @@ func TestClassRegister(t *testing.T) {
 							Name: []string{
 								"String",
 							},
-							Parameters: []ast.Node{},
+							Parameters: []*ast.TypeRef{},
 						},
 						Parameters: []ast.Node{
 							&ast.Parameter{
@@ -130,7 +130,7 @@ func TestClassRegister(t *testing.T) {
 									Name: []string{
 										"Boolean",
 									},
-									Parameters: []ast.Node{},
+									Parameters: []*ast.TypeRef{},
 								},
 								Name: "p1",
 							},
@@ -148,7 +148,7 @@ func TestClassRegister(t *testing.T) {
 							},
 						},
 						ReturnType: nil,
-						Parameters: []ast.Node{},
+						Parameters: []*ast.TypeRef{},
 						Throws:     []ast.Node{},
 						Statements: &ast.Block{
 							Statements: []ast.Node{},
@@ -173,7 +173,7 @@ func TestClassRegister(t *testing.T) {
 									},
 								},
 								ReturnType: nil,
-								Parameters: []ast.Node{},
+								Parameters: []*ast.TypeRef{},
 								Throws:     []ast.Node{},
 								Statements: &ast.Block{
 									Statements: []ast.Node{},
@@ -199,7 +199,7 @@ func TestClassRegister(t *testing.T) {
 									Name: []string{
 										"String",
 									},
-									Parameters: []ast.Node{},
+									Parameters: []*ast.TypeRef{},
 								},
 								Parameters: []ast.Node{
 									&ast.Parameter{
@@ -208,7 +208,7 @@ func TestClassRegister(t *testing.T) {
 											Name: []string{
 												"Boolean",
 											},
-											Parameters: []ast.Node{},
+											Parameters: []*ast.TypeRef{},
 										},
 										Name: "p1",
 									},
@@ -228,7 +228,7 @@ func TestClassRegister(t *testing.T) {
 								Name: []string{
 									"Integer",
 								},
-								Parameters: []ast.Node{},
+								Parameters: []*ast.TypeRef{},
 							},
 							Modifiers: []ast.Node{
 								&ast.Modifier{
@@ -243,7 +243,7 @@ func TestClassRegister(t *testing.T) {
 								Name: []string{
 									"Double",
 								},
-								Parameters: []ast.Node{},
+								Parameters: []*ast.TypeRef{},
 							},
 							Modifiers: []ast.Node{
 								&ast.Modifier{
@@ -264,7 +264,7 @@ func TestClassRegister(t *testing.T) {
 								Name: []string{
 									"String",
 								},
-								Parameters: []ast.Node{},
+								Parameters: []*ast.TypeRef{},
 							},
 							Modifiers: []ast.Node{
 								&ast.Modifier{
@@ -282,7 +282,7 @@ func TestClassRegister(t *testing.T) {
 								Name: []string{
 									"Boolean",
 								},
-								Parameters: []ast.Node{},
+								Parameters: []*ast.TypeRef{},
 							},
 							Modifiers: []ast.Node{
 								&ast.Modifier{
@@ -371,7 +371,7 @@ func TestClassRegisterError(t *testing.T) {
 							Name: []string{
 								"Integer",
 							},
-							Parameters: []ast.Node{},
+							Parameters: []*ast.TypeRef{},
 						},
 						Declarators: []ast.Node{
 							&ast.VariableDeclarator{
@@ -385,7 +385,7 @@ func TestClassRegisterError(t *testing.T) {
 							Name: []string{
 								"Double",
 							},
-							Parameters: []ast.Node{},
+							Parameters: []*ast.TypeRef{},
 						},
 						Declarators: []ast.Node{
 							&ast.VariableDeclarator{
@@ -411,7 +411,7 @@ func TestClassRegisterError(t *testing.T) {
 							Name: []string{
 								"Integer",
 							},
-							Parameters: []ast.Node{},
+							Parameters: []*ast.TypeRef{},
 						},
 						Modifiers: []ast.Node{
 							&ast.Modifier{
@@ -430,7 +430,7 @@ func TestClassRegisterError(t *testing.T) {
 							Name: []string{
 								"Double",
 							},
-							Parameters: []ast.Node{},
+							Parameters: []*ast.TypeRef{},
 						},
 						Modifiers: []ast.Node{
 							&ast.Modifier{
@@ -461,7 +461,7 @@ func TestClassRegisterError(t *testing.T) {
 							Name: []string{
 								"Integer",
 							},
-							Parameters: []ast.Node{},
+							Parameters: []*ast.TypeRef{},
 						},
 						Modifiers: []ast.Node{
 							&ast.Modifier{
@@ -480,7 +480,7 @@ func TestClassRegisterError(t *testing.T) {
 							Name: []string{
 								"Double",
 							},
-							Parameters: []ast.Node{},
+							Parameters: []*ast.TypeRef{},
 						},
 						Declarators: []ast.Node{
 							&ast.VariableDeclarator{

@@ -71,16 +71,9 @@ func init() {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"sendEmail",
-				CreateListTypeRef(&ast.TypeRef{
-					Name:       []string{"Messaging", "SendEmailResult"},
-					Parameters: []ast.Node{},
-				}),
+				CreateListType(sendMailResultType),
 				[]*ast.Parameter{
-					CreateListTypeParameter(&ast.TypeRef{
-						// Name:       []string{"Messaging", "Email"},
-						Name:       []string{"Messaging", "SingleEmailMessage"}, // TODO: implement
-						Parameters: []ast.Node{},
-					}),
+					CreateListTypeParameter(singleEmailMessageType),
 				},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					// TODO: implment

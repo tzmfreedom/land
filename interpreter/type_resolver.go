@@ -276,12 +276,10 @@ func convertClassTypes(parameters []*ast.Object) []*ast.ClassType {
 	inputParameters := make([]*ast.ClassType, len(parameters))
 	for i, parameter := range parameters {
 		classType := parameter.ClassType
-		if classType.IsGeneric() {
+		if classType.IsGenerics() {
 			inputParameters[i] = &ast.ClassType{
-				Name: classType.Name,
-				Extra: map[string]interface{}{
-					"generics": parameter.GenericType,
-				},
+				Name:     classType.Name,
+				Generics: parameter.GenericType,
 			}
 		} else {
 			inputParameters[i] = classType

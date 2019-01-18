@@ -31,7 +31,7 @@ func TestClassChecker(t *testing.T) {
 									Name: []string{
 										"Integer",
 									},
-									Parameters: []ast.Node{},
+									Parameters: []*ast.TypeRef{},
 								},
 								Modifiers: []ast.Node{
 									&ast.Modifier{
@@ -51,7 +51,7 @@ func TestClassChecker(t *testing.T) {
 									Name: []string{
 										"Integer",
 									},
-									Parameters: []ast.Node{},
+									Parameters: []*ast.TypeRef{},
 								},
 								Modifiers: []ast.Node{
 									&ast.Modifier{
@@ -90,7 +90,7 @@ func TestClassChecker(t *testing.T) {
 									Name: []string{
 										"Integer",
 									},
-									Parameters: []ast.Node{},
+									Parameters: []*ast.TypeRef{},
 								},
 								Modifiers: []ast.Node{
 									&ast.Modifier{
@@ -110,7 +110,7 @@ func TestClassChecker(t *testing.T) {
 									Name: []string{
 										"String",
 									},
-									Parameters: []ast.Node{},
+									Parameters: []*ast.TypeRef{},
 								},
 								Modifiers: []ast.Node{
 									&ast.Modifier{
@@ -149,7 +149,7 @@ func TestClassChecker(t *testing.T) {
 									Name: []string{
 										"Integer",
 									},
-									Parameters: []ast.Node{},
+									Parameters: []*ast.TypeRef{},
 								},
 								Modifiers: []ast.Node{
 									&ast.Modifier{
@@ -169,7 +169,7 @@ func TestClassChecker(t *testing.T) {
 									Name: []string{
 										"Integer",
 									},
-									Parameters: []ast.Node{},
+									Parameters: []*ast.TypeRef{},
 								},
 								Modifiers: []ast.Node{
 									&ast.Modifier{
@@ -212,7 +212,7 @@ func TestClassChecker(t *testing.T) {
 									Name: []string{
 										"Integer",
 									},
-									Parameters: []ast.Node{},
+									Parameters: []*ast.TypeRef{},
 								},
 								Modifiers: []ast.Node{
 									&ast.Modifier{

@@ -8,7 +8,7 @@ import (
 
 var dateTypeRef = &ast.TypeRef{
 	Name:       []string{"Date"},
-	Parameters: []ast.Node{},
+	Parameters: []*ast.TypeRef{},
 }
 
 func init() {
@@ -26,7 +26,7 @@ func init() {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"format",
-				stringTypeRef,
+				StringType,
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					tm := this.Extra["value"].(time.Time)
@@ -41,7 +41,7 @@ func init() {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"today",
-				dateTypeRef,
+				dateType,
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					obj := ast.CreateObject(dateType)

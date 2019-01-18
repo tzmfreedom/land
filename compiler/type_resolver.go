@@ -321,22 +321,22 @@ func (r *TypeResolver) SearchMethod(receiverClass *ast.ClassType, methods []*ast
 
 		for i, p := range m.Parameters {
 			inputParam := parameters[i]
-			typeRef := p.TypeRef
+			classType := p.Type
 
 			var methodParam *ast.ClassType
-			if typeRef.IsGenerics() {
+			if classType == builtin.T1type || classType == builtin.T2type {
 				// TODO: implement better solution
 				if r.IgnoreGenerics {
 					continue
 				}
-				generics := receiverClass.Extra["generics"].([]*ast.ClassType)
-				if typeRef.IsGenericsNumber(1) {
+				generics := receiverClass.Generics
+				if classType == builtin.T1type {
 					methodParam = generics[0]
 				} else {
 					methodParam = generics[1]
 				}
 			} else {
-				methodParam, _ = r.ConvertType(typeRef)
+				methodParam = classType
 			}
 			// TODO: implement
 			// extend, implements, Object

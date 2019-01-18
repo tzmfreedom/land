@@ -122,7 +122,7 @@ func (v *TypeChecker) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) 
 		return nil, err
 	}
 	klass := k.(*ast.ClassType)
-	if !klass.IsGeneric() {
+	if !klass.IsGenerics() {
 		v.AddError("receiver should be list or map", n.Key)
 		return nil, nil
 	}
@@ -130,7 +130,7 @@ func (v *TypeChecker) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) 
 	if err != nil {
 		return nil, err
 	}
-	generics := klass.Extra["generics"].([]*ast.ClassType)
+	generics := klass.Generics
 	if len(generics) == 0 {
 		return nil, v.compileError("generics is not specified", n)
 	}
@@ -260,7 +260,7 @@ func (v *TypeChecker) VisitEnhancedForControl(n *ast.EnhancedForControl) (interf
 		return nil, nil
 	}
 
-	genericsType := expClassType.Extra["generics"].([]*ast.ClassType)[0]
+	genericsType := expClassType.Generics[0]
 	if !builtin.Equals(declClassType, genericsType) {
 		v.AddError(fmt.Sprintf("expression <%s> must be <%s> expression", declClassType.Name, expClassType.Name), n)
 	}
@@ -332,14 +332,12 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 			return nil, v.compileError(err.Error(), n)
 		}
 		if method.ReturnType != nil {
-			retType := method.ReturnTypeRef.Name[0]
-			if retType == "T:1" || retType == "T:2" {
-				generics := receiverType.Extra["generics"].([]*ast.ClassType)
-				if retType == "T:1" {
-					return generics[0], nil
-				} else {
-					return generics[1], nil
-				}
+			retType := method.ReturnType
+			if retType == builtin.T1type {
+				return receiverType.Generics[0], nil
+			}
+			if retType == builtin.T2type {
+				return receiverType.Generics[1], nil
 			}
 			return method.ReturnType, nil
 		}
@@ -359,14 +357,12 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		}
 		if method.ReturnType != nil {
 			// TODO: duplicate code
-			retType := method.ReturnTypeRef.Name[0]
-			if retType == "T:1" || retType == "T:2" {
-				generics := receiverType.Extra["generics"].([]*ast.ClassType)
-				if retType == "T:1" {
-					return generics[0], nil
-				} else {
-					return generics[1], nil
-				}
+			retType := method.ReturnType
+			if retType == builtin.T1type {
+				return receiverType.Generics[0], nil
+			}
+			if retType == builtin.T2type {
+				return receiverType.Generics[1], nil
 			}
 			return method.ReturnType, nil
 		}
@@ -539,10 +535,8 @@ func (v *TypeChecker) VisitSoql(n *ast.Soql) (interface{}, error) {
 		return nil, v.compileError(err.Error(), n)
 	}
 	return &ast.ClassType{
-		Name: "List",
-		Extra: map[string]interface{}{
-			"generics": []*ast.ClassType{t},
-		},
+		Name:     "List",
+		Generics: []*ast.ClassType{t},
 	}, nil
 }
 
@@ -581,12 +575,11 @@ func (v *TypeChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (inte
 		if err != nil {
 			return nil, err
 		}
-		decl := d.(*ast.VariableDeclarator)
-		if _, ok := v.Context.Env.Get(decl.Name); ok {
-			v.AddError(fmt.Sprintf("variable declaration is duplicated <%s>", decl.Name), n)
+		if _, ok := v.Context.Env.Get(d.Name); ok {
+			v.AddError(fmt.Sprintf("variable declaration is duplicated <%s>", d.Name), n)
 			continue
 		}
-		v.Context.Env.Set(decl.Name, n.Type)
+		v.Context.Env.Set(d.Name, n.Type)
 		if !builtin.Equals(n.Type, t.(*ast.ClassType)) {
 			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", n.Type.String(), t.(*ast.ClassType).String()), n)
 		}
@@ -750,7 +743,7 @@ func (v *TypeChecker) VisitMethod(n *ast.Method) (interface{}, error) {
 		return nil, err
 	}
 	if n.ReturnType != nil && r == nil {
-		v.AddError(fmt.Sprintf("return type <void> does not match %v", n.ReturnType.String()), n.ReturnTypeRef)
+		v.AddError(fmt.Sprintf("return type <void> does not match %v", n.ReturnType.String()), n.Statements)
 	}
 
 	v.Context.CurrentMethod = nil

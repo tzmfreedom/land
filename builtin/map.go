@@ -9,6 +9,19 @@ import (
 
 var MapType = createMapType()
 
+func CreateMapType(keyClass, valueClass *ast.ClassType) *ast.ClassType {
+	return &ast.ClassType{
+		Name:            "Map",
+		Modifiers:       MapType.Modifiers,
+		Constructors:    MapType.Constructors,
+		InstanceFields:  MapType.InstanceFields,
+		InstanceMethods: MapType.InstanceMethods,
+		StaticFields:    MapType.StaticFields,
+		StaticMethods:   MapType.StaticMethods,
+		Generics:        []*ast.ClassType{keyClass, valueClass},
+	}
+}
+
 func createMapType() *ast.ClassType {
 	instanceMethods := ast.NewMethodMap()
 	instanceMethods.Set(
@@ -16,7 +29,7 @@ func createMapType() *ast.ClassType {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"get",
-				t2TypeRef,
+				T2type,
 				[]*ast.Parameter{t1Parameter},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					key := params[0].StringValue()
@@ -34,7 +47,7 @@ func createMapType() *ast.ClassType {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"put",
-				nil,
+				T2type,
 				[]*ast.Parameter{t1Parameter, t2Parameter},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					key := params[0].StringValue()
@@ -50,7 +63,7 @@ func createMapType() *ast.ClassType {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"size",
-				integerTypeRef,
+				nil,
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return NewInteger(len(this.Extra["values"].(map[string]*ast.Object)))
@@ -63,7 +76,7 @@ func createMapType() *ast.ClassType {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"keySet",
-				t1TypeRef,
+				nil,
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					keySets := map[string]struct{}{}

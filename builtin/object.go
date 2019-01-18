@@ -12,10 +12,7 @@ var ObjectType = ast.CreateClass(
 )
 
 var objectTypeParameter = &ast.Parameter{
-	TypeRef: &ast.TypeRef{
-		Name:       []string{"Object"},
-		Parameters: []ast.Node{},
-	},
+	Type: ObjectType,
 	Name: "_",
 }
 

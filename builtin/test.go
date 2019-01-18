@@ -12,7 +12,7 @@ func createTestType() *ast.ClassType {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"setCurrentPage",
-				pageReferenceTypeRef,
+				pageReferenceType,
 				[]*ast.Parameter{pageReferenceParameter},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					extra["current_page"] = params[0]

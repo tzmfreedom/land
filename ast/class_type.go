@@ -21,6 +21,7 @@ type ClassType struct {
 	InnerClasses       *ClassMap
 	ToString           func(*Object) string
 	Extra              map[string]interface{}
+	Generics           []*ClassType
 	Interface          bool
 	Location           *Location
 	Parent             Node
@@ -34,15 +35,15 @@ func (t *ClassType) IsAbstract() bool {
 	return t.Is("abstract")
 }
 
-func (t *ClassType) IsGeneric() bool {
+func (t *ClassType) IsGenerics() bool {
 	return t.Name == "List" ||
 		t.Name == "Map" ||
 		t.Name == "Set"
 }
 
 func (t *ClassType) String() string {
-	if t.IsGeneric() {
-		classTypes := t.Extra["generics"].([]*ClassType)
+	if t.IsGenerics() {
+		classTypes := t.Generics
 		generics := make([]string, len(classTypes))
 		for i, classType := range classTypes {
 			generics[i] = classType.String()
@@ -352,14 +353,14 @@ func CreateClass(
 
 func CreateMethod(
 	name string,
-	returnType *TypeRef,
+	returnType *ClassType,
 	parameters []*Parameter,
 	nativeFunction func(*Object, []*Object, map[string]interface{}) interface{},
 ) *Method {
 	return &Method{
 		Name:           name,
 		Modifiers:      []*Modifier{PublicModifier()},
-		ReturnTypeRef:  returnType,
+		ReturnType:     returnType,
 		Parameters:     parameters,
 		NativeFunction: nativeFunction,
 	}

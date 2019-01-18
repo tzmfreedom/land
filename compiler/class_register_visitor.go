@@ -287,7 +287,7 @@ func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *ast.Cl
 				var setter ast.Node
 				var getter ast.Node
 				for _, getterSetter := range decl.GetterSetters {
-					if getterSetter.(*ast.GetterSetter).IsGet() {
+					if getterSetter.IsGet() {
 						getter = getterSetter
 					} else {
 						setter = getterSetter
@@ -311,7 +311,7 @@ func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *ast.Cl
 				var setter ast.Node
 				var getter ast.Node
 				for _, getterSetter := range decl.GetterSetters {
-					if getterSetter.(*ast.GetterSetter).IsGet() {
+					if getterSetter.IsGet() {
 						getter = getterSetter
 					} else {
 						setter = getterSetter
@@ -332,33 +332,31 @@ func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *ast.Cl
 		case *ast.FieldDeclaration:
 			if decl.IsStatic() {
 				for _, d := range decl.Declarators {
-					varDecl := d.(*ast.VariableDeclarator)
-					if _, ok := t.StaticFields.Get(varDecl.Name); ok {
-						return fmt.Errorf("Field %s is already defined", varDecl.Name)
+					if _, ok := t.StaticFields.Get(d.Name); ok {
+						return fmt.Errorf("Field %s is already defined", d.Name)
 					}
 					t.StaticFields.Set(
-						varDecl.Name,
+						d.Name,
 						&ast.Field{
 							TypeRef:    decl.TypeRef,
 							Modifiers:  decl.Modifiers,
-							Name:       varDecl.Name,
-							Expression: varDecl.Expression,
+							Name:       d.Name,
+							Expression: d.Expression,
 						},
 					)
 				}
 			} else {
 				for _, d := range decl.Declarators {
-					varDecl := d.(*ast.VariableDeclarator)
-					if _, ok := t.InstanceFields.Get(varDecl.Name); ok {
-						return fmt.Errorf("Field %s is already defined", varDecl.Name)
+					if _, ok := t.InstanceFields.Get(d.Name); ok {
+						return fmt.Errorf("Field %s is already defined", d.Name)
 					}
 					t.InstanceFields.Set(
-						varDecl.Name,
+						d.Name,
 						&ast.Field{
 							TypeRef:    decl.TypeRef,
 							Modifiers:  decl.Modifiers,
-							Name:       varDecl.Name,
-							Expression: varDecl.Expression,
+							Name:       d.Name,
+							Expression: d.Expression,
 						},
 					)
 				}

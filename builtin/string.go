@@ -8,16 +8,16 @@ import (
 
 var stringTypeRef = &ast.TypeRef{
 	Name:       []string{"String"},
-	Parameters: []ast.Node{},
+	Parameters: []*ast.TypeRef{},
 }
 
-var StringType *ast.ClassType
+var StringType = &ast.ClassType{Name: "String"}
 
-func createStringType() *ast.ClassType {
+func createStringType(c *ast.ClassType) *ast.ClassType {
 	instanceMethods := ast.NewMethodMap()
 	method := ast.CreateMethod(
 		"split",
-		CreateListTypeRef(stringTypeRef),
+		CreateListType(StringType),
 		[]*ast.Parameter{stringTypeParameter},
 		func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 			split := params[0].StringValue()
@@ -32,14 +32,13 @@ func createStringType() *ast.ClassType {
 			return listType
 		},
 	)
-	method.ReturnTypeRef.Parameters = []ast.Node{stringTypeRef}
 
 	instanceMethods.Set("split", []*ast.Method{method})
 	staticMethods := ast.NewMethodMap()
 	staticMethods.Set("valueOf", []*ast.Method{
 		ast.CreateMethod(
 			"valueOf",
-			stringTypeRef,
+			StringType,
 			[]*ast.Parameter{objectTypeParameter},
 			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 				toConvert := params[0]
@@ -47,27 +46,20 @@ func createStringType() *ast.ClassType {
 			},
 		),
 	})
-	classType := ast.CreateClass(
-		"String",
-		nil,
-		instanceMethods,
-		staticMethods,
-	)
-	classType.ToString = func(o *ast.Object) string {
+	c.InstanceMethods = instanceMethods
+	c.StaticMethods = staticMethods
+	c.ToString = func(o *ast.Object) string {
 		return o.Value().(string)
 	}
-	return classType
+	return c
 }
 
 var stringTypeParameter = &ast.Parameter{
-	TypeRef: &ast.TypeRef{
-		Name:       []string{"Object"},
-		Parameters: []ast.Node{},
-	},
+	Type: StringType,
 	Name: "_",
 }
 
 func init() {
-	StringType = createStringType()
+	createStringType(StringType)
 	primitiveClassMap.Set("String", StringType)
 }

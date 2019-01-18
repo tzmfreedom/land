@@ -101,7 +101,7 @@ type FieldDeclaration struct {
 	Type        *ClassType
 	Modifiers   []*Modifier
 	Annotations []*Annotation
-	Declarators []Node
+	Declarators []*VariableDeclarator
 	Location    *Location
 	Parent      Node
 }
@@ -333,7 +333,7 @@ type VariableDeclaration struct {
 	Modifiers   []*Modifier
 	TypeRef     *TypeRef
 	Type        *ClassType
-	Declarators []Node
+	Declarators []*VariableDeclarator
 	Location    *Location
 	Parent      Node
 }
@@ -391,7 +391,7 @@ type FieldAccess struct {
 
 type TypeRef struct {
 	Name       []string
-	Parameters []Node
+	Parameters []*TypeRef
 	Dimmension int
 	Location   *Location
 	Parent     Node
@@ -406,7 +406,7 @@ type Block struct {
 type GetterSetter struct {
 	Type       string
 	Modifiers  []*Modifier
-	MethodBody Node
+	MethodBody *Block
 	Location   *Location
 	Parent     Node
 }
@@ -417,7 +417,7 @@ type PropertyDeclaration struct {
 	TypeRef       *TypeRef
 	Type          *ClassType
 	Identifier    string
-	GetterSetters []Node
+	GetterSetters []*GetterSetter
 	Location      *Location
 	Parent        Node
 }

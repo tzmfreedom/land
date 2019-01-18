@@ -8,16 +8,13 @@ import (
 
 var pageReferenceType = createPageReferenceType()
 var pageReferenceParameter = &ast.Parameter{
-	TypeRef: &ast.TypeRef{
-		Name:       []string{"PageReference"},
-		Parameters: []ast.Node{},
-	},
+	Type: pageReferenceType,
 	Name: "_",
 }
 
 var pageReferenceTypeRef = &ast.TypeRef{
 	Name:       []string{"PageReference"},
-	Parameters: []ast.Node{},
+	Parameters: []*ast.TypeRef{},
 }
 
 func createPageReferenceType() *ast.ClassType {
@@ -27,7 +24,7 @@ func createPageReferenceType() *ast.ClassType {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"getUrl",
-				stringTypeRef,
+				StringType,
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return this.Extra["url"]
@@ -43,13 +40,7 @@ func createPageReferenceType() *ast.ClassType {
 			return this.Extra["parameters"]
 		},
 	)
-	method.ReturnTypeRef = &ast.TypeRef{
-		Name: []string{"Map"},
-		Parameters: []ast.Node{
-			stringTypeRef,
-			stringTypeRef,
-		},
-	}
+	method.ReturnType = CreateMapType(StringType, StringType)
 
 	instanceMethods.Set(
 		"getParameters",

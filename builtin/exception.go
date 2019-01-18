@@ -6,24 +6,21 @@ import (
 	"github.com/tzmfreedom/goland/ast"
 )
 
-var ExceptionType = createExceptionType()
+var ExceptionType = &ast.ClassType{}
 
 var exceptionTypeParameter = &ast.Parameter{
-	TypeRef: &ast.TypeRef{
-		Name:       []string{"Exception"},
-		Parameters: []ast.Node{},
-	},
+	Type: ExceptionType,
 	Name: "_",
 }
 
-func createExceptionType() *ast.ClassType {
+func createExceptionType() {
 	instanceMethods := ast.NewMethodMap()
 	instanceMethods.Set(
 		"getMessage",
 		[]*ast.Method{
 			ast.CreateMethod(
 				"getMessage",
-				stringTypeRef,
+				StringType,
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					return this.Extra["message"]
@@ -32,46 +29,45 @@ func createExceptionType() *ast.ClassType {
 		},
 	)
 
-	classType := ast.CreateClass(
-		"Exception",
-		[]*ast.Method{
-			{
-				Modifiers:  []*ast.Modifier{ast.PublicModifier()},
-				Parameters: []*ast.Parameter{},
-				NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-					this.Extra["message"] = Null
-					this.Extra["exception"] = Null
-					return nil
-				},
-			},
-			{
-				Modifiers:  []*ast.Modifier{ast.PublicModifier()},
-				Parameters: []*ast.Parameter{stringTypeParameter},
-				NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-					this.Extra["message"] = params[0]
-					this.Extra["exception"] = Null
-					return nil
-				},
-			},
-			{
-				Modifiers:  []*ast.Modifier{ast.PublicModifier()},
-				Parameters: []*ast.Parameter{exceptionTypeParameter},
-				NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-					this.Extra["message"] = Null
-					this.Extra["exception"] = params[0]
-					return nil
-				},
+	ExceptionType.Constructors = []*ast.Method{
+		{
+			Modifiers:  []*ast.Modifier{ast.PublicModifier()},
+			Parameters: []*ast.Parameter{},
+			NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+				this.Extra["message"] = Null
+				this.Extra["exception"] = Null
+				return nil
 			},
 		},
-		instanceMethods,
-		nil,
-	)
-	classType.ToString = func(o *ast.Object) string {
-		return fmt.Sprintf("<%s> { message => %s } ", classType.Name, String(o.Extra["message"].(*ast.Object)))
+		{
+			Modifiers:  []*ast.Modifier{ast.PublicModifier()},
+			Parameters: []*ast.Parameter{stringTypeParameter},
+			NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+				this.Extra["message"] = params[0]
+				this.Extra["exception"] = Null
+				return nil
+			},
+		},
+		{
+			Modifiers:  []*ast.Modifier{ast.PublicModifier()},
+			Parameters: []*ast.Parameter{exceptionTypeParameter},
+			NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+				this.Extra["message"] = Null
+				this.Extra["exception"] = params[0]
+				return nil
+			},
+		},
 	}
-	return classType
+	ExceptionType.InstanceFields = ast.NewFieldMap()
+	ExceptionType.StaticFields = ast.NewFieldMap()
+	ExceptionType.InstanceMethods = instanceMethods
+	ExceptionType.StaticMethods = ast.NewMethodMap()
+	ExceptionType.ToString = func(o *ast.Object) string {
+		return fmt.Sprintf("<%s> { message => %s } ", ExceptionType.Name, String(o.Extra["message"].(*ast.Object)))
+	}
 }
 
 func init() {
+	createExceptionType()
 	primitiveClassMap.Set("Exception", ExceptionType)
 }

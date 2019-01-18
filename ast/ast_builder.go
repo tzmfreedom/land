@@ -286,7 +286,7 @@ func (v *Builder) VisitConstructorDeclaration(ctx *parser.ConstructorDeclaration
 
 func (v *Builder) VisitFieldDeclaration(ctx *parser.FieldDeclarationContext) interface{} {
 	t := ctx.ApexType().Accept(v).(*TypeRef)
-	d := ctx.VariableDeclarators().Accept(v).([]Node)
+	d := ctx.VariableDeclarators().Accept(v).([]*VariableDeclarator)
 	return &FieldDeclaration{
 		TypeRef:     t,
 		Declarators: d,
@@ -296,7 +296,7 @@ func (v *Builder) VisitFieldDeclaration(ctx *parser.FieldDeclarationContext) int
 func (v *Builder) VisitPropertyDeclaration(ctx *parser.PropertyDeclarationContext) interface{} {
 	t := ctx.ApexType().Accept(v).(*TypeRef)
 	d := ctx.VariableDeclaratorId().Accept(v).(string)
-	getterSetters := ctx.PropertyBodyDeclaration().Accept(v).([]Node)
+	getterSetters := ctx.PropertyBodyDeclaration().Accept(v).([]*GetterSetter)
 	return &PropertyDeclaration{
 		TypeRef:       t,
 		Identifier:    d,
@@ -306,7 +306,7 @@ func (v *Builder) VisitPropertyDeclaration(ctx *parser.PropertyDeclarationContex
 
 func (v *Builder) VisitPropertyBodyDeclaration(ctx *parser.PropertyBodyDeclarationContext) interface{} {
 	blocks := ctx.AllPropertyBlock()
-	declarations := make([]Node, len(blocks))
+	declarations := make([]*GetterSetter, len(blocks))
 	for i, b := range blocks {
 		declarations[i] = b.Accept(v).(*GetterSetter)
 	}
@@ -403,9 +403,9 @@ func (v *Builder) VisitInterfaceMethodDeclaration(ctx *parser.InterfaceMethodDec
 
 func (v *Builder) VisitVariableDeclarators(ctx *parser.VariableDeclaratorsContext) interface{} {
 	variableDeclarators := ctx.AllVariableDeclarator()
-	declarators := make([]Node, len(variableDeclarators))
+	declarators := make([]*VariableDeclarator, len(variableDeclarators))
 	for i, d := range variableDeclarators {
-		declarators[i] = d.Accept(v).(Node)
+		declarators[i] = d.Accept(v).(*VariableDeclarator)
 	}
 	return declarators
 }
@@ -465,11 +465,7 @@ func (v *Builder) VisitTypedArray(ctx *parser.TypedArrayContext) interface{} {
 func (v *Builder) VisitClassOrInterfaceType(ctx *parser.ClassOrInterfaceTypeContext) interface{} {
 	t := &TypeRef{Location: v.newLocation(ctx)}
 	if len(ctx.AllTypeArguments()) != 0 {
-		arguments := ctx.TypeArguments(0).Accept(v).([]Node)
-		t.Parameters = make([]Node, len(arguments))
-		for i, argument := range arguments {
-			t.Parameters[i] = argument
-		}
+		t.Parameters = ctx.TypeArguments(0).Accept(v).([]*TypeRef)
 	}
 	if idents := ctx.AllTypeIdentifier(); len(idents) != 0 {
 		t.Name = make([]string, len(idents))
@@ -485,16 +481,16 @@ func (v *Builder) VisitClassOrInterfaceType(ctx *parser.ClassOrInterfaceTypeCont
 func (v *Builder) VisitPrimitiveType(ctx *parser.PrimitiveTypeContext) interface{} {
 	return &TypeRef{
 		Name:       []string{ctx.GetText()},
-		Parameters: []Node{},
+		Parameters: []*TypeRef{},
 		Location:   v.newLocation(ctx),
 	}
 }
 
 func (v *Builder) VisitTypeArguments(ctx *parser.TypeArgumentsContext) interface{} {
 	arguments := ctx.AllTypeArgument()
-	typeArguments := make([]Node, len(arguments))
+	typeArguments := make([]*TypeRef, len(arguments))
 	for i, a := range arguments {
-		typeArguments[i] = a.Accept(v).(Node)
+		typeArguments[i] = a.Accept(v).(*TypeRef)
 	}
 	return typeArguments
 }
@@ -667,7 +663,7 @@ func (v *Builder) VisitLocalVariableDeclaration(ctx *parser.LocalVariableDeclara
 		decl.Modifiers[i] = m.Accept(v).(*Modifier)
 	}
 	decl.TypeRef = ctx.ApexType().Accept(v).(*TypeRef)
-	decl.Declarators = ctx.VariableDeclarators().Accept(v).([]Node)
+	decl.Declarators = ctx.VariableDeclarators().Accept(v).([]*VariableDeclarator)
 	return decl
 }
 
@@ -1058,7 +1054,7 @@ func (v *Builder) VisitCreator(ctx *parser.CreatorContext) interface{} {
 		return &New{
 			TypeRef: &TypeRef{
 				Name:       []string{"List"},
-				Parameters: []Node{classType},
+				Parameters: []*TypeRef{classType},
 			},
 			Parameters: []Node{},
 			Init:       init,
@@ -1099,7 +1095,7 @@ func (v *Builder) VisitCreatedName(ctx *parser.CreatedNameContext) interface{} {
 	if identifiers := ctx.AllApexIdentifier(); len(identifiers) != 0 {
 		n := &TypeRef{Location: v.newLocation(ctx)}
 		if len(ctx.AllTypeArgumentsOrDiamond()) != 0 {
-			n.Parameters = ctx.TypeArgumentsOrDiamond(0).Accept(v).([]Node)
+			n.Parameters = ctx.TypeArgumentsOrDiamond(0).Accept(v).([]*TypeRef)
 		}
 		names := make([]string, len(identifiers))
 		for i, ident := range identifiers {

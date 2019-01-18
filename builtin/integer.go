@@ -15,7 +15,7 @@ var IntegerType = &ast.ClassType{
 
 var integerTypeRef = &ast.TypeRef{
 	Name:       []string{"Integer"},
-	Parameters: []ast.Node{},
+	Parameters: []*ast.TypeRef{},
 }
 
 func init() {

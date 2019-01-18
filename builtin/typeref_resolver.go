@@ -62,7 +62,7 @@ func (r *TypeRefResolver) ConvertType(n *ast.TypeRef) (*ast.ClassType, error) {
 		name := n.Name
 		params := n.Parameters
 		n.Name = []string{"List"}
-		n.Parameters = []ast.Node{
+		n.Parameters = []*ast.TypeRef{
 			&ast.TypeRef{
 				Name:       name,
 				Parameters: params,
@@ -75,11 +75,11 @@ func (r *TypeRefResolver) ConvertType(n *ast.TypeRef) (*ast.ClassType, error) {
 	if err != nil {
 		return nil, err
 	}
-	if t.IsGeneric() {
+	if t.IsGenerics() {
 		types := make([]*ast.ClassType, len(n.Parameters))
 		var err error
-		for i, p := range n.Parameters {
-			types[i], err = r.ConvertType(p.(*ast.TypeRef))
+		for i, param := range n.Parameters {
+			types[i], err = r.ConvertType(param)
 			if err != nil {
 				return nil, err
 			}
@@ -89,9 +89,7 @@ func (r *TypeRefResolver) ConvertType(n *ast.TypeRef) (*ast.ClassType, error) {
 			Constructors:    t.Constructors,
 			InstanceMethods: t.InstanceMethods,
 			StaticMethods:   t.StaticMethods,
-			Extra: map[string]interface{}{
-				"generics": types,
-			},
+			Generics:        types,
 		}, nil
 	}
 	return t, nil

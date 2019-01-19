@@ -15,6 +15,10 @@ const (
 	DebugColor   = "\033[0;36m%s\033[0m"
 )
 
+type EqualChecker interface {
+	Equals(*ast.Object, *ast.Object) bool
+}
+
 func init() {
 	system := ast.CreateClass(
 		"System",
@@ -46,10 +50,11 @@ func init() {
 						NativeFunction: func(this *ast.Object, parameter []*ast.Object, extra map[string]interface{}) interface{} {
 							expected := parameter[0]
 							actual := parameter[1]
-							if expected.Value() != actual.Value() {
+							checker := extra["interpreter"].(EqualChecker)
+							if !checker.Equals(expected, actual) {
 								node := extra["node"].(ast.Node)
 								errors := extra["errors"].([]*TestError)
-								message := fmt.Sprintf("      expected: %s\n      actual:   %s", expected.Value(), actual.Value())
+								message := fmt.Sprintf("      expected: %s\n      actual:   %s", String(expected), String(actual))
 								extra["errors"] = append(errors, &TestError{
 									Node:    node,
 									Message: message,

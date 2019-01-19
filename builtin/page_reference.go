@@ -6,7 +6,7 @@ import (
 	"github.com/tzmfreedom/goland/ast"
 )
 
-var pageReferenceType = createPageReferenceType()
+var pageReferenceType = &ast.ClassType{Name: "PageReference"}
 var pageReferenceParameter = &ast.Parameter{
 	Type: pageReferenceType,
 	Name: "_",
@@ -17,7 +17,7 @@ var pageReferenceTypeRef = &ast.TypeRef{
 	Parameters: []*ast.TypeRef{},
 }
 
-func createPageReferenceType() *ast.ClassType {
+func createPageReferenceType() {
 	instanceMethods := ast.NewMethodMap()
 	instanceMethods.Set(
 		"getUrl",
@@ -46,28 +46,44 @@ func createPageReferenceType() *ast.ClassType {
 		"getParameters",
 		[]*ast.Method{method},
 	)
-
-	classType := ast.CreateClass(
-		"PageReference",
+	instanceMethods.Set(
+		"Equals",
 		[]*ast.Method{
-			{
-				Modifiers:  []*ast.Modifier{ast.PublicModifier()},
-				Parameters: []*ast.Parameter{stringTypeParameter},
-				NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-					parameters := ast.CreateObject(MapType)
-					parameters.Extra["values"] = map[string]*ast.Object{}
-					this.Extra = map[string]interface{}{
-						"url":        params[0],
-						"parameters": parameters,
+			ast.CreateMethod(
+				"Equals",
+				BooleanType,
+				[]*ast.Parameter{pageReferenceParameter},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					if params[0] == Null {
+						return NewBoolean(false)
 					}
-					return nil
+					self := this.Extra["url"].(*ast.Object).StringValue()
+					other := params[0].Extra["url"].(*ast.Object).StringValue()
+					return NewBoolean(self == other)
 				},
+			),
+		},
+	)
+	pageReferenceType.Constructors = []*ast.Method{
+		{
+			Modifiers:  []*ast.Modifier{ast.PublicModifier()},
+			Parameters: []*ast.Parameter{stringTypeParameter},
+			NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+				parameters := ast.CreateObject(MapType)
+				parameters.Extra["values"] = map[string]*ast.Object{}
+				this.Extra = map[string]interface{}{
+					"url":        params[0],
+					"parameters": parameters,
+				}
+				return nil
 			},
 		},
-		instanceMethods,
-		nil,
-	)
-	classType.ToString = func(o *ast.Object) string {
+	}
+	pageReferenceType.InstanceFields = ast.NewFieldMap()
+	pageReferenceType.InstanceMethods = instanceMethods
+	pageReferenceType.StaticFields = ast.NewFieldMap()
+	pageReferenceType.StaticMethods = ast.NewMethodMap()
+	pageReferenceType.ToString = func(o *ast.Object) string {
 		url := o.Extra["url"].(*ast.Object)
 		parameters := o.Extra["parameters"].(*ast.Object)
 		return fmt.Sprintf(
@@ -77,9 +93,9 @@ func createPageReferenceType() *ast.ClassType {
 			String(parameters),
 		)
 	}
-	return classType
 }
 
 func init() {
+	createPageReferenceType()
 	primitiveClassMap.Set("PageReference", pageReferenceType)
 }

@@ -23,6 +23,7 @@ func NewInterpreter(classTypeMap *ast.ClassMap) *Interpreter {
 			"errors": []*builtin.TestError{},
 		},
 	}
+	interpreter.Extra["interpreter"] = interpreter
 	interpreter.Context.ClassTypes = classTypeMap
 	return interpreter
 }
@@ -1075,4 +1076,26 @@ func (v *Interpreter) NewEnv(f func() (interface{}, error)) (interface{}, error)
 	r, err := f()
 	v.Context.Env = prevEnv
 	return r, err
+}
+
+func (v *Interpreter) Equals(o, other *ast.Object) bool {
+	if o == builtin.Null {
+		return other == builtin.Null
+	}
+	m, ok := o.ClassType.InstanceMethods.Get("Equals")
+	if !ok {
+		return o.Value() == other.Value()
+	}
+	method := m[0]
+	if method.NativeFunction != nil {
+		bObj := method.NativeFunction(o, []*ast.Object{other}, nil).(*ast.Object)
+		return bObj.BoolValue()
+	}
+	prev := v.Context.Env
+	v.Context.Env = NewEnv(nil)
+	v.Context.Env.Define(method.Parameters[0].Name, other)
+	v.Context.Env.Define("this", o)
+	r, _ := method.Statements.Accept(v) // TODO
+	v.Context.Env = prev
+	return r.(*ast.Object).BoolValue()
 }

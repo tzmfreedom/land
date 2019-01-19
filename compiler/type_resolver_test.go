@@ -69,11 +69,9 @@ func TestResolveVariable(t *testing.T) {
 								InstanceFields: &ast.FieldMap{
 									Data: map[string]*ast.Field{
 										"instance_field": {
-											TypeRef: &ast.TypeRef{
-												Name: []string{"Integer"},
-											},
+											Type: builtin.IntegerType,
 											Modifiers: []*ast.Modifier{
-												&ast.Modifier{
+												{
 													Name: "public",
 												},
 											},
@@ -124,11 +122,9 @@ func TestResolveVariable(t *testing.T) {
 							StaticFields: &ast.FieldMap{
 								Data: map[string]*ast.Field{
 									"static_field": {
-										TypeRef: &ast.TypeRef{
-											Name: []string{"Integer"},
-										},
+										Type: builtin.IntegerType,
 										Modifiers: []*ast.Modifier{
-											&ast.Modifier{
+											{
 												Name: "public",
 											},
 										},
@@ -149,41 +145,40 @@ func TestResolveVariable(t *testing.T) {
 					Data: &TypeMap{},
 				},
 				ClassTypes: &ast.ClassMap{
-					Data: map[string]*ast.ClassType{
-						"integer": builtin.IntegerType,
-						"class2": {
-							InstanceFields: &ast.FieldMap{
-								Data: map[string]*ast.Field{
-									"instance_field": {
-										TypeRef: &ast.TypeRef{
-											Name: []string{"Integer"},
-										},
-										Modifiers: []*ast.Modifier{
-											&ast.Modifier{
-												Name: "public",
+					Data: func() map[string]*ast.ClassType {
+						classTypeMap := map[string]*ast.ClassType{
+							"integer": builtin.IntegerType,
+							"class2": {
+								InstanceFields: &ast.FieldMap{
+									Data: map[string]*ast.Field{
+										"instance_field": {
+											Type: builtin.IntegerType,
+											Modifiers: []*ast.Modifier{
+												{
+													Name: "public",
+												},
 											},
 										},
 									},
 								},
 							},
-						},
-						"class": {
+						}
+						classTypeMap["class"] = &ast.ClassType{
 							StaticFields: &ast.FieldMap{
 								Data: map[string]*ast.Field{
 									"static_field": {
-										TypeRef: &ast.TypeRef{
-											Name: []string{"class2"},
-										},
+										Type: classTypeMap["class2"],
 										Modifiers: []*ast.Modifier{
-											&ast.Modifier{
+											{
 												Name: "public",
 											},
 										},
 									},
 								},
 							},
-						},
-					},
+						}
+						return classTypeMap
+					}(),
 				},
 			},
 			builtin.IntegerType,
@@ -208,9 +203,7 @@ func TestResolveVariable(t *testing.T) {
 									StaticFields: &ast.FieldMap{
 										Data: map[string]*ast.Field{
 											"static_field": {
-												TypeRef: &ast.TypeRef{
-													Name: []string{"Integer"},
-												},
+												Type: builtin.IntegerType,
 												Modifiers: []*ast.Modifier{
 													&ast.Modifier{
 														Name: "public",
@@ -244,9 +237,7 @@ func TestResolveVariable(t *testing.T) {
 								InstanceFields: &ast.FieldMap{
 									Data: map[string]*ast.Field{
 										"instance_field_protected": {
-											TypeRef: &ast.TypeRef{
-												Name: []string{"Integer"},
-											},
+											Type: builtin.IntegerType,
 											Modifiers: []*ast.Modifier{
 												&ast.Modifier{
 													Name: "protected",
@@ -278,9 +269,7 @@ func TestResolveVariable(t *testing.T) {
 								InstanceFields: &ast.FieldMap{
 									Data: map[string]*ast.Field{
 										"instance_field_private": {
-											TypeRef: &ast.TypeRef{
-												Name: []string{"Integer"},
-											},
+											Type: builtin.IntegerType,
 											Modifiers: []*ast.Modifier{
 												&ast.Modifier{
 													Name: "private",
@@ -310,9 +299,7 @@ func TestResolveVariable(t *testing.T) {
 							StaticFields: &ast.FieldMap{
 								Data: map[string]*ast.Field{
 									"static_field_protected": {
-										TypeRef: &ast.TypeRef{
-											Name: []string{"Integer"},
-										},
+										Type: builtin.IntegerType,
 										Modifiers: []*ast.Modifier{
 											&ast.Modifier{
 												Name: "protected",
@@ -341,9 +328,7 @@ func TestResolveVariable(t *testing.T) {
 							StaticFields: &ast.FieldMap{
 								Data: map[string]*ast.Field{
 									"static_field_private": {
-										TypeRef: &ast.TypeRef{
-											Name: []string{"Integer"},
-										},
+										Type: builtin.IntegerType,
 										Modifiers: []*ast.Modifier{
 											&ast.Modifier{
 												Name: "private",
@@ -460,41 +445,40 @@ func TestResolveVariable(t *testing.T) {
 					Data: &TypeMap{},
 				},
 				ClassTypes: &ast.ClassMap{
-					Data: map[string]*ast.ClassType{
-						"integer": builtin.IntegerType,
-						"class2": {
-							InstanceFields: &ast.FieldMap{
-								Data: map[string]*ast.Field{
-									"instance_field_protected": {
-										TypeRef: &ast.TypeRef{
-											Name: []string{"Integer"},
-										},
-										Modifiers: []*ast.Modifier{
-											&ast.Modifier{
-												Name: "protected",
+					Data: func() map[string]*ast.ClassType {
+						classTypeMap := map[string]*ast.ClassType{
+							"integer": builtin.IntegerType,
+							"class2": {
+								InstanceFields: &ast.FieldMap{
+									Data: map[string]*ast.Field{
+										"instance_field_protected": {
+											Type: builtin.IntegerType,
+											Modifiers: []*ast.Modifier{
+												{
+													Name: "protected",
+												},
 											},
 										},
 									},
 								},
 							},
-						},
-						"class": {
+						}
+						classTypeMap["class"] = &ast.ClassType{
 							StaticFields: &ast.FieldMap{
 								Data: map[string]*ast.Field{
 									"static_field": {
-										TypeRef: &ast.TypeRef{
-											Name: []string{"class2"},
-										},
+										Type: classTypeMap["class2"],
 										Modifiers: []*ast.Modifier{
-											&ast.Modifier{
+											{
 												Name: "public",
 											},
 										},
 									},
 								},
 							},
-						},
-					},
+						}
+						return classTypeMap
+					}(),
 				},
 			},
 			nil,
@@ -507,41 +491,40 @@ func TestResolveVariable(t *testing.T) {
 					Data: &TypeMap{},
 				},
 				ClassTypes: &ast.ClassMap{
-					Data: map[string]*ast.ClassType{
-						"integer": builtin.IntegerType,
-						"class2": {
-							InstanceFields: &ast.FieldMap{
-								Data: map[string]*ast.Field{
-									"instance_field_private": {
-										TypeRef: &ast.TypeRef{
-											Name: []string{"Integer"},
-										},
-										Modifiers: []*ast.Modifier{
-											&ast.Modifier{
-												Name: "private",
+					Data: func() map[string]*ast.ClassType {
+						classTypeMap := map[string]*ast.ClassType{
+							"integer": builtin.IntegerType,
+							"class2": {
+								InstanceFields: &ast.FieldMap{
+									Data: map[string]*ast.Field{
+										"instance_field_private": {
+											Type: builtin.IntegerType,
+											Modifiers: []*ast.Modifier{
+												{
+													Name: "private",
+												},
 											},
 										},
 									},
 								},
 							},
-						},
-						"class": {
+						}
+						classTypeMap["class"] = &ast.ClassType{
 							StaticFields: &ast.FieldMap{
 								Data: map[string]*ast.Field{
 									"static_field": {
-										TypeRef: &ast.TypeRef{
-											Name: []string{"class2"},
-										},
+										Type: classTypeMap["class2"],
 										Modifiers: []*ast.Modifier{
-											&ast.Modifier{
+											{
 												Name: "public",
 											},
 										},
 									},
 								},
 							},
-						},
-					},
+						}
+						return classTypeMap
+					}(),
 				},
 			},
 			nil,
@@ -566,11 +549,9 @@ func TestResolveVariable(t *testing.T) {
 									StaticFields: &ast.FieldMap{
 										Data: map[string]*ast.Field{
 											"static_field_protected": {
-												TypeRef: &ast.TypeRef{
-													Name: []string{"Integer"},
-												},
+												Type: builtin.IntegerType,
 												Modifiers: []*ast.Modifier{
-													&ast.Modifier{
+													{
 														Name: "protected",
 													},
 												},
@@ -605,11 +586,9 @@ func TestResolveVariable(t *testing.T) {
 									StaticFields: &ast.FieldMap{
 										Data: map[string]*ast.Field{
 											"static_field_private": {
-												TypeRef: &ast.TypeRef{
-													Name: []string{"Integer"},
-												},
+												Type: builtin.IntegerType,
 												Modifiers: []*ast.Modifier{
-													&ast.Modifier{
+													{
 														Name: "private",
 													},
 												},
@@ -802,7 +781,7 @@ func TestResolveMethod(t *testing.T) {
 											{
 												Name: "instance",
 												Modifiers: []*ast.Modifier{
-													&ast.Modifier{
+													{
 														Name: "public",
 													},
 												},
@@ -818,7 +797,7 @@ func TestResolveMethod(t *testing.T) {
 			&ast.Method{
 				Name: "instance",
 				Modifiers: []*ast.Modifier{
-					&ast.Modifier{
+					{
 						Name: "public",
 					},
 				},
@@ -839,7 +818,7 @@ func TestResolveMethod(t *testing.T) {
 											{
 												Name: "instance",
 												Modifiers: []*ast.Modifier{
-													&ast.Modifier{
+													{
 														Name: "public",
 													},
 												},
@@ -855,7 +834,7 @@ func TestResolveMethod(t *testing.T) {
 			&ast.Method{
 				Name: "instance",
 				Modifiers: []*ast.Modifier{
-					&ast.Modifier{
+					{
 						Name: "public",
 					},
 				},
@@ -874,7 +853,7 @@ func TestResolveMethod(t *testing.T) {
 										{
 											Name: "static",
 											Modifiers: []*ast.Modifier{
-												&ast.Modifier{
+												{
 													Name: "public",
 												},
 											},
@@ -890,7 +869,7 @@ func TestResolveMethod(t *testing.T) {
 			&ast.Method{
 				Name: "static",
 				Modifiers: []*ast.Modifier{
-					&ast.Modifier{
+					{
 						Name: "public",
 					},
 				},
@@ -901,48 +880,49 @@ func TestResolveMethod(t *testing.T) {
 			[]string{"class", "static", "instance"},
 			&Context{
 				ClassTypes: &ast.ClassMap{
-					Data: map[string]*ast.ClassType{
-						"class": {
-							StaticFields: &ast.FieldMap{
-								Data: map[string]*ast.Field{
-									"static": {
-										Name: "static",
-										Modifiers: []*ast.Modifier{
-											&ast.Modifier{
-												Name: "public",
-											},
-										},
-										TypeRef: &ast.TypeRef{
-											Name: []string{"class2"},
-										},
-									},
-								},
-							},
-						},
-						"class2": {
-							InstanceMethods: &ast.MethodMap{
-								Data: map[string][]*ast.Method{
-									"instance": {
-										{
-											Name: "instance",
-											Modifiers: []*ast.Modifier{
-												&ast.Modifier{
-													Name: "public",
+					Data: func() map[string]*ast.ClassType {
+						classTypeMap := map[string]*ast.ClassType{
+							"class2": {
+								InstanceMethods: &ast.MethodMap{
+									Data: map[string][]*ast.Method{
+										"instance": {
+											{
+												Name: "instance",
+												Modifiers: []*ast.Modifier{
+													{
+														Name: "public",
+													},
 												},
 											},
 										},
 									},
 								},
 							},
-						},
-					},
+						}
+						classTypeMap["class"] = &ast.ClassType{
+							StaticFields: &ast.FieldMap{
+								Data: map[string]*ast.Field{
+									"static": {
+										Name: "static",
+										Modifiers: []*ast.Modifier{
+											{
+												Name: "public",
+											},
+										},
+										Type: classTypeMap["class2"],
+									},
+								},
+							},
+						}
+						return classTypeMap
+					}(),
 				},
 				Env: newTypeEnv(nil),
 			},
 			&ast.Method{
 				Name: "instance",
 				Modifiers: []*ast.Modifier{
-					&ast.Modifier{
+					{
 						Name: "public",
 					},
 				},
@@ -965,7 +945,7 @@ func TestResolveMethod(t *testing.T) {
 												{
 													Name: "static",
 													Modifiers: []*ast.Modifier{
-														&ast.Modifier{
+														{
 															Name: "public",
 														},
 													},
@@ -982,7 +962,7 @@ func TestResolveMethod(t *testing.T) {
 			&ast.Method{
 				Name: "static",
 				Modifiers: []*ast.Modifier{
-					&ast.Modifier{
+					{
 						Name: "public",
 					},
 				},
@@ -991,19 +971,21 @@ func TestResolveMethod(t *testing.T) {
 		},
 		{
 			[]string{"namespace", "class", "static", "instance"},
-			&Context{
-				Env: newTypeEnv(nil),
-				ClassTypes: &ast.ClassMap{
-					Data: map[string]*ast.ClassType{
-						"class2": {
-							InstanceMethods: &ast.MethodMap{
-								Data: map[string][]*ast.Method{
-									"instance": {
-										{
-											Name: "instance",
-											Modifiers: []*ast.Modifier{
-												&ast.Modifier{
-													Name: "public",
+			func() *Context {
+				context := &Context{
+					Env: newTypeEnv(nil),
+					ClassTypes: &ast.ClassMap{
+						Data: map[string]*ast.ClassType{
+							"class2": {
+								InstanceMethods: &ast.MethodMap{
+									Data: map[string][]*ast.Method{
+										"instance": {
+											{
+												Name: "instance",
+												Modifiers: []*ast.Modifier{
+													{
+														Name: "public",
+													},
 												},
 											},
 										},
@@ -1012,8 +994,8 @@ func TestResolveMethod(t *testing.T) {
 							},
 						},
 					},
-				},
-				NameSpaces: &builtin.NameSpaceStore{
+				}
+				context.NameSpaces = &builtin.NameSpaceStore{
 					Data: map[string]*ast.ClassMap{
 						"namespace": {
 							Data: map[string]*ast.ClassType{
@@ -1021,11 +1003,9 @@ func TestResolveMethod(t *testing.T) {
 									StaticFields: &ast.FieldMap{
 										Data: map[string]*ast.Field{
 											"static": {
-												TypeRef: &ast.TypeRef{
-													Name: []string{"class2"},
-												},
+												Type: context.ClassTypes.Data["class2"],
 												Modifiers: []*ast.Modifier{
-													&ast.Modifier{
+													{
 														Name: "public",
 													},
 												},
@@ -1037,12 +1017,13 @@ func TestResolveMethod(t *testing.T) {
 							},
 						},
 					},
-				},
-			},
+				}
+				return context
+			}(),
 			&ast.Method{
 				Name: "instance",
 				Modifiers: []*ast.Modifier{
-					&ast.Modifier{
+					{
 						Name: "public",
 					},
 				},
@@ -1064,7 +1045,7 @@ func TestResolveMethod(t *testing.T) {
 											{
 												Name: "instance",
 												Modifiers: []*ast.Modifier{
-													&ast.Modifier{
+													{
 														Name: "protected",
 													},
 												},
@@ -1094,7 +1075,7 @@ func TestResolveMethod(t *testing.T) {
 											{
 												Name: "instance",
 												Modifiers: []*ast.Modifier{
-													&ast.Modifier{
+													{
 														Name: "private",
 													},
 												},
@@ -1122,7 +1103,7 @@ func TestResolveMethod(t *testing.T) {
 										{
 											Name: "static",
 											Modifiers: []*ast.Modifier{
-												&ast.Modifier{
+												{
 													Name: "protected",
 												},
 											},
@@ -1150,7 +1131,7 @@ func TestResolveMethod(t *testing.T) {
 										{
 											Name: "static",
 											Modifiers: []*ast.Modifier{
-												&ast.Modifier{
+												{
 													Name: "private",
 												},
 											},
@@ -1286,7 +1267,7 @@ func TestResolveMethod(t *testing.T) {
 												{
 													Name: "static",
 													Modifiers: []*ast.Modifier{
-														&ast.Modifier{
+														{
 															Name: "protected",
 														},
 													},
@@ -1319,7 +1300,7 @@ func TestResolveMethod(t *testing.T) {
 												{
 													Name: "static",
 													Modifiers: []*ast.Modifier{
-														&ast.Modifier{
+														{
 															Name: "private",
 														},
 													},
@@ -1338,19 +1319,21 @@ func TestResolveMethod(t *testing.T) {
 		},
 		{
 			[]string{"namespace", "class", "static", "instance"},
-			&Context{
-				Env: newTypeEnv(nil),
-				ClassTypes: &ast.ClassMap{
-					Data: map[string]*ast.ClassType{
-						"class2": {
-							InstanceMethods: &ast.MethodMap{
-								Data: map[string][]*ast.Method{
-									"instance": {
-										{
-											Name: "instance",
-											Modifiers: []*ast.Modifier{
-												&ast.Modifier{
-													Name: "protected",
+			func() *Context {
+				context := &Context{
+					Env: newTypeEnv(nil),
+					ClassTypes: &ast.ClassMap{
+						Data: map[string]*ast.ClassType{
+							"class2": {
+								InstanceMethods: &ast.MethodMap{
+									Data: map[string][]*ast.Method{
+										"instance": {
+											{
+												Name: "instance",
+												Modifiers: []*ast.Modifier{
+													{
+														Name: "protected",
+													},
 												},
 											},
 										},
@@ -1359,8 +1342,8 @@ func TestResolveMethod(t *testing.T) {
 							},
 						},
 					},
-				},
-				NameSpaces: &builtin.NameSpaceStore{
+				}
+				context.NameSpaces = &builtin.NameSpaceStore{
 					Data: map[string]*ast.ClassMap{
 						"namespace": {
 							Data: map[string]*ast.ClassType{
@@ -1368,11 +1351,9 @@ func TestResolveMethod(t *testing.T) {
 									StaticFields: &ast.FieldMap{
 										Data: map[string]*ast.Field{
 											"static": {
-												TypeRef: &ast.TypeRef{
-													Name: []string{"class2"},
-												},
+												Type: context.ClassTypes.Data["class2"],
 												Modifiers: []*ast.Modifier{
-													&ast.Modifier{
+													{
 														Name: "public",
 													},
 												},
@@ -1384,26 +1365,29 @@ func TestResolveMethod(t *testing.T) {
 							},
 						},
 					},
-				},
-			},
+				}
+				return context
+			}(),
 			nil,
 			errors.New("Method access modifier must be public but protected"),
 		},
 		{
 			[]string{"namespace", "class", "static", "instance"},
-			&Context{
-				Env: newTypeEnv(nil),
-				ClassTypes: &ast.ClassMap{
-					Data: map[string]*ast.ClassType{
-						"class2": {
-							InstanceMethods: &ast.MethodMap{
-								Data: map[string][]*ast.Method{
-									"instance": {
-										{
-											Name: "instance",
-											Modifiers: []*ast.Modifier{
-												&ast.Modifier{
-													Name: "private",
+			func() *Context {
+				context := &Context{
+					Env: newTypeEnv(nil),
+					ClassTypes: &ast.ClassMap{
+						Data: map[string]*ast.ClassType{
+							"class2": {
+								InstanceMethods: &ast.MethodMap{
+									Data: map[string][]*ast.Method{
+										"instance": {
+											{
+												Name: "instance",
+												Modifiers: []*ast.Modifier{
+													{
+														Name: "private",
+													},
 												},
 											},
 										},
@@ -1412,8 +1396,8 @@ func TestResolveMethod(t *testing.T) {
 							},
 						},
 					},
-				},
-				NameSpaces: &builtin.NameSpaceStore{
+				}
+				context.NameSpaces = &builtin.NameSpaceStore{
 					Data: map[string]*ast.ClassMap{
 						"namespace": {
 							Data: map[string]*ast.ClassType{
@@ -1421,11 +1405,9 @@ func TestResolveMethod(t *testing.T) {
 									StaticFields: &ast.FieldMap{
 										Data: map[string]*ast.Field{
 											"static": {
-												TypeRef: &ast.TypeRef{
-													Name: []string{"class2"},
-												},
+												Type: context.ClassTypes.Data["class2"],
 												Modifiers: []*ast.Modifier{
-													&ast.Modifier{
+													{
 														Name: "public",
 													},
 												},
@@ -1437,8 +1419,9 @@ func TestResolveMethod(t *testing.T) {
 							},
 						},
 					},
-				},
-			},
+				}
+				return context
+			}(),
 			nil,
 			errors.New("Method access modifier must be public but private"),
 		},

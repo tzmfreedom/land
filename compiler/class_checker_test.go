@@ -14,7 +14,7 @@ func TestClassChecker(t *testing.T) {
 		Input         *ast.ClassType
 		ExpectedError error
 	}{
-		// difference parameter type
+		// different parameter type
 		{
 			&ast.ClassType{
 				Modifiers:      []*ast.Modifier{},
@@ -27,13 +27,8 @@ func TestClassChecker(t *testing.T) {
 					Data: map[string][]*ast.Method{
 						"bar": {
 							&ast.Method{
-								Name: "bar",
-								ReturnTypeRef: &ast.TypeRef{
-									Name: []string{
-										"Integer",
-									},
-									Parameters: []*ast.TypeRef{},
-								},
+								Name:       "bar",
+								ReturnType: builtin.IntegerType,
 								Modifiers: []*ast.Modifier{
 									{
 										Name: "public",
@@ -41,19 +36,14 @@ func TestClassChecker(t *testing.T) {
 								},
 								Parameters: []*ast.Parameter{
 									{
-										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
-										Name:    "a",
+										Type: builtin.IntegerType,
+										Name: "a",
 									},
 								},
 							},
 							&ast.Method{
-								Name: "bar",
-								ReturnTypeRef: &ast.TypeRef{
-									Name: []string{
-										"Integer",
-									},
-									Parameters: []*ast.TypeRef{},
-								},
+								Name:       "bar",
+								ReturnType: builtin.IntegerType,
 								Modifiers: []*ast.Modifier{
 									{
 										Name: "public",
@@ -61,8 +51,8 @@ func TestClassChecker(t *testing.T) {
 								},
 								Parameters: []*ast.Parameter{
 									{
-										TypeRef: &ast.TypeRef{Name: []string{"String"}},
-										Name:    "a",
+										Type: builtin.StringType,
+										Name: "a",
 									},
 								},
 							},
@@ -153,12 +143,12 @@ func TestClassChecker(t *testing.T) {
 									Parameters: []*ast.TypeRef{},
 								},
 								Modifiers: []*ast.Modifier{
-									&ast.Modifier{
+									{
 										Name: "public",
 									},
 								},
 								Parameters: []*ast.Parameter{
-									&ast.Parameter{
+									{
 										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
 										Name:    "a",
 									},
@@ -173,16 +163,16 @@ func TestClassChecker(t *testing.T) {
 									Parameters: []*ast.TypeRef{},
 								},
 								Modifiers: []*ast.Modifier{
-									&ast.Modifier{
+									{
 										Name: "public",
 									},
 								},
 								Parameters: []*ast.Parameter{
-									&ast.Parameter{
+									{
 										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
 										Name:    "a",
 									},
-									&ast.Parameter{
+									{
 										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
 										Name:    "b",
 									},
@@ -216,16 +206,16 @@ func TestClassChecker(t *testing.T) {
 									Parameters: []*ast.TypeRef{},
 								},
 								Modifiers: []*ast.Modifier{
-									&ast.Modifier{
+									{
 										Name: "public",
 									},
 								},
 								Parameters: []*ast.Parameter{
-									&ast.Parameter{
+									{
 										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
 										Name:    "a",
 									},
-									&ast.Parameter{
+									{
 										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
 										Name:    "a",
 									},
@@ -239,14 +229,14 @@ func TestClassChecker(t *testing.T) {
 			errors.New("parameter name is duplicated: a"),
 		},
 	}
-	for _, testCase := range testCases {
+	for i, testCase := range testCases {
 		checker := &ClassChecker{}
 		checker.Context = &Context{}
 		checker.Context.ClassTypes = builtin.NewClassMapWithPrimivie(nil)
 		err := checker.Check(testCase.Input)
 		if testCase.ExpectedError == nil {
 			if err != nil {
-				t.Fatalf("expect nil, actual %s", err.Error())
+				t.Fatalf("%d: expect nil, actual %s", i, err.Error())
 			}
 			continue
 		}
@@ -255,7 +245,7 @@ func TestClassChecker(t *testing.T) {
 			continue
 		}
 		if testCase.ExpectedError.Error() != err.Error() {
-			t.Fatalf("expected %s, actual %s", testCase.ExpectedError.Error(), err.Error())
+			t.Fatalf("%d: expected %s, actual %s", i, testCase.ExpectedError.Error(), err.Error())
 		}
 	}
 }

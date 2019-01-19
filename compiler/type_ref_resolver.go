@@ -86,7 +86,9 @@ func (v *TypeRefResolver) Resolve(n *ast.ClassType) (*ast.ClassType, error) {
 			for _, param := range m.Parameters {
 				param.Accept(v)
 			}
-			m.Statements.Accept(v)
+			if !n.Interface {
+				m.Statements.Accept(v)
+			}
 		}
 	}
 

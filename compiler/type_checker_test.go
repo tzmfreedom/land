@@ -174,7 +174,7 @@ func TestTypeChecker(t *testing.T) {
 					Data: map[string][]*ast.Method{
 						"foo": {
 							&ast.Method{
-								ReturnTypeRef: &ast.TypeRef{Name: []string{"Integer"}},
+								ReturnType: builtin.IntegerType,
 								Statements: &ast.Block{
 									Statements: []ast.Node{
 										&ast.Return{
@@ -189,7 +189,7 @@ func TestTypeChecker(t *testing.T) {
 						},
 						"bar": {
 							&ast.Method{
-								ReturnTypeRef: &ast.TypeRef{Name: []string{"Integer"}},
+								ReturnType: builtin.IntegerType,
 								Statements: &ast.Block{
 									Statements: []ast.Node{
 										&ast.Return{
@@ -204,7 +204,7 @@ func TestTypeChecker(t *testing.T) {
 						},
 						"baz": {
 							&ast.Method{
-								ReturnTypeRef: &ast.TypeRef{Name: []string{"Integer"}},
+								ReturnType: builtin.IntegerType,
 								Statements: &ast.Block{
 									Statements: []ast.Node{
 										&ast.Return{
@@ -219,7 +219,7 @@ func TestTypeChecker(t *testing.T) {
 						},
 						"qux": {
 							&ast.Method{
-								ReturnTypeRef: &ast.TypeRef{Name: []string{"Integer"}},
+								ReturnType: builtin.IntegerType,
 								Statements: &ast.Block{
 									Statements: []ast.Node{
 										&ast.Return{
@@ -342,7 +342,7 @@ func TestTypeChecker(t *testing.T) {
 								Statements: &ast.Block{
 									Statements: []ast.Node{
 										&ast.VariableDeclaration{
-											TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
+											Type: builtin.IntegerType,
 											Declarators: []*ast.VariableDeclarator{
 												{
 													Name:       "i",
@@ -351,7 +351,7 @@ func TestTypeChecker(t *testing.T) {
 											},
 										},
 										&ast.VariableDeclaration{
-											TypeRef: &ast.TypeRef{Name: []string{"String"}},
+											Type: builtin.StringType,
 											Declarators: []*ast.VariableDeclarator{
 												{
 													Name:       "j",
@@ -554,89 +554,95 @@ func TestModifier(t *testing.T) {
 		},
 		//
 		{
-			&ast.ClassType{
-				Name: "klass",
-				InstanceMethods: &ast.MethodMap{
-					Data: map[string][]*ast.Method{
-						"protected_method": {
-							&ast.Method{
-								Modifiers: []*ast.Modifier{
-									&ast.Modifier{Name: "protected"},
-								},
-								ReturnTypeRef: nil,
-								Statements:    &ast.Block{},
-								Parent: &ast.ClassDeclaration{
-									Name: "klass",
-								},
-							},
-						},
-						"caller": {
-							&ast.Method{
-								ReturnTypeRef: nil,
-								Statements: &ast.Block{
-									Statements: []ast.Node{
-										&ast.MethodInvocation{
-											NameOrExpression: &ast.FieldAccess{
-												Expression: &ast.New{
-													TypeRef: &ast.TypeRef{Name: []string{"klass"}},
-												},
-												FieldName: "protected_method",
-											},
-											Parameters: []ast.Node{},
-										},
+			(func() *ast.ClassType {
+				classType := &ast.ClassType{
+					Name: "klass",
+					InstanceMethods: &ast.MethodMap{
+						Data: map[string][]*ast.Method{
+							"protected_method": {
+								&ast.Method{
+									Modifiers: []*ast.Modifier{
+										&ast.Modifier{Name: "protected"},
 									},
-								},
-								Parent: &ast.ClassDeclaration{
-									Name: "klass",
+									ReturnTypeRef: nil,
+									Statements:    &ast.Block{},
+									Parent: &ast.ClassDeclaration{
+										Name: "klass",
+									},
 								},
 							},
 						},
 					},
-				},
-			},
+				}
+				classType.InstanceMethods.Set("caller", []*ast.Method{
+					{
+						ReturnTypeRef: nil,
+						Statements: &ast.Block{
+							Statements: []ast.Node{
+								&ast.MethodInvocation{
+									NameOrExpression: &ast.FieldAccess{
+										Expression: &ast.New{
+											Type: classType,
+										},
+										FieldName: "protected_method",
+									},
+									Parameters: []ast.Node{},
+								},
+							},
+						},
+						Parent: &ast.ClassDeclaration{
+							Name: "klass",
+						},
+					},
+				})
+				return classType
+			})(),
 			errors.New("Method access modifier must be public but protected"),
 		},
 		{
-			&ast.ClassType{
-				Name: "klass",
-				InstanceMethods: &ast.MethodMap{
-					Data: map[string][]*ast.Method{
-						"public_method": {
-							&ast.Method{
-								Modifiers: []*ast.Modifier{
-									{Name: "public"},
-								},
-								ReturnTypeRef: nil,
-								Statements:    &ast.Block{},
-								Parent: &ast.ClassDeclaration{
-									Name: "klass",
-								},
-							},
-						},
-						"caller": {
-							&ast.Method{
-								ReturnTypeRef: nil,
-								Statements: &ast.Block{
-									Statements: []ast.Node{
-										&ast.MethodInvocation{
-											NameOrExpression: &ast.FieldAccess{
-												Expression: &ast.New{
-													TypeRef: &ast.TypeRef{Name: []string{"klass"}},
-												},
-												FieldName: "public_method",
-											},
-											Parameters: []ast.Node{},
-										},
+			(func() *ast.ClassType {
+				classType := &ast.ClassType{
+					Name: "klass",
+					InstanceMethods: &ast.MethodMap{
+						Data: map[string][]*ast.Method{
+							"public_method": {
+								&ast.Method{
+									Modifiers: []*ast.Modifier{
+										{Name: "public"},
 									},
-								},
-								Parent: &ast.ClassDeclaration{
-									Name: "klass",
+									ReturnTypeRef: nil,
+									Statements:    &ast.Block{},
+									Parent: &ast.ClassDeclaration{
+										Name: "klass",
+									},
 								},
 							},
 						},
 					},
-				},
-			},
+				}
+				classType.InstanceMethods.Set("caller", []*ast.Method{
+					{
+						ReturnTypeRef: nil,
+						Statements: &ast.Block{
+							Statements: []ast.Node{
+								&ast.MethodInvocation{
+									NameOrExpression: &ast.FieldAccess{
+										Expression: &ast.New{
+											Type: classType,
+										},
+										FieldName: "public_method",
+									},
+									Parameters: []ast.Node{},
+								},
+							},
+						},
+						Parent: &ast.ClassDeclaration{
+							Name: "klass",
+						},
+					},
+				})
+				return classType
+			})(),
 			nil,
 		},
 	}

@@ -149,9 +149,9 @@ func (v *Builder) VisitInterfaceDeclaration(ctx *parser.InterfaceDeclarationCont
 
 func (v *Builder) VisitTypeList(ctx *parser.TypeListContext) interface{} {
 	apexTypes := ctx.AllApexType()
-	types := make([]Node, len(apexTypes))
+	types := make([]*TypeRef, len(apexTypes))
 	for i, t := range apexTypes {
-		types[i] = t.Accept(v).(Node)
+		types[i] = t.Accept(v).(*TypeRef)
 	}
 	return types
 }
@@ -167,9 +167,9 @@ func (v *Builder) VisitClassBody(ctx *parser.ClassBodyContext) interface{} {
 
 func (v *Builder) VisitInterfaceBody(ctx *parser.InterfaceBodyContext) interface{} {
 	bodyDeclarations := ctx.AllInterfaceBodyDeclaration()
-	declarations := make([]Node, len(bodyDeclarations))
+	declarations := make([]*MethodDeclaration, len(bodyDeclarations))
 	for i, d := range bodyDeclarations {
-		declarations[i] = d.Accept(v).(Node)
+		declarations[i] = d.Accept(v).(*MethodDeclaration)
 	}
 	return declarations
 }

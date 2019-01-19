@@ -720,6 +720,9 @@ func (v *TypeChecker) VisitConstructorDeclaration(n *ast.ConstructorDeclaration)
 }
 
 func (v *TypeChecker) VisitMethod(n *ast.Method) (interface{}, error) {
+	if _, ok := n.Parent.(*ast.InterfaceDeclaration); ok {
+		return nil, nil
+	}
 	v.Context.CurrentMethod = n
 	env := newTypeEnv(nil)
 	v.Context.Env = env

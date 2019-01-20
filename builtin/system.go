@@ -59,6 +59,8 @@ func init() {
 									Node:    node,
 									Message: message,
 								})
+
+								fmt.Fprintf(extra["stdout"].(io.Writer), "expected: %s, actual: %s", String(expected), String(actual))
 							}
 							return nil
 						},

@@ -11,6 +11,9 @@ type ClassChecker struct {
 }
 
 func (c *ClassChecker) Check(t *ast.ClassType) error {
+	if err := c.checkConstructorName(t); err != nil {
+		return err
+	}
 	if err := c.checkSameParameterName(t.InstanceMethods); err != nil {
 		return err
 	}
@@ -76,10 +79,24 @@ func (c *ClassChecker) checkDuplicated(m *ast.MethodMap) error {
 	return nil
 }
 
+func (c *ClassChecker) checkImplements(t *ast.ClassType) error {
+	if len(t.ImplementClasses) == 0 {
+		return nil
+	}
+	for _, impl := range t.ImplementClasses {
+		for _, methods := range impl.InstanceMethods.All() {
+			for _, method := range methods {
+				_, _ = t.InstanceMethods.Get(method.Name)
+			}
+		}
+	}
+	return nil
+}
+
 // if override modifier is specified, check modifier virtual/abstract on SuperClassRef
 // if SuperClassRef is abstract/virtual, check override method implementation
 func (c *ClassChecker) checkOverrideMethod(t *ast.ClassType) error {
-	resolver := NewTypeResolver(c.Context, false)
+	resolver := NewTypeResolver(c.Context)
 	for _, methods := range t.InstanceMethods.Data {
 		for _, m := range methods {
 			if m.IsOverride() {
@@ -180,6 +197,15 @@ func (c *ClassChecker) checkOverrideField(t *ast.ClassType) error {
 			if ok {
 				return fmt.Errorf("field %s is not defined in %s", field.Name, t.Name)
 			}
+		}
+	}
+	return nil
+}
+
+func (c *ClassChecker) checkConstructorName(t *ast.ClassType) error {
+	for _, constructor := range t.Constructors {
+		if t.Name != constructor.Name {
+			return fmt.Errorf("Invalid constructor name: %s", constructor.Name)
 		}
 	}
 	return nil

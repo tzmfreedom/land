@@ -14,7 +14,6 @@ var NullType = &ast.ClassType{
 var Null = &ast.Object{
 	ClassType:      NullType,
 	InstanceFields: ast.NewObjectMap(),
-	GenericType:    []*ast.ClassType{},
 	Extra:          map[string]interface{}{},
 }
 
@@ -111,4 +110,44 @@ func Equals(t, other *ast.ClassType) bool {
 		}
 	}
 	return false
+}
+
+func SearchMethod(receiverClass *ast.ClassType, methods []*ast.Method, parameters []*ast.ClassType) *ast.Method {
+	l := len(parameters)
+	for _, m := range methods {
+		if len(m.Parameters) != l {
+			continue
+		}
+		match := true
+
+		for i, p := range m.Parameters {
+			inputParam := parameters[i]
+			classType := p.Type
+
+			var methodParam *ast.ClassType
+			if classType == T1type || classType == T2type {
+				generics := receiverClass.Generics
+				if classType == T1type {
+					methodParam = generics[0]
+				} else {
+					methodParam = generics[1]
+				}
+			} else {
+				methodParam = classType
+			}
+			// TODO: implement
+			// extend, implements, Object
+			if methodParam == ObjectType {
+				continue
+			}
+			if !Equals(inputParam, methodParam) {
+				match = false
+				break
+			}
+		}
+		if match {
+			return m
+		}
+	}
+	return nil
 }

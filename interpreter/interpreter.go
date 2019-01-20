@@ -91,7 +91,7 @@ func (v *Interpreter) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) 
 	}
 	receiver := r.(*ast.Object)
 	key := k.(*ast.Object)
-	if receiver.ClassType == builtin.ListType {
+	if receiver.ClassType.Name == "List" {
 		records := receiver.Extra["records"].([]*ast.Object)
 		return records[key.IntegerValue()], nil
 	}
@@ -120,7 +120,7 @@ func (v *Interpreter) VisitDml(n *ast.Dml) (interface{}, error) {
 	var records []*ast.Object
 	obj := o.(*ast.Object)
 	// TODO: check SObject class
-	if obj.ClassType == builtin.ListType {
+	if obj.ClassType.Name == "List" {
 		records = obj.Extra["records"].([]*ast.Object)
 	} else {
 		records = []*ast.Object{obj}
@@ -375,7 +375,6 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 	newObj := &ast.Object{
 		ClassType:      classType,
 		InstanceFields: ast.NewObjectMap(),
-		GenericType:    n.Type.Generics,
 		Extra:          map[string]interface{}{},
 	}
 	for _, f := range classType.InstanceFields.Data {
@@ -417,7 +416,7 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 			v.Context.Env = prev
 		}
 	}
-	if classType == builtin.ListType {
+	if classType.Name == "List" {
 		newObj.Extra["records"] = []*ast.Object{}
 		if n.Init != nil {
 			if len(n.Init.Records) != 0 {
@@ -783,10 +782,10 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 				return nil, err
 			}
 			receiver := r.(*ast.Object)
-			if receiver.ClassType == builtin.ListType {
+			if receiver.ClassType.Name == "List" {
 				receiver.Extra["records"].([]*ast.Object)[key.IntegerValue()] = rObj
 			}
-			if receiver.ClassType == builtin.MapType {
+			if receiver.ClassType.Name == "Map" {
 				receiver.Extra["values"].(map[string]*ast.Object)[key.StringValue()] = rObj
 			}
 			// TODO: implment set type

@@ -275,8 +275,10 @@ func (v *Builder) VisitConstructorDeclaration(ctx *parser.ConstructorDeclaration
 	} else {
 		throws = []Node{}
 	}
+	name := ctx.ApexIdentifier().Accept(v).(string)
 	body := ctx.ConstructorBody().Accept(v).(*Block)
 	return &ConstructorDeclaration{
+		Name:       name,
 		Parameters: parameters,
 		Throws:     throws,
 		Statements: body,

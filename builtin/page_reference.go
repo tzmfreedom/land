@@ -69,7 +69,7 @@ func createPageReferenceType() {
 			Modifiers:  []*ast.Modifier{ast.PublicModifier()},
 			Parameters: []*ast.Parameter{stringTypeParameter},
 			NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-				parameters := ast.CreateObject(MapType)
+				parameters := ast.CreateObject(CreateMapType(StringType, StringType))
 				parameters.Extra["values"] = map[string]*ast.Object{}
 				this.Extra = map[string]interface{}{
 					"url":        params[0],

@@ -10,12 +10,11 @@ import (
 )
 
 type TypeResolver struct {
-	Context        *Context
-	resolver       *builtin.TypeRefResolver
-	IgnoreGenerics bool
+	Context  *Context
+	resolver *builtin.TypeRefResolver
 }
 
-func NewTypeResolver(ctx *Context, ignoreGenerics bool) *TypeResolver {
+func NewTypeResolver(ctx *Context) *TypeResolver {
 	return &TypeResolver{
 		Context: ctx,
 		resolver: &builtin.TypeRefResolver{
@@ -23,7 +22,6 @@ func NewTypeResolver(ctx *Context, ignoreGenerics bool) *TypeResolver {
 			NameSpaces:   ctx.NameSpaces,
 			CurrentClass: ctx.CurrentClass,
 		},
-		IgnoreGenerics: ignoreGenerics,
 	}
 }
 
@@ -231,7 +229,7 @@ func (r *TypeResolver) FindInstanceMethod(classType *ast.ClassType, methodName s
 	}
 	methods, ok := classType.InstanceMethods.Get(methodName)
 	if ok {
-		method := r.SearchMethod(classType, methods, parameters)
+		method := builtin.SearchMethod(classType, methods, parameters)
 		if method != nil {
 			if allowedModifier == MODIFIER_PUBLIC_ONLY && !method.IsPublic() {
 				return nil, nil, fmt.Errorf("Method access modifier must be public but %s", method.AccessModifier())
@@ -254,7 +252,7 @@ func (r *TypeResolver) FindInstanceMethod(classType *ast.ClassType, methodName s
 func (r *TypeResolver) FindStaticMethod(classType *ast.ClassType, methodName string, parameters []*ast.ClassType, allowedModifier int) (*ast.ClassType, *ast.Method, error) {
 	methods, ok := classType.StaticMethods.Get(methodName)
 	if ok {
-		method := r.SearchMethod(classType, methods, parameters)
+		method := builtin.SearchMethod(classType, methods, parameters)
 		if method != nil {
 			if allowedModifier == MODIFIER_PUBLIC_ONLY && !method.IsPublic() {
 				return nil, nil, fmt.Errorf("Method access modifier must be public but %s", method.AccessModifier())
@@ -314,52 +312,8 @@ func (r *TypeResolver) findStaticField(classType *ast.ClassType, fieldName strin
 	return nil, nil
 }
 
-func (r *TypeResolver) SearchMethod(receiverClass *ast.ClassType, methods []*ast.Method, parameters []*ast.ClassType) *ast.Method {
-	l := len(parameters)
-	for _, m := range methods {
-		if len(m.Parameters) != l {
-			continue
-		}
-		match := true
-
-		for i, p := range m.Parameters {
-			inputParam := parameters[i]
-			classType := p.Type
-
-			var methodParam *ast.ClassType
-			if classType == builtin.T1type || classType == builtin.T2type {
-				// TODO: implement better solution
-				if r.IgnoreGenerics {
-					continue
-				}
-				generics := receiverClass.Generics
-				if classType == builtin.T1type {
-					methodParam = generics[0]
-				} else {
-					methodParam = generics[1]
-				}
-			} else {
-				methodParam = classType
-			}
-			// TODO: implement
-			// extend, implements, Object
-			if methodParam == builtin.ObjectType {
-				continue
-			}
-			if !builtin.Equals(inputParam, methodParam) {
-				match = false
-				break
-			}
-		}
-		if match {
-			return m
-		}
-	}
-	return nil
-}
-
 func (r *TypeResolver) SearchConstructor(classType *ast.ClassType, parameters []*ast.ClassType) (*ast.ClassType, *ast.Method, error) {
-	method := r.SearchMethod(classType, classType.Constructors, parameters)
+	method := builtin.SearchMethod(classType, classType.Constructors, parameters)
 	if method != nil {
 		return classType, method, nil
 	}

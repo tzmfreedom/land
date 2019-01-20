@@ -5,7 +5,6 @@ import "strings"
 type Object struct {
 	ClassType      *ClassType
 	InstanceFields *ObjectMap
-	GenericType    []*ClassType
 	Extra          map[string]interface{}
 }
 
@@ -13,7 +12,6 @@ func CreateObject(t *ClassType) *Object {
 	return &Object{
 		ClassType:      t,
 		InstanceFields: NewObjectMap(),
-		GenericType:    []*ClassType{},
 		Extra:          map[string]interface{}{},
 	}
 }

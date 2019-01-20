@@ -35,7 +35,6 @@ func CreateListTypeParameter(classType *ast.ClassType) *ast.Parameter {
 
 func CreateListObject(classType *ast.ClassType, records []*ast.Object) *ast.Object {
 	listObj := ast.CreateObject(ListType)
-	listObj.GenericType = []*ast.ClassType{classType}
 	listObj.Extra["records"] = records
 	return listObj
 }

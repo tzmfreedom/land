@@ -475,6 +475,7 @@ type Name struct {
 type ConstructorDeclaration struct {
 	Modifiers   []*Modifier
 	Annotations []*Annotation
+	Name        string
 	ReturnType  Node
 	Parameters  []*Parameter
 	Throws      []Node

@@ -36,9 +36,8 @@ func (e *SoqlExecutor) getListFromResponse(n *ast.Soql, records []*ast.Object) (
 	// TODO: implement
 	classType, _ := builtin.PrimitiveClassMap().Get(n.FromObject)
 	list := &ast.Object{
-		ClassType:      builtin.ListType,
+		ClassType:      builtin.CreateListType(classType),
 		InstanceFields: ast.NewObjectMap(),
-		GenericType:    []*ast.ClassType{classType},
 		Extra: map[string]interface{}{
 			"records": records,
 		},

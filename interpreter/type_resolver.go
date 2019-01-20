@@ -21,7 +21,7 @@ func NewTypeResolver(ctx *Context) *TypeResolver {
 	compilerContext.CurrentClass = ctx.CurrentClass
 	return &TypeResolver{
 		Context:  ctx,
-		resolver: compiler.NewTypeResolver(compilerContext, true),
+		resolver: compiler.NewTypeResolver(compilerContext),
 	}
 }
 
@@ -261,7 +261,7 @@ func (r *TypeResolver) FindStaticMethod(classType *ast.ClassType, methodName str
 }
 
 func (r *TypeResolver) SearchMethod(receiverClass *ast.ClassType, methods []*ast.Method, parameters []*ast.Object) *ast.Method {
-	return r.resolver.SearchMethod(receiverClass, methods, convertClassTypes(parameters))
+	return builtin.SearchMethod(receiverClass, methods, convertClassTypes(parameters))
 }
 
 func (r *TypeResolver) SearchConstructor(receiverClass *ast.ClassType, parameters []*ast.Object) (*ast.ClassType, *ast.Method, error) {
@@ -275,15 +275,7 @@ func (r *TypeResolver) ConvertType(n *ast.TypeRef) (*ast.ClassType, error) {
 func convertClassTypes(parameters []*ast.Object) []*ast.ClassType {
 	inputParameters := make([]*ast.ClassType, len(parameters))
 	for i, parameter := range parameters {
-		classType := parameter.ClassType
-		if classType.IsGenerics() {
-			inputParameters[i] = &ast.ClassType{
-				Name:     classType.Name,
-				Generics: parameter.GenericType,
-			}
-		} else {
-			inputParameters[i] = classType
-		}
+		inputParameters[i] = parameter.ClassType
 	}
 	return inputParameters
 }

@@ -311,7 +311,7 @@ func (v *TypeChecker) VisitMethodDeclaration(n *ast.MethodDeclaration) (interfac
 }
 
 func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{}, error) {
-	resolver := NewTypeResolver(v.Context, false)
+	resolver := NewTypeResolver(v.Context)
 
 	nameOrExp := n.NameOrExpression
 	types := make([]*ast.ClassType, len(n.Parameters))
@@ -379,7 +379,7 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 		}
 		params[i] = param.(*ast.ClassType)
 	}
-	typeResolver := NewTypeResolver(v.Context, false)
+	typeResolver := NewTypeResolver(v.Context)
 	classType := n.Type
 
 	if classType.IsAbstract() || classType.Constructors == nil {
@@ -425,7 +425,7 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		n.Op == "=/" {
 
 		var l *ast.ClassType
-		resolver := NewTypeResolver(v.Context, false)
+		resolver := NewTypeResolver(v.Context)
 		switch leftNode := n.Left.(type) {
 		case *ast.Name:
 			left, err := resolver.ResolveVariable(leftNode.Value, true)
@@ -529,7 +529,7 @@ func (v *TypeChecker) VisitThrow(n *ast.Throw) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitSoql(n *ast.Soql) (interface{}, error) {
-	resolver := NewTypeResolver(v.Context, false)
+	resolver := NewTypeResolver(v.Context)
 	t, err := resolver.ResolveType([]string{n.FromObject})
 	if err != nil {
 		return nil, v.compileError(err.Error(), n)
@@ -636,7 +636,7 @@ func (v *TypeChecker) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) 
 }
 
 func (v *TypeChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
-	resolver := NewTypeResolver(v.Context, false)
+	resolver := NewTypeResolver(v.Context)
 	return resolver.ConvertType(n)
 }
 
@@ -701,7 +701,7 @@ func (v *TypeChecker) VisitSetCreator(n *ast.SetCreator) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitName(n *ast.Name) (interface{}, error) {
-	resolver := NewTypeResolver(v.Context, false)
+	resolver := NewTypeResolver(v.Context)
 	classType, err := resolver.ResolveVariable(n.Value, false)
 	if err != nil {
 		return nil, v.compileError(err.Error(), n)

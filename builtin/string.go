@@ -221,42 +221,36 @@ func createStringType(c *ast.ClassType) *ast.ClassType {
 			},
 		),
 	})
-	instanceMethods.Set("split", []*ast.Method{
-		ast.CreateMethod(
-			"split",
-			CreateListType(StringType),
-			[]*ast.Parameter{stringTypeParameter},
-			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-				split := params[0].StringValue()
-				src := this.StringValue()
-				parts := strings.Split(src, split)
-				records := make([]*ast.Object, len(parts))
-				for i, part := range parts {
-					records[i] = NewString(part)
-				}
-				listType := ast.CreateObject(ListType)
-				listType.Extra["records"] = records
-				return listType
-			},
-		),
-	})
 	staticMethods := ast.NewMethodMap()
 	staticMethods.Set("join", []*ast.Method{
 		ast.CreateMethod(
 			"join",
 			StringType,
-			[]*ast.Parameter{ListTypeParameter},
+			[]*ast.Parameter{
+				CreateListTypeParameter(ObjectType),
+				stringTypeParameter,
+			},
 			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 				iterableObj := params[0].Extra["records"].([]*ast.Object)
+				separator := params[1].StringValue()
 				elements := make([]string, len(iterableObj))
 				for i, obj := range iterableObj {
 					elements[i] = String(obj)
 				}
-				return NewString(strings.Join(elements, ","))
+				return NewString(strings.Join(elements, separator))
 			},
 		),
 	})
 	staticMethods.Set("valueOf", []*ast.Method{
+		ast.CreateMethod(
+			"valueOf",
+			StringType,
+			[]*ast.Parameter{BlobTypeParameter},
+			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+				src := params[0].Extra["value"].([]byte)
+				return NewString(string(src))
+			},
+		),
 		ast.CreateMethod(
 			"valueOf",
 			StringType,

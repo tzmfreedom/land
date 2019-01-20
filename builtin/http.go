@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"strings"
+
 	"github.com/tzmfreedom/goland/ast"
 )
 
@@ -40,7 +42,8 @@ func init() {
 					endpoint := request.Extra["endpoint"].(string)
 					method := request.Extra["method"].(string)
 					headers := request.Extra["headers"].(map[string]*ast.Object)
-					req, err := http.NewRequest(method, endpoint, nil)
+					body := request.Extra["body"].(string)
+					req, err := http.NewRequest(method, endpoint, strings.NewReader(body))
 					if err != nil {
 						panic(err) // TODO: impl
 					}
@@ -64,5 +67,5 @@ func init() {
 		},
 	)
 
-	primitiveClassMap.Set("HttpRequest", httpType)
+	primitiveClassMap.Set("Http", httpType)
 }

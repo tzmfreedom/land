@@ -24,5 +24,19 @@ func init() {
 	httpResponseType.InstanceMethods = instanceMethods
 	httpResponseType.StaticMethods = staticMethods
 
+	instanceMethods.Set(
+		"getBody",
+		[]*ast.Method{
+			ast.CreateMethod(
+				"getBody",
+				StringType,
+				[]*ast.Parameter{},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					return NewString(this.Extra["body"].(string))
+				},
+			),
+		},
+	)
+
 	primitiveClassMap.Set("HttpResponse", httpResponseType)
 }

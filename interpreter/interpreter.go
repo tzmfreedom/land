@@ -1080,7 +1080,7 @@ func (v *Interpreter) Equals(o, other *ast.Object) bool {
 	if o == builtin.Null {
 		return other == builtin.Null
 	}
-	m, ok := o.ClassType.InstanceMethods.Get("Equals")
+	m, ok := o.ClassType.InstanceMethods.Get("equals")
 	if !ok {
 		return o.Value() == other.Value()
 	}

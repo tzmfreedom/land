@@ -3,13 +3,15 @@ package builtin
 import (
 	"encoding/base64"
 
+	"net/url"
+
 	"github.com/tzmfreedom/goland/ast"
 )
 
 func init() {
 	instanceMethods := ast.NewMethodMap()
 	staticMethods := ast.NewMethodMap()
-	dateType := ast.CreateClass(
+	encodingUtilType := ast.CreateClass(
 		"EncodingUtil",
 		[]*ast.Method{},
 		instanceMethods,
@@ -21,7 +23,7 @@ func init() {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"base64Decode",
-				StringType,
+				BlobType,
 				[]*ast.Parameter{stringTypeParameter},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					msg := params[0].StringValue()
@@ -40,7 +42,7 @@ func init() {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"base64Encode",
-				dateType,
+				StringType,
 				[]*ast.Parameter{BlobTypeParameter},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					msg := params[0].Value().([]byte)
@@ -51,5 +53,23 @@ func init() {
 		},
 	)
 
-	primitiveClassMap.Set("Date", dateType)
+	staticMethods.Set(
+		"urlEncode",
+		[]*ast.Method{
+			ast.CreateMethod(
+				"urlEncode",
+				StringType,
+				[]*ast.Parameter{
+					stringTypeParameter,
+					stringTypeParameter,
+				},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					inputString := params[0].StringValue()
+					// encodingScheme := params[1].StringValue()
+					return NewString(url.QueryEscape(inputString))
+				},
+			),
+		},
+	)
+	primitiveClassMap.Set("EncodingUtil", encodingUtilType)
 }

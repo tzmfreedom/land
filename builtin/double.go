@@ -13,6 +13,11 @@ var DoubleType = &ast.ClassType{
 	},
 }
 
+var doubleTypeParameter = &ast.Parameter{
+	Type: DoubleType,
+	Name: "_",
+}
+
 func init() {
 	primitiveClassMap.Set("Double", DoubleType)
 }

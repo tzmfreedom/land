@@ -60,7 +60,8 @@ func init() {
 									Message: message,
 								})
 
-								fmt.Fprintf(extra["stdout"].(io.Writer), "expected: %s, actual: %s", String(expected), String(actual))
+								loc := node.GetLocation()
+								fmt.Fprintf(extra["stdout"].(io.Writer), "expected: %s, actual: %s at %d:%d\n", String(expected), String(actual), loc.Line, loc.Column)
 							}
 							return nil
 						},

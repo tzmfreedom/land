@@ -76,6 +76,9 @@ func Equals(t, other *ast.ClassType) bool {
 	if other == NullType {
 		return true
 	}
+	if other == ObjectType {
+		return true
+	}
 	if t.IsGenerics() && other.IsGenerics() {
 		if t.Name != other.Name {
 			return false

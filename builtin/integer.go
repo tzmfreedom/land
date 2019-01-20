@@ -7,7 +7,9 @@ import (
 )
 
 var IntegerType = &ast.ClassType{
-	Name: "Integer",
+	Name:            "Integer",
+	InstanceMethods: ast.NewMethodMap(),
+	StaticMethods:   ast.NewMethodMap(),
 	ToString: func(o *ast.Object) string {
 		return fmt.Sprintf("%d", o.Value().(int))
 	},

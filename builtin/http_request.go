@@ -1,6 +1,10 @@
 package builtin
 
-import "github.com/tzmfreedom/goland/ast"
+import (
+	"strings"
+
+	"github.com/tzmfreedom/goland/ast"
+)
 
 var httpRequestType = &ast.ClassType{Name: "HttpRequest"}
 var httpRequestTypeParameter = &ast.Parameter{
@@ -22,6 +26,8 @@ func init() {
 			},
 		),
 	}
+	httpRequestType.InstanceFields = ast.NewFieldMap()
+	httpRequestType.StaticFields = ast.NewFieldMap()
 	httpRequestType.InstanceMethods = instanceMethods
 	httpRequestType.StaticMethods = staticMethods
 
@@ -55,7 +61,24 @@ func init() {
 				},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					method := params[0].StringValue()
-					this.Extra["method"] = method
+					this.Extra["method"] = strings.ToUpper(method)
+					return nil
+				},
+			),
+		},
+	)
+	instanceMethods.Set(
+		"setBody",
+		[]*ast.Method{
+			ast.CreateMethod(
+				"setBody",
+				nil,
+				[]*ast.Parameter{
+					stringTypeParameter,
+				},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					body := params[0].StringValue()
+					this.Extra["body"] = body
 					return nil
 				},
 			),

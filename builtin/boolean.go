@@ -7,7 +7,9 @@ import (
 )
 
 var BooleanType = &ast.ClassType{
-	Name: "Boolean",
+	Name:            "Boolean",
+	InstanceMethods: ast.NewMethodMap(),
+	StaticMethods:   ast.NewMethodMap(),
 	ToString: func(o *ast.Object) string {
 		return fmt.Sprintf("%t", o.Value().(bool))
 	},

@@ -92,16 +92,14 @@ func createListType() {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"sort",
-				CreateListType(T1type),
+				nil,
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					records := this.Extra["records"].([]*ast.Object)
-					sorted := make([]*ast.Object, len(records))
-					copy(records, sorted)
-					sort.SliceStable(sorted, func(i, j int) bool {
-						return String(sorted[i]) < String(sorted[j])
+					sort.SliceStable(records, func(i, j int) bool {
+						return String(records[i]) < String(records[j])
 					})
-					return CreateListObject(this.ClassType.Generics[0], sorted)
+					return nil
 				},
 			),
 		},

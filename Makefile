@@ -36,7 +36,7 @@ format: import
 .PHONY: import
 import:
 ifneq ($(shell command -v goimports 2> /dev/null),)
-	@goimports -w compiler/ ast/ visitor/ interpreter/ builtin/ server/ ./land.go
+	@goimports -w compiler/ ast/ visitor/ interpreter/ builtin/ server/ ./land.go ./commands.go
 endif
 
 .PHONY: generate

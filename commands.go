@@ -14,6 +14,8 @@ import (
 
 	"bytes"
 
+	"path/filepath"
+
 	"github.com/chzyer/readline"
 	"github.com/fsnotify/fsnotify"
 	"github.com/mattn/go-colorable"
@@ -104,11 +106,11 @@ var testCommand = cli.Command{
 		}
 		trees, err := parseFiles(files)
 		if err != nil {
-			handleError(err)
+			return err
 		}
 		classTypes, err := buildAllFile(trees)
 		if err != nil {
-			handleError(err)
+			return err
 		}
 		var i = 1
 		for _, classType := range classTypes {
@@ -123,7 +125,7 @@ var testCommand = cli.Command{
 							i.Extra["stdout"] = new(bytes.Buffer)
 						})
 						if err != nil {
-							handleError(err)
+							return err
 						}
 						stdout := colorable.NewColorableStdout()
 						errors := ret.Extra["errors"].([]*builtin.TestError)
@@ -169,11 +171,11 @@ var watchCommand = cli.Command{
 		}
 		trees, err := parseFiles(files)
 		if err != nil {
-			handleError(err)
+			return err
 		}
 		classTypes, err := buildAllFile(trees)
 		if err != nil {
-			handleError(err)
+			return err
 		}
 		return watchAndRunTest(classTypes)
 	},
@@ -196,11 +198,11 @@ var serverCommand = cli.Command{
 		}
 		trees, err := parseFiles(files)
 		if err != nil {
-			handleError(err)
+			return err
 		}
 		classTypes, err := buildAllFile(trees)
 		if err != nil {
-			handleError(err)
+			return err
 		}
 		server.Run(classTypes)
 		return nil
@@ -239,10 +241,12 @@ var formatCommand = cli.Command{
 		}
 		trees, err := parseFiles(files)
 		if err != nil {
-			handleError(err)
+			return err
 		}
 		for _, t := range trees {
-			tos(t)
+			visitor := &ast.TosVisitor{}
+			r, _ := t.Accept(visitor)
+			fmt.Println(r)
 		}
 		return nil
 	},
@@ -269,21 +273,21 @@ var runCommand = cli.Command{
 		}
 		trees, err := parseFiles(files)
 		if err != nil {
-			handleError(err)
+			return err
 		}
 		classTypes, err := buildAllFile(trees)
 		if err != nil {
-			handleError(err)
+			return err
 		}
 		if c.Bool("interactive") {
 			err = interactiveRun(classTypes, files)
 			if err != nil {
-				handleError(err)
+				return err
 			}
 		} else {
 			err = run(c.String("action"), classTypes)
 			if err != nil {
-				handleError(err)
+				return err
 			}
 		}
 		return nil
@@ -307,11 +311,11 @@ var checkCommand = cli.Command{
 		}
 		trees, err := parseFiles(files)
 		if err != nil {
-			handleError(err)
+			return err
 		}
 		classTypes, err := buildAllFile(trees)
 		if err != nil {
-			handleError(err)
+			return err
 		}
 		for _, classType := range classTypes {
 			check(classType)
@@ -350,6 +354,10 @@ func parseFileOption(c *cli.Context) ([]string, error) {
 		files = []string{}
 		for _, f := range filesInDirectory {
 			if f.IsDir() {
+				continue
+			}
+			ext := filepath.Ext(f.Name())
+			if ext != ".cls" && ext != ".apxc" {
 				continue
 			}
 			files = append(files, fmt.Sprintf("%s/%s", dir, f.Name()))
@@ -490,7 +498,10 @@ func interactiveRun(classTypes []*ast.ClassType, files []string) error {
 		case "reload":
 			ch <- true
 			if len(args) == 0 {
-				reloadAll(landInterpreter, files)
+				err := reloadAll(landInterpreter, files)
+				if err != nil {
+					return err
+				}
 			} else {
 				_, err := buildFile(landInterpreter, args[0])
 				if err != nil {
@@ -517,7 +528,10 @@ func interactiveRun(classTypes []*ast.ClassType, files []string) error {
 			ch <- true
 			if isReload {
 				lastReloadedAt = time.Now()
-				reloadAll(landInterpreter, files)
+				err := reloadAll(landInterpreter, files)
+				if err != nil {
+					return err
+				}
 			}
 			run(args[0], classTypes)
 			<-ch
@@ -682,20 +696,20 @@ func execFile(code string, env *interpreter.Env) *interpreter.Env {
 	return env
 }
 
-func reloadAll(interpreter *interpreter.Interpreter, files []string) {
+func reloadAll(interpreter *interpreter.Interpreter, files []string) error {
 	var err error
 	trees := make([]ast.Node, len(files))
 	for i, file := range files {
 		trees[i], err = ast.ParseFile(file, preprocessors...)
 		if err != nil {
-			handleError(err)
+			return err
 		}
 	}
 	classTypes := make([]*ast.ClassType, len(trees))
 	for i, t := range trees {
 		classTypes[i], err = register(t)
 		if err != nil {
-			handleError(err)
+			return err
 		}
 	}
 
@@ -707,28 +721,18 @@ func reloadAll(interpreter *interpreter.Interpreter, files []string) {
 	for i, classType := range classTypes {
 		classTypes[i], err = convert(classType, classMap)
 		if err != nil {
-			handleError(err)
+			return err
 		}
 	}
 
 	for _, t := range classTypes {
 		if err = semanticAnalysis(t); err != nil {
-			handleError(err)
+			return err
 		}
 	}
 	interpreter.Context.ClassTypes.Clear()
 	for _, classType := range classTypes {
 		interpreter.Context.ClassTypes.Set(classType.Name, classType)
 	}
-}
-
-func tos(n ast.Node) {
-	visitor := &ast.TosVisitor{}
-	r, _ := n.Accept(visitor)
-	fmt.Println(r)
-}
-
-func handleError(err error) {
-	fmt.Fprintln(os.Stderr, err.Error())
-	os.Exit(1)
+	return nil
 }

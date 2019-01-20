@@ -1,5 +1,3 @@
 public abstract class AbstractClass {
-    public abstract String hello() {
-        return 'super';
-    }
+    public abstract String hello();
 }

@@ -57,7 +57,7 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*ast.C
 				if len(names)-2 == i {
 					check = checkSetter
 				}
-				instanceField, err = r.findInstanceField(fieldType, f, allowedModifier, check)
+				instanceField, err = FindInstanceField(fieldType, f, allowedModifier, check)
 				if err != nil {
 					return nil, err
 				}
@@ -73,7 +73,7 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*ast.C
 			if len(names) == 2 {
 				check = checkSetter
 			}
-			n, err := r.findStaticField(v, names[1], MODIFIER_PUBLIC_ONLY, check)
+			n, err := FindStaticField(v, names[1], MODIFIER_PUBLIC_ONLY, check)
 			if err != nil {
 				return nil, err
 			}
@@ -86,7 +86,7 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*ast.C
 					if len(names)-3 == i {
 						check = checkSetter
 					}
-					instanceField, err = r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY, check)
+					instanceField, err = FindInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY, check)
 					if err != nil {
 						return nil, err
 					}
@@ -104,7 +104,7 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*ast.C
 				if len(names) == 3 {
 					check = checkSetter
 				}
-				field, err := r.findStaticField(classType, names[2], MODIFIER_PUBLIC_ONLY, check)
+				field, err := FindStaticField(classType, names[2], MODIFIER_PUBLIC_ONLY, check)
 				if err != nil {
 					return nil, err
 				}
@@ -118,7 +118,7 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*ast.C
 						if len(names)-4 == i {
 							check = checkSetter
 						}
-						instanceField, err = r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY, check)
+						instanceField, err = FindInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY, check)
 						if err != nil {
 							return nil, err
 						}
@@ -139,7 +139,7 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*ast.ClassType
 	if len(names) == 1 {
 		methodName := names[0]
 		if v, ok := r.Context.Env.Get("this"); ok {
-			classType, method, err := r.FindInstanceMethod(v, methodName, parameters, MODIFIER_ALL_OK)
+			classType, method, err := FindInstanceMethod(v, methodName, parameters, MODIFIER_ALL_OK)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -160,7 +160,7 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*ast.ClassType
 				} else {
 					allowedModifier = MODIFIER_PUBLIC_ONLY
 				}
-				instanceField, err := r.findInstanceField(fieldType, f, allowedModifier, false)
+				instanceField, err := FindInstanceField(fieldType, f, allowedModifier, false)
 				if err != nil {
 					return nil, nil, err
 				}
@@ -172,25 +172,25 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*ast.ClassType
 			} else {
 				allowedModifier = MODIFIER_PUBLIC_ONLY
 			}
-			return r.FindInstanceMethod(fieldType, methodName, parameters, allowedModifier)
+			return FindInstanceMethod(fieldType, methodName, parameters, allowedModifier)
 		}
 		if len(names) == 2 {
 			if v, ok := r.Context.ClassTypes.Get(first); ok {
-				return r.FindStaticMethod(v, methodName, parameters, MODIFIER_PUBLIC_ONLY)
+				return FindStaticMethod(v, methodName, parameters, MODIFIER_PUBLIC_ONLY)
 			}
 		}
 		if v, ok := r.Context.ClassTypes.Get(first); ok {
-			n, err := r.findStaticField(v, names[1], MODIFIER_PUBLIC_ONLY, false)
+			n, err := FindStaticField(v, names[1], MODIFIER_PUBLIC_ONLY, false)
 			if err == nil {
 				fieldType := n.Type
 				for _, f := range names[2 : len(names)-1] {
-					instanceField, err := r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY, false)
+					instanceField, err := FindInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY, false)
 					if err != nil {
 						return nil, nil, err
 					}
 					fieldType = instanceField.Type
 				}
-				return r.FindInstanceMethod(fieldType, methodName, parameters, MODIFIER_PUBLIC_ONLY)
+				return FindInstanceMethod(fieldType, methodName, parameters, MODIFIER_PUBLIC_ONLY)
 			}
 		}
 
@@ -198,20 +198,20 @@ func (r *TypeResolver) ResolveMethod(names []string, parameters []*ast.ClassType
 			if classType, ok := v.Get(names[1]); ok {
 				// namespace.class.static_field.instance_field...instance_method()
 				if len(names) > 3 {
-					if field, err := r.findStaticField(classType, names[2], MODIFIER_PUBLIC_ONLY, false); err == nil {
+					if field, err := FindStaticField(classType, names[2], MODIFIER_PUBLIC_ONLY, false); err == nil {
 						fieldType := field.Type
 						for _, f := range names[3 : len(names)-1] {
-							instanceField, err := r.findInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY, false)
+							instanceField, err := FindInstanceField(fieldType, f, MODIFIER_PUBLIC_ONLY, false)
 							if err != nil {
 								return nil, nil, err
 							}
 							fieldType = instanceField.Type
 						}
-						return r.FindInstanceMethod(fieldType, methodName, parameters, MODIFIER_PUBLIC_ONLY)
+						return FindInstanceMethod(fieldType, methodName, parameters, MODIFIER_PUBLIC_ONLY)
 					}
 					// namespace.class.static_method()
 				} else {
-					return r.FindStaticMethod(classType, methodName, parameters, MODIFIER_PUBLIC_ONLY)
+					return FindStaticMethod(classType, methodName, parameters, MODIFIER_PUBLIC_ONLY)
 				}
 			}
 		}
@@ -223,7 +223,7 @@ func (r *TypeResolver) ResolveType(names []string) (*ast.ClassType, error) {
 	return r.resolver.ResolveType(names)
 }
 
-func (r *TypeResolver) FindInstanceMethod(classType *ast.ClassType, methodName string, parameters []*ast.ClassType, allowedModifier int) (*ast.ClassType, *ast.Method, error) {
+func FindInstanceMethod(classType *ast.ClassType, methodName string, parameters []*ast.ClassType, allowedModifier int) (*ast.ClassType, *ast.Method, error) {
 	if classType == builtin.NullType {
 		return nil, nil, fmt.Errorf("null pointer exception")
 	}
@@ -244,12 +244,12 @@ func (r *TypeResolver) FindInstanceMethod(classType *ast.ClassType, methodName s
 		if allowedModifier == MODIFIER_ALL_OK {
 			allowedModifier = MODIFIER_ALLOW_PROTECTED
 		}
-		return r.FindInstanceMethod(classType.SuperClass, methodName, parameters, allowedModifier)
+		return FindInstanceMethod(classType.SuperClass, methodName, parameters, allowedModifier)
 	}
 	return nil, nil, methodNotFoundError(classType, methodName, parameters)
 }
 
-func (r *TypeResolver) FindStaticMethod(classType *ast.ClassType, methodName string, parameters []*ast.ClassType, allowedModifier int) (*ast.ClassType, *ast.Method, error) {
+func FindStaticMethod(classType *ast.ClassType, methodName string, parameters []*ast.ClassType, allowedModifier int) (*ast.ClassType, *ast.Method, error) {
 	methods, ok := classType.StaticMethods.Get(methodName)
 	if ok {
 		method := builtin.SearchMethod(classType, methods, parameters)
@@ -267,12 +267,12 @@ func (r *TypeResolver) FindStaticMethod(classType *ast.ClassType, methodName str
 		if allowedModifier == MODIFIER_ALL_OK {
 			allowedModifier = MODIFIER_ALLOW_PROTECTED
 		}
-		return r.FindStaticMethod(classType.SuperClass, methodName, parameters, allowedModifier)
+		return FindStaticMethod(classType.SuperClass, methodName, parameters, allowedModifier)
 	}
 	return nil, nil, methodNotFoundError(classType, methodName, parameters)
 }
 
-func (r *TypeResolver) findInstanceField(classType *ast.ClassType, fieldName string, allowedModifier int, checkSetter bool) (*ast.Field, error) {
+func FindInstanceField(classType *ast.ClassType, fieldName string, allowedModifier int, checkSetter bool) (*ast.Field, error) {
 	fieldType, ok := classType.InstanceFields.Get(fieldName)
 	if ok {
 		if allowedModifier == MODIFIER_PUBLIC_ONLY && !fieldType.IsPublic(checkSetter) {
@@ -287,12 +287,12 @@ func (r *TypeResolver) findInstanceField(classType *ast.ClassType, fieldName str
 		if allowedModifier == MODIFIER_ALL_OK {
 			allowedModifier = MODIFIER_ALLOW_PROTECTED
 		}
-		return r.findInstanceField(classType.SuperClass, fieldName, allowedModifier, checkSetter)
+		return FindInstanceField(classType.SuperClass, fieldName, allowedModifier, checkSetter)
 	}
 	return nil, nil
 }
 
-func (r *TypeResolver) findStaticField(classType *ast.ClassType, fieldName string, allowedModifier int, checkSetter bool) (*ast.Field, error) {
+func FindStaticField(classType *ast.ClassType, fieldName string, allowedModifier int, checkSetter bool) (*ast.Field, error) {
 	fieldType, ok := classType.StaticFields.Get(fieldName)
 	if ok {
 		if allowedModifier == MODIFIER_PUBLIC_ONLY && !fieldType.IsPublic(checkSetter) {
@@ -307,7 +307,7 @@ func (r *TypeResolver) findStaticField(classType *ast.ClassType, fieldName strin
 		if allowedModifier == MODIFIER_ALL_OK {
 			allowedModifier = MODIFIER_ALLOW_PROTECTED
 		}
-		return r.findStaticField(classType.SuperClass, fieldName, allowedModifier, checkSetter)
+		return FindStaticField(classType.SuperClass, fieldName, allowedModifier, checkSetter)
 	}
 	return nil, nil
 }

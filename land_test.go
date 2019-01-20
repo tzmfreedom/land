@@ -76,5 +76,5 @@ func ExampleAbstract() {
 	main()
 	// Output:
 	// hello
-	// super
+	// world
 }

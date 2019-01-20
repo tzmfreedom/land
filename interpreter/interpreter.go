@@ -293,8 +293,7 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		}
 		receiver = r
 		// TODO: extend
-		typeResolver := NewTypeResolver(v.Context)
-		_, m, err = typeResolver.FindInstanceMethod(receiver.(*ast.Object), exp.FieldName, evaluated, compiler.MODIFIER_ALL_OK)
+		_, m, err = FindInstanceMethod(receiver.(*ast.Object), exp.FieldName, evaluated, compiler.MODIFIER_ALL_OK)
 		if err != nil {
 			panic("not found")
 		}

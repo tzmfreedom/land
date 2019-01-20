@@ -269,14 +269,14 @@ func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *ast.Cl
 		case *ast.ConstructorDeclaration:
 			t.Constructors = append(
 				t.Constructors,
-				ast.NewConstructor(decl),
+				ast.NewConstructor(t, decl),
 			)
 		case *ast.MethodDeclaration:
 			// TODO: check method name and signature to prevent conflict
 			if decl.IsStatic() {
-				t.StaticMethods.Add(decl.Name, ast.NewMethod(decl))
+				t.StaticMethods.Add(decl.Name, ast.NewMethod(t, decl))
 			} else {
-				t.InstanceMethods.Add(decl.Name, ast.NewMethod(decl))
+				t.InstanceMethods.Add(decl.Name, ast.NewMethod(t, decl))
 			}
 		case *ast.PropertyDeclaration:
 			identifier := decl.Identifier
@@ -383,9 +383,9 @@ func (v *ClassRegisterVisitor) setMethods(methods []*ast.MethodDeclaration, t *a
 	for _, d := range methods {
 		// TODO: check method name and signature to prevent conflict
 		if d.IsStatic() {
-			t.StaticMethods.Add(d.Name, ast.NewMethod(d))
+			t.StaticMethods.Add(d.Name, ast.NewMethod(t, d))
 		} else {
-			t.InstanceMethods.Add(d.Name, ast.NewMethod(d))
+			t.InstanceMethods.Add(d.Name, ast.NewMethod(t, d))
 		}
 	}
 	return nil

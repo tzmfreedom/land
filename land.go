@@ -534,6 +534,14 @@ func buildAllFile(trees []ast.Node) ([]*ast.ClassType, error) {
 			return nil, err
 		}
 	}
+
+	for _, classType := range classTypes {
+		err := compiler.CheckClass(classType)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	for _, t := range classTypes {
 		if err := semanticAnalysis(t); err != nil {
 			return nil, err

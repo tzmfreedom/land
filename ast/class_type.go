@@ -35,6 +35,10 @@ func (t *ClassType) IsAbstract() bool {
 	return t.Is("abstract")
 }
 
+func (t *ClassType) IsVirtual() bool {
+	return t.Is("virtual")
+}
+
 func (t *ClassType) IsGenerics() bool {
 	return t.Name == "List" ||
 		t.Name == "Map" ||
@@ -175,14 +179,14 @@ type Method struct {
 	ReturnTypeRef *TypeRef
 	Parameters    []*Parameter
 	Throws        []Node
-	Statements    Node
+	Statements    *Block
 	// func(receiver, value, options)
 	NativeFunction func(*Object, []*Object, map[string]interface{}) interface{}
 	Location       *Location
-	Parent         Node
+	Parent         *ClassType
 }
 
-func NewMethod(decl *MethodDeclaration) *Method {
+func NewMethod(owner *ClassType, decl *MethodDeclaration) *Method {
 	return &Method{
 		Name:          decl.Name,
 		Annotations:   decl.Annotations,
@@ -192,11 +196,11 @@ func NewMethod(decl *MethodDeclaration) *Method {
 		Throws:        decl.Throws,
 		Statements:    decl.Statements,
 		Location:      decl.Location,
-		Parent:        decl.Parent,
+		Parent:        owner,
 	}
 }
 
-func NewConstructor(decl *ConstructorDeclaration) *Method {
+func NewConstructor(owner *ClassType, decl *ConstructorDeclaration) *Method {
 	return &Method{
 		Name:        decl.GetParent().(*ClassDeclaration).Name,
 		Modifiers:   decl.Modifiers,
@@ -205,7 +209,7 @@ func NewConstructor(decl *ConstructorDeclaration) *Method {
 		Throws:      decl.Throws,
 		Statements:  decl.Statements,
 		Location:    decl.Location,
-		Parent:      decl.Parent,
+		Parent:      owner,
 	}
 }
 

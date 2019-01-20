@@ -18,37 +18,22 @@ func TestTypeChecker(t *testing.T) {
 	}{
 		// Array key must be integer or string
 		{
-			newTestClassType([]ast.Node{
+			newTestClassTypeWithStatement([]ast.Node{
 				&ast.ArrayAccess{
-					Receiver: &ast.TypeRef{
-						Name: []string{"List"},
-						Parameters: []*ast.TypeRef{
-							{
-								Name: []string{"Integer"},
-							},
-						},
+					Receiver: &ast.New{
+						Type: builtin.CreateListType(builtin.IntegerType),
 					},
 					Key: &ast.IntegerLiteral{},
 				},
 				&ast.ArrayAccess{
-					Receiver: &ast.TypeRef{
-						Name: []string{"List"},
-						Parameters: []*ast.TypeRef{
-							{
-								Name: []string{"Integer"},
-							},
-						},
+					Receiver: &ast.New{
+						Type: builtin.CreateListType(builtin.IntegerType),
 					},
 					Key: &ast.StringLiteral{},
 				},
 				&ast.ArrayAccess{
-					Receiver: &ast.TypeRef{
-						Name: []string{"List"},
-						Parameters: []*ast.TypeRef{
-							{
-								Name: []string{"Integer"},
-							},
-						},
+					Receiver: &ast.New{
+						Type: builtin.CreateListType(builtin.IntegerType),
 					},
 					Key: &ast.BooleanLiteral{},
 				},
@@ -64,7 +49,7 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// `if` condition type must be boolean
 		{
-			newTestClassType([]ast.Node{
+			newTestClassTypeWithStatement([]ast.Node{
 				&ast.If{
 					Condition:     &ast.BooleanLiteral{},
 					IfStatement:   &ast.Block{},
@@ -100,7 +85,7 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// `while` condition must be boolean
 		{
-			newTestClassType([]ast.Node{
+			newTestClassTypeWithStatement([]ast.Node{
 				&ast.While{
 					Condition:  &ast.BooleanLiteral{},
 					Statements: &ast.Block{},
@@ -132,7 +117,7 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// ternaly condition must be boolean
 		{
-			newTestClassType([]ast.Node{
+			newTestClassTypeWithStatement([]ast.Node{
 				&ast.TernalyExpression{
 					Condition:       &ast.BooleanLiteral{},
 					TrueExpression:  &ast.IntegerLiteral{},
@@ -168,7 +153,7 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// method return type must be return expression type
 		{
-			&ast.ClassType{
+			newTestClassType(&ast.ClassType{
 				Name: "klass",
 				InstanceMethods: &ast.MethodMap{
 					Data: map[string][]*ast.Method{
@@ -182,9 +167,6 @@ func TestTypeChecker(t *testing.T) {
 										},
 									},
 								},
-								Parent: &ast.ClassDeclaration{
-									Name: "klass",
-								},
 							},
 						},
 						"bar": {
@@ -196,9 +178,6 @@ func TestTypeChecker(t *testing.T) {
 											Expression: &ast.IntegerLiteral{},
 										},
 									},
-								},
-								Parent: &ast.ClassDeclaration{
-									Name: "klass",
 								},
 							},
 						},
@@ -212,9 +191,6 @@ func TestTypeChecker(t *testing.T) {
 										},
 									},
 								},
-								Parent: &ast.ClassDeclaration{
-									Name: "klass",
-								},
 							},
 						},
 						"qux": {
@@ -227,14 +203,11 @@ func TestTypeChecker(t *testing.T) {
 										},
 									},
 								},
-								Parent: &ast.ClassDeclaration{
-									Name: "klass",
-								},
 							},
 						},
 					},
 				},
-			},
+			}),
 			[]*Error{
 				{
 					Message: "return type <Boolean> does not match Integer",
@@ -251,7 +224,7 @@ func TestTypeChecker(t *testing.T) {
 		// * break must be in for/while loop
 		// * condition must be boolean
 		{
-			newTestClassType([]ast.Node{
+			newTestClassTypeWithStatement([]ast.Node{
 				func() *ast.For {
 					t := &ast.For{
 						Control: &ast.ForControl{
@@ -305,7 +278,7 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// Unary Operator
 		{
-			newTestClassType([]ast.Node{
+			newTestClassTypeWithStatement([]ast.Node{
 				&ast.UnaryOperator{
 					Expression: &ast.IntegerLiteral{},
 				},
@@ -333,7 +306,7 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// types must equal on variable declaration, variable assignment
 		{
-			&ast.ClassType{
+			newTestClassType(&ast.ClassType{
 				Name: "klass",
 				InstanceMethods: &ast.MethodMap{
 					Data: map[string][]*ast.Method{
@@ -371,14 +344,11 @@ func TestTypeChecker(t *testing.T) {
 										},
 									},
 								},
-								Parent: &ast.ClassDeclaration{
-									Name: "klass",
-								},
 							},
 						},
 					},
 				},
-			},
+			}),
 			[]*Error{
 				{
 					Message: "expression <Integer> does not match <String>",
@@ -390,7 +360,7 @@ func TestTypeChecker(t *testing.T) {
 		},
 		// arithmetic expression type
 		{
-			newTestClassType([]ast.Node{
+			newTestClassTypeWithStatement([]ast.Node{
 				&ast.BinaryOperator{
 					Op:    "+",
 					Left:  &ast.IntegerLiteral{},
@@ -515,20 +485,17 @@ func TestModifier(t *testing.T) {
 	}{
 		// method call on `this` context
 		{
-			&ast.ClassType{
+			newTestClassType(&ast.ClassType{
 				Name: "klass",
 				InstanceMethods: &ast.MethodMap{
 					Data: map[string][]*ast.Method{
 						"private_method": {
 							&ast.Method{
 								Modifiers: []*ast.Modifier{
-									&ast.Modifier{Name: "private"},
+									{Name: "private"},
 								},
 								ReturnTypeRef: nil,
 								Statements:    &ast.Block{},
-								Parent: &ast.ClassDeclaration{
-									Name: "klass",
-								},
 							},
 						},
 						"caller": {
@@ -542,14 +509,11 @@ func TestModifier(t *testing.T) {
 										},
 									},
 								},
-								Parent: &ast.ClassDeclaration{
-									Name: "klass",
-								},
 							},
 						},
 					},
 				},
-			},
+			}),
 			nil,
 		},
 		//
@@ -557,19 +521,16 @@ func TestModifier(t *testing.T) {
 			(func() *ast.ClassType {
 				classType := &ast.ClassType{
 					Name: "klass",
-					InstanceMethods: &ast.MethodMap{
-						Data: map[string][]*ast.Method{
-							"protected_method": {
-								&ast.Method{
-									Modifiers: []*ast.Modifier{
-										&ast.Modifier{Name: "protected"},
-									},
-									ReturnTypeRef: nil,
-									Statements:    &ast.Block{},
-									Parent: &ast.ClassDeclaration{
-										Name: "klass",
-									},
+				}
+				classType.InstanceMethods = &ast.MethodMap{
+					Data: map[string][]*ast.Method{
+						"protected_method": {
+							&ast.Method{
+								Modifiers: []*ast.Modifier{
+									{Name: "protected"},
 								},
+								ReturnType: nil,
+								Statements: &ast.Block{},
 							},
 						},
 					},
@@ -590,12 +551,9 @@ func TestModifier(t *testing.T) {
 								},
 							},
 						},
-						Parent: &ast.ClassDeclaration{
-							Name: "klass",
-						},
 					},
 				})
-				return classType
+				return newTestClassType(classType)
 			})(),
 			errors.New("Method access modifier must be public but protected"),
 		},
@@ -603,19 +561,16 @@ func TestModifier(t *testing.T) {
 			(func() *ast.ClassType {
 				classType := &ast.ClassType{
 					Name: "klass",
-					InstanceMethods: &ast.MethodMap{
-						Data: map[string][]*ast.Method{
-							"public_method": {
-								&ast.Method{
-									Modifiers: []*ast.Modifier{
-										{Name: "public"},
-									},
-									ReturnTypeRef: nil,
-									Statements:    &ast.Block{},
-									Parent: &ast.ClassDeclaration{
-										Name: "klass",
-									},
+				}
+				classType.InstanceMethods = &ast.MethodMap{
+					Data: map[string][]*ast.Method{
+						"public_method": {
+							&ast.Method{
+								Modifiers: []*ast.Modifier{
+									{Name: "public"},
 								},
+								ReturnType: nil,
+								Statements: &ast.Block{},
 							},
 						},
 					},
@@ -636,12 +591,9 @@ func TestModifier(t *testing.T) {
 								},
 							},
 						},
-						Parent: &ast.ClassDeclaration{
-							Name: "klass",
-						},
 					},
 				})
-				return classType
+				return newTestClassType(classType)
 			})(),
 			nil,
 		},
@@ -670,22 +622,39 @@ func TestModifier(t *testing.T) {
 	}
 }
 
-func newTestClassType(statements []ast.Node) *ast.ClassType {
-	return &ast.ClassType{
+func newTestClassTypeWithStatement(statements []ast.Node) *ast.ClassType {
+	classType := &ast.ClassType{
 		Name: "klass",
-		InstanceMethods: &ast.MethodMap{
-			Data: map[string][]*ast.Method{
-				"foo": {
-					&ast.Method{
-						Statements: &ast.Block{
-							Statements: statements,
-						},
-						Parent: &ast.ClassDeclaration{
-							Name: "klass",
-						},
+	}
+	classType.InstanceMethods = &ast.MethodMap{
+		Data: map[string][]*ast.Method{
+			"foo": {
+				&ast.Method{
+					Statements: &ast.Block{
+						Statements: statements,
 					},
+					Parent: classType,
 				},
 			},
 		},
 	}
+	return classType
+}
+
+func newTestClassType(classType *ast.ClassType) *ast.ClassType {
+	if classType.StaticMethods != nil {
+		for _, methods := range classType.StaticMethods.All() {
+			for _, method := range methods {
+				method.Parent = classType
+			}
+		}
+	}
+	if classType.InstanceMethods != nil {
+		for _, methods := range classType.InstanceMethods.All() {
+			for _, method := range methods {
+				method.Parent = classType
+			}
+		}
+	}
+	return classType
 }

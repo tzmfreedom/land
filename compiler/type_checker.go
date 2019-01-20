@@ -346,7 +346,7 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		if err != nil {
 			return nil, err
 		}
-		receiverType, method, err := resolver.FindInstanceMethod(
+		receiverType, method, err := FindInstanceMethod(
 			classType.(*ast.ClassType),
 			fieldAccess.FieldName,
 			types,
@@ -435,7 +435,7 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			l = left
 		case *ast.FieldAccess:
 			classType, _ := leftNode.Expression.Accept(v)
-			f, _ := resolver.findInstanceField(classType.(*ast.ClassType), leftNode.FieldName, MODIFIER_PUBLIC_ONLY, true)
+			f, _ := FindInstanceField(classType.(*ast.ClassType), leftNode.FieldName, MODIFIER_PUBLIC_ONLY, true)
 			l = f.Type
 		case *ast.ArrayAccess:
 			left, err := leftNode.Accept(v)
@@ -720,22 +720,16 @@ func (v *TypeChecker) VisitConstructorDeclaration(n *ast.ConstructorDeclaration)
 }
 
 func (v *TypeChecker) VisitMethod(n *ast.Method) (interface{}, error) {
-	if _, ok := n.Parent.(*ast.InterfaceDeclaration); ok {
+	if n.Parent.IsInterface() {
+		return nil, nil
+	}
+	if n.Parent.IsAbstract() {
 		return nil, nil
 	}
 	v.Context.CurrentMethod = n
 	env := newTypeEnv(nil)
 	v.Context.Env = env
-	if n.Statements == nil {
-		if _, ok := n.Parent.(*ast.ClassDeclaration); ok {
-			panic("not pass")
-		}
-		return nil, nil
-	}
-	classType, ok := v.Context.ClassTypes.Get(n.Parent.(*ast.ClassDeclaration).Name)
-	if !ok {
-		panic("not found")
-	}
+	classType := n.Parent
 	v.Context.Env.Set("this", classType)
 	for _, param := range n.Parameters {
 		env.Set(param.Name, param.Type)

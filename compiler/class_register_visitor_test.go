@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
 )
@@ -302,20 +303,21 @@ func TestClassRegister(t *testing.T) {
 			},
 		},
 	}
-	for _, testCase := range testCases {
+	for i, testCase := range testCases {
 		classRegister := &ClassRegisterVisitor{}
 		actual, err := testCase.Input.Accept(classRegister)
 		if err != nil {
 			panic(err)
 		}
 
-		equalNode(t, testCase.Expected, actual.(*ast.ClassType))
+		equalNode(t, i, testCase.Expected, actual.(*ast.ClassType))
 	}
 }
 
-func equalNode(t *testing.T, expected *ast.ClassType, actual *ast.ClassType) {
-	if ok := cmp.Equal(expected, actual); !ok {
-		diff := cmp.Diff(expected, actual)
+func equalNode(t *testing.T, i int, expected *ast.ClassType, actual *ast.ClassType) {
+	ignore := cmpopts.IgnoreFields(ast.Method{}, "Parent")
+	if ok := cmp.Equal(expected, actual, ignore); !ok {
+		diff := cmp.Diff(expected, actual, ignore)
 		pp.Print(actual)
 		t.Errorf(diff)
 	}
@@ -347,11 +349,11 @@ func TestClassRegisterDuplicateClass(t *testing.T) {
 	_, err := classNode.Accept(classRegister)
 	expected := "Class Bar is already defined"
 	if err == nil {
-		t.Fatalf("error is not raised, expected %s", expected)
+		t.Errorf("error is not raised, expected %s", expected)
 		return
 	}
 	if err.Error() != expected {
-		t.Fatalf("expected %s, actual %s", expected, err.Error())
+		t.Errorf("expected %s, actual %s", expected, err.Error())
 	}
 }
 
@@ -502,16 +504,16 @@ func TestClassRegisterError(t *testing.T) {
 		_, err := testCase.Input.Accept(classRegister)
 		if testCase.ExpectedError == nil {
 			if err != nil {
-				t.Fatalf("expect nil, actual %s", err.Error())
+				t.Errorf("expect nil, actual %s", err.Error())
 			}
 			continue
 		}
 		if err == nil {
-			t.Fatalf("error is not raised, expected %s", testCase.ExpectedError.Error())
+			t.Errorf("error is not raised, expected %s", testCase.ExpectedError.Error())
 			continue
 		}
 		if testCase.ExpectedError.Error() != err.Error() {
-			t.Fatalf("expected %s, actual %s", testCase.ExpectedError.Error(), err.Error())
+			t.Errorf("expected %s, actual %s", testCase.ExpectedError.Error(), err.Error())
 		}
 	}
 }

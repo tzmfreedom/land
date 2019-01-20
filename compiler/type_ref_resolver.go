@@ -86,7 +86,7 @@ func (v *TypeRefResolver) Resolve(n *ast.ClassType) (*ast.ClassType, error) {
 			for _, param := range m.Parameters {
 				param.Accept(v)
 			}
-			if !n.Interface {
+			if !n.Interface && !m.IsAbstract() {
 				m.Statements.Accept(v)
 			}
 		}

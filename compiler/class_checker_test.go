@@ -76,13 +76,8 @@ func TestClassChecker(t *testing.T) {
 					Data: map[string][]*ast.Method{
 						"bar": {
 							&ast.Method{
-								Name: "bar",
-								ReturnTypeRef: &ast.TypeRef{
-									Name: []string{
-										"Integer",
-									},
-									Parameters: []*ast.TypeRef{},
-								},
+								Name:       "bar",
+								ReturnType: builtin.IntegerType,
 								Modifiers: []*ast.Modifier{
 									{
 										Name: "public",
@@ -90,28 +85,23 @@ func TestClassChecker(t *testing.T) {
 								},
 								Parameters: []*ast.Parameter{
 									{
-										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
-										Name:    "a",
+										Type: builtin.IntegerType,
+										Name: "a",
 									},
 								},
 							},
 							&ast.Method{
-								Name: "bar",
-								ReturnTypeRef: &ast.TypeRef{
-									Name: []string{
-										"String",
-									},
-									Parameters: []*ast.TypeRef{},
-								},
+								Name:       "bar",
+								ReturnType: builtin.StringType,
 								Modifiers: []*ast.Modifier{
-									&ast.Modifier{
+									{
 										Name: "public",
 									},
 								},
 								Parameters: []*ast.Parameter{
-									&ast.Parameter{
-										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
-										Name:    "a",
+									{
+										Type: builtin.IntegerType,
+										Name: "a",
 									},
 								},
 							},
@@ -135,13 +125,8 @@ func TestClassChecker(t *testing.T) {
 					Data: map[string][]*ast.Method{
 						"bar": {
 							&ast.Method{
-								Name: "bar",
-								ReturnTypeRef: &ast.TypeRef{
-									Name: []string{
-										"Integer",
-									},
-									Parameters: []*ast.TypeRef{},
-								},
+								Name:       "bar",
+								ReturnType: builtin.IntegerType,
 								Modifiers: []*ast.Modifier{
 									{
 										Name: "public",
@@ -149,19 +134,14 @@ func TestClassChecker(t *testing.T) {
 								},
 								Parameters: []*ast.Parameter{
 									{
-										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
-										Name:    "a",
+										Type: builtin.IntegerType,
+										Name: "a",
 									},
 								},
 							},
 							&ast.Method{
-								Name: "bar",
-								ReturnTypeRef: &ast.TypeRef{
-									Name: []string{
-										"Integer",
-									},
-									Parameters: []*ast.TypeRef{},
-								},
+								Name:       "bar",
+								ReturnType: builtin.IntegerType,
 								Modifiers: []*ast.Modifier{
 									{
 										Name: "public",
@@ -169,12 +149,12 @@ func TestClassChecker(t *testing.T) {
 								},
 								Parameters: []*ast.Parameter{
 									{
-										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
-										Name:    "a",
+										Type: builtin.IntegerType,
+										Name: "a",
 									},
 									{
-										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
-										Name:    "b",
+										Type: builtin.IntegerType,
+										Name: "b",
 									},
 								},
 							},
@@ -191,20 +171,15 @@ func TestClassChecker(t *testing.T) {
 				Modifiers:      []*ast.Modifier{},
 				Annotations:    []*ast.Annotation{},
 				Name:           "Foo",
-				SuperClassRef:  nil,
+				SuperClass:     nil,
 				InstanceFields: ast.NewFieldMap(),
 				StaticFields:   ast.NewFieldMap(),
 				InstanceMethods: &ast.MethodMap{
 					Data: map[string][]*ast.Method{
 						"bar": {
 							&ast.Method{
-								Name: "bar",
-								ReturnTypeRef: &ast.TypeRef{
-									Name: []string{
-										"Integer",
-									},
-									Parameters: []*ast.TypeRef{},
-								},
+								Name:       "bar",
+								ReturnType: builtin.IntegerType,
 								Modifiers: []*ast.Modifier{
 									{
 										Name: "public",
@@ -212,12 +187,12 @@ func TestClassChecker(t *testing.T) {
 								},
 								Parameters: []*ast.Parameter{
 									{
-										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
-										Name:    "a",
+										Type: builtin.IntegerType,
+										Name: "a",
 									},
 									{
-										TypeRef: &ast.TypeRef{Name: []string{"Integer"}},
-										Name:    "a",
+										Type: builtin.IntegerType,
+										Name: "a",
 									},
 								},
 							},
@@ -230,22 +205,19 @@ func TestClassChecker(t *testing.T) {
 		},
 	}
 	for i, testCase := range testCases {
-		checker := &ClassChecker{}
-		checker.Context = &Context{}
-		checker.Context.ClassTypes = builtin.NewClassMapWithPrimivie(nil)
-		err := checker.Check(testCase.Input)
+		err := CheckClass(testCase.Input)
 		if testCase.ExpectedError == nil {
 			if err != nil {
-				t.Fatalf("%d: expect nil, actual %s", i, err.Error())
+				t.Errorf("%d: expect nil, actual %s", i, err.Error())
 			}
 			continue
 		}
 		if err == nil {
-			t.Fatalf("error is not raised, expected %s", testCase.ExpectedError.Error())
+			t.Errorf("error is not raised, expected %s", testCase.ExpectedError.Error())
 			continue
 		}
 		if testCase.ExpectedError.Error() != err.Error() {
-			t.Fatalf("%d: expected %s, actual %s", i, testCase.ExpectedError.Error(), err.Error())
+			t.Errorf("%d: expected %s, actual %s", i, testCase.ExpectedError.Error(), err.Error())
 		}
 	}
 }

@@ -262,7 +262,7 @@ func (v *Builder) VisitMethodDeclaration(ctx *parser.MethodDeclarationContext) i
 		n.Statements = ctx.MethodBody().Accept(v).(*Block)
 		n.Statements.SetParent(n)
 	} else {
-		n.Statements = &Block{}
+		n.Statements = nil
 	}
 	return n
 }

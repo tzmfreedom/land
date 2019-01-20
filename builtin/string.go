@@ -3,8 +3,9 @@ package builtin
 import (
 	"strings"
 
-	"github.com/tzmfreedom/goland/ast"
 	"regexp"
+
+	"github.com/tzmfreedom/goland/ast"
 )
 
 var stringTypeRef = &ast.TypeRef{
@@ -206,7 +207,7 @@ func createStringType(c *ast.ClassType) *ast.ClassType {
 			StringType,
 			[]*ast.Parameter{},
 			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-				return NewString(strings.ToLower(this.StringValue())))
+				return NewString(strings.ToLower(this.StringValue()))
 			},
 		),
 	})
@@ -216,7 +217,7 @@ func createStringType(c *ast.ClassType) *ast.ClassType {
 			StringType,
 			[]*ast.Parameter{},
 			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-				return NewString(strings.ToUpper(this.StringValue())))
+				return NewString(strings.ToUpper(this.StringValue()))
 			},
 		),
 	})

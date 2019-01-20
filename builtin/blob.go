@@ -1,10 +1,6 @@
 package builtin
 
-import (
-	"time"
-
-	"github.com/tzmfreedom/goland/ast"
-)
+import "github.com/tzmfreedom/goland/ast"
 
 var BlobType = &ast.ClassType{Name: "Blob"}
 var BlobTypeParameter = &ast.Parameter{

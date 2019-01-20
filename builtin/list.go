@@ -1,8 +1,9 @@
 package builtin
 
 import (
-	"github.com/tzmfreedom/goland/ast"
 	"sort"
+
+	"github.com/tzmfreedom/goland/ast"
 )
 
 var ListType = &ast.ClassType{Name: "List"}

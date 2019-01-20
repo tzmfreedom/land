@@ -1,10 +1,9 @@
 package builtin
 
 import (
-	"time"
+	"encoding/base64"
 
 	"github.com/tzmfreedom/goland/ast"
-	"encoding/base64"
 )
 
 func init() {

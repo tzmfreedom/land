@@ -2,9 +2,15 @@ package builtin
 
 import (
 	"github.com/tzmfreedom/goland/ast"
+	"sort"
 )
 
 var ListType = &ast.ClassType{Name: "List"}
+
+var ListTypeParameter = &ast.Parameter{
+	Type: ListType,
+	Name: "_",
+}
 
 func CreateListType(classType *ast.ClassType) *ast.ClassType {
 	return &ast.ClassType{
@@ -76,6 +82,25 @@ func createListType() {
 					listElement := params[0]
 					this.Extra["records"] = append(records, listElement)
 					return nil
+				},
+			),
+		},
+	)
+	instanceMethods.Set(
+		"sort",
+		[]*ast.Method{
+			ast.CreateMethod(
+				"sort",
+				CreateListType(T1type),
+				[]*ast.Parameter{},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					records := this.Extra["records"].([]*ast.Object)
+					sorted := make([]*ast.Object, len(records))
+					copy(records, sorted)
+					sort.SliceStable(sorted, func(i, j int) bool {
+						return String(sorted[i]) < String(sorted[j])
+					})
+					return CreateListObject(this.ClassType.Generics[0], sorted)
 				},
 			),
 		},

@@ -7,6 +7,16 @@ import (
 )
 
 var BlobType = &ast.ClassType{Name: "Blob"}
+var BlobTypeParameter = &ast.Parameter{
+	Type: BlobType,
+	Name: "_",
+}
+
+func NewBlob(value []byte) *ast.Object {
+	t := ast.CreateObject(BlobType)
+	t.Extra["value"] = value
+	return t
+}
 
 func init() {
 	instanceMethods := ast.NewMethodMap()

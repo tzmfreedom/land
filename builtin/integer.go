@@ -13,6 +13,11 @@ var IntegerType = &ast.ClassType{
 	},
 }
 
+var IntegerTypeParameter = &ast.Parameter{
+	Type: IntegerType,
+	Name: "_",
+}
+
 var integerTypeRef = &ast.TypeRef{
 	Name:       []string{"Integer"},
 	Parameters: []*ast.TypeRef{},

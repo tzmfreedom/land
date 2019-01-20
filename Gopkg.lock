@@ -108,11 +108,19 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:91137b48dc3eb34409f731b49f63a5ebf73218168a065e1a93af24eb5b2f99e8"
+  digest = "1:f6f6d9d6f80c9e32acc0f4f3b904e0b9f5b18a7757c2ef941121bd79a10e7bdf"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "48ac38b7c8cbedd50b1613c0fccacfc7d88dfcdf"
+  revision = "11f53e03133963fb11ae0588e08b5e0b85be8be5"
+
+[[projects]]
+  digest = "1:b24d38b282bacf9791408a080f606370efa3d364e4b5fd9ba0f7b87786d3b679"
+  name = "gopkg.in/urfave/cli.v1"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
+  version = "v1.20.0"
 
 [solve-meta]
   analyzer-name = "dep"
@@ -126,9 +134,11 @@
     "github.com/joho/godotenv",
     "github.com/k0kubun/pp",
     "github.com/lib/pq",
+    "github.com/mattn/go-colorable",
     "github.com/mattn/go-sqlite3",
     "github.com/pkg/errors",
     "github.com/tzmfreedom/go-soapforce",
+    "gopkg.in/urfave/cli.v1",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

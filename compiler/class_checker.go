@@ -181,7 +181,7 @@ func checkOverrideMethod(
 				}
 				_, method, _ := findMethod(t.SuperClass, m.Name, types, MODIFIER_NO_CHECK)
 				if method != nil {
-					if method.IsAbstract() {
+					if method.IsAbstract() || method.IsVirtual() {
 						return fmt.Errorf("Method must use the override keyword: %s", MethodSignature(t, method))
 					}
 					return fmt.Errorf("Non-virtual, non-abstract methods cannot be overridden: %s", MethodSignature(t, method))

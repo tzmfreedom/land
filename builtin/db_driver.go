@@ -79,6 +79,14 @@ func (d *databaseDriver) QueryRaw(query string) {
 	pp.Println(rows)
 }
 
+func (d *databaseDriver) Begin() {
+	d.db.Exec("BEGIN;")
+}
+
+func (d *databaseDriver) Rollback() {
+	d.db.Exec("ROLLBACK;")
+}
+
 func (d *databaseDriver) Execute(dmlType string, sObjectType string, records []*ast.Object, upsertKey string) {
 	for _, record := range records {
 		var query string

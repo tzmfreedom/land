@@ -498,6 +498,9 @@ func run(action string, classTypes []*ast.ClassType, options ...func(*interprete
 	for _, option := range options {
 		option(interpreter)
 	}
+	builtin.DatabaseDriver.Begin()
+	defer builtin.DatabaseDriver.Rollback()
+
 	interpreter.LoadStaticField()
 	_, err := invoke.Accept(interpreter)
 	return err

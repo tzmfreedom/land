@@ -14,6 +14,7 @@ func main() {
 	app := cli.NewApp()
 	app.Commands = []cli.Command{
 		dbSetupCommand,
+		dbCreateCommand,
 		dbSeedCommand,
 		dbFetchCommand,
 		testCommand,

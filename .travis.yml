@@ -7,8 +7,7 @@ before_install:
 install:
 - make deps
 before_script:
-- make db/setup
-- make db/seed
+- make db/create
 script:
 - make test
 before_deploy:

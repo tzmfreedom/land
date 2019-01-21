@@ -17,6 +17,10 @@ run/format:
 db/setup:
 	@go run . db:setup
 
+.PHONY: db/create
+db/create:
+	@go run . db:create
+
 .PHONY: db/seed
 db/seed:
 	@go run . db:seed

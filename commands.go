@@ -122,6 +122,18 @@ var dbSetupCommand = cli.Command{
 	},
 }
 
+var dbCreateCommand = cli.Command{
+	Name:  "db:create",
+	Usage: "",
+	Flags: []cli.Flag{
+		metaFileFlag,
+	},
+	Action: func(c *cli.Context) error {
+		metafile := c.String("metafile")
+		return builtin.CreateDatabase(metafile)
+	},
+}
+
 var dbSeedCommand = cli.Command{
 	Name:  "db:seed",
 	Usage: "",

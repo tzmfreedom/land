@@ -3,7 +3,7 @@ go:
 - '1.11'
 before_install:
 - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-- mv sobjects.json.test sobjects.json
+- mv sobjects.yml.test sobjects.yml
 install:
 - make deps
 before_script:

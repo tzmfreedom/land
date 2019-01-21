@@ -3,5 +3,5 @@ example.cls
 .idea/
 *.js
 .env
-sobjects.json
+sobjects.yml
 database.sqlite3

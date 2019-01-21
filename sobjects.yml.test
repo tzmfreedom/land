@@ -1,0 +1,2074 @@
+Account:
+  name: Account
+  custom: false
+  customsetting: false
+  label: 取引先
+  fields:
+  - name: Id
+    type: id
+    label: 取引先 ID
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsDeleted
+    type: boolean
+    label: 削除
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: MasterRecordId
+    type: reference
+    label: マスタレコード ID
+    relationshipname: MasterRecord
+    custom: false
+    referenceto:
+    - Account
+  - name: Name
+    type: string
+    label: 取引先名
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Type
+    type: picklist
+    label: 取引先 種別
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ParentId
+    type: reference
+    label: 親取引先 ID
+    relationshipname: Parent
+    custom: false
+    referenceto:
+    - Account
+  - name: BillingStreet
+    type: textarea
+    label: 町名・番地(請求先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: BillingCity
+    type: string
+    label: 市区郡(請求先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: BillingState
+    type: string
+    label: 都道府県(請求先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: BillingPostalCode
+    type: string
+    label: 郵便番号(請求先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: BillingCountry
+    type: string
+    label: 国(請求先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: BillingLatitude
+    type: double
+    label: 緯度(請求先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: BillingLongitude
+    type: double
+    label: 経度(請求先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: BillingGeocodeAccuracy
+    type: picklist
+    label: Billing Geocode Accuracy
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ShippingStreet
+    type: textarea
+    label: 町名・番地(納入先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ShippingCity
+    type: string
+    label: 市区郡(納入先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ShippingState
+    type: string
+    label: 都道府県(納入先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ShippingPostalCode
+    type: string
+    label: 郵便番号(納入先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ShippingCountry
+    type: string
+    label: 国(納入先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ShippingLatitude
+    type: double
+    label: 緯度(納入先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ShippingLongitude
+    type: double
+    label: 経度(納入先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ShippingGeocodeAccuracy
+    type: picklist
+    label: Shipping Geocode Accuracy
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Phone
+    type: phone
+    label: 取引先 電話
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Fax
+    type: phone
+    label: 取引先 Fax
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: AccountNumber
+    type: string
+    label: 取引先番号
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Website
+    type: url
+    label: Web サイト
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: PhotoUrl
+    type: url
+    label: 写真の URL
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Sic
+    type: string
+    label: 産業コード
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Industry
+    type: picklist
+    label: 業種
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: AnnualRevenue
+    type: currency
+    label: 年間売上
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: NumberOfEmployees
+    type: int
+    label: 従業員数
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Ownership
+    type: picklist
+    label: 会社形態
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: TickerSymbol
+    type: string
+    label: 株式コード
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Description
+    type: textarea
+    label: 取引先 説明
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Rating
+    type: picklist
+    label: 取引先 評価
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Site
+    type: string
+    label: 取引先 部門
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: OwnerId
+    type: reference
+    label: 所有者 ID
+    relationshipname: Owner
+    custom: false
+    referenceto:
+    - User
+  - name: CreatedDate
+    type: datetime
+    label: 作成日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CreatedById
+    type: reference
+    label: 作成者 ID
+    relationshipname: CreatedBy
+    custom: false
+    referenceto:
+    - User
+  - name: LastModifiedDate
+    type: datetime
+    label: 最終更新日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastModifiedById
+    type: reference
+    label: 最終更新者 ID
+    relationshipname: LastModifiedBy
+    custom: false
+    referenceto:
+    - User
+  - name: SystemModstamp
+    type: datetime
+    label: System Modstamp
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastActivityDate
+    type: date
+    label: 最終活動日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastViewedDate
+    type: datetime
+    label: 最終閲覧日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastReferencedDate
+    type: datetime
+    label: 最終参照日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Jigsaw
+    type: string
+    label: Data.com キー
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: JigsawCompanyId
+    type: string
+    label: Jigsaw Company ID
+    relationshipname: JigsawCompany
+    custom: false
+    referenceto: []
+  - name: CleanStatus
+    type: picklist
+    label: 状況をクリーンアップ
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: AccountSource
+    type: picklist
+    label: 取引先ソース
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: DunsNumber
+    type: string
+    label: D-U-N-S 番号
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Tradestyle
+    type: string
+    label: 取引形態
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: NaicsCode
+    type: string
+    label: NAICS コード
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: NaicsDesc
+    type: string
+    label: NAICS の説明
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: YearStarted
+    type: string
+    label: 開始年
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: SicDesc
+    type: string
+    label: 産業区分の説明
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: DandbCompanyId
+    type: reference
+    label: D&B 企業 ID
+    relationshipname: DandbCompany
+    custom: false
+    referenceto:
+    - DandBCompany
+  - name: CustomerPriority__c
+    type: picklist
+    label: Customer Priority
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: SLA__c
+    type: picklist
+    label: SLA
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: Active__c
+    type: picklist
+    label: Active
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: NumberofLocations__c
+    type: double
+    label: Number of Locations
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: UpsellOpportunity__c
+    type: picklist
+    label: Upsell Opportunity
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: SLASerialNumber__c
+    type: string
+    label: SLA Serial Number
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: SLAExpirationDate__c
+    type: date
+    label: SLA Expiration Date
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: Field1__c
+    type: string
+    label: Field1
+    relationshipname: ""
+    custom: true
+    referenceto: []
+Campaign:
+  name: Campaign
+  custom: false
+  customsetting: false
+  label: キャンペーン
+  fields:
+  - name: Id
+    type: id
+    label: キャンペーン ID
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsDeleted
+    type: boolean
+    label: 削除
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Name
+    type: string
+    label: 名前
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ParentId
+    type: reference
+    label: 親キャンペーン ID
+    relationshipname: Parent
+    custom: false
+    referenceto:
+    - Campaign
+  - name: Type
+    type: picklist
+    label: 種別
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Status
+    type: picklist
+    label: 状況
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: StartDate
+    type: date
+    label: 開始日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: EndDate
+    type: date
+    label: 終了日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ExpectedRevenue
+    type: currency
+    label: キャンペーンの期待収益
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: BudgetedCost
+    type: currency
+    label: キャンペーンの予算
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ActualCost
+    type: currency
+    label: キャンペーンの実費
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ExpectedResponse
+    type: percent
+    label: 期待されるレスポンス(%)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: NumberSent
+    type: double
+    label: キャンペーンの実施数
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsActive
+    type: boolean
+    label: 有効
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Description
+    type: textarea
+    label: 説明
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: NumberOfLeads
+    type: int
+    label: キャンペーンのリード数
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: NumberOfConvertedLeads
+    type: int
+    label: キャンペーンの取引開始済みのリード数
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: NumberOfContacts
+    type: int
+    label: キャンペーンの取引先責任者数
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: NumberOfResponses
+    type: int
+    label: キャンペーンのレスポンス数
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: NumberOfOpportunities
+    type: int
+    label: キャンペーンの商談数
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: NumberOfWonOpportunities
+    type: int
+    label: キャンペーンの成立商談数
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: AmountAllOpportunities
+    type: currency
+    label: キャンペーンの商談金額
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: AmountWonOpportunities
+    type: currency
+    label: キャンペーンの成立商談金額
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: OwnerId
+    type: reference
+    label: 所有者 ID
+    relationshipname: Owner
+    custom: false
+    referenceto:
+    - User
+  - name: CreatedDate
+    type: datetime
+    label: 作成日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CreatedById
+    type: reference
+    label: 作成者 ID
+    relationshipname: CreatedBy
+    custom: false
+    referenceto:
+    - User
+  - name: LastModifiedDate
+    type: datetime
+    label: 最終更新日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastModifiedById
+    type: reference
+    label: 最終更新者 ID
+    relationshipname: LastModifiedBy
+    custom: false
+    referenceto:
+    - User
+  - name: SystemModstamp
+    type: datetime
+    label: System Modstamp
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastActivityDate
+    type: date
+    label: 最終活動日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastViewedDate
+    type: datetime
+    label: 最終閲覧日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastReferencedDate
+    type: datetime
+    label: 最終参照日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CampaignMemberRecordTypeId
+    type: reference
+    label: レコードタイプ ID
+    relationshipname: CampaignMemberRecordType
+    custom: false
+    referenceto:
+    - RecordType
+Case:
+  name: Case
+  custom: false
+  customsetting: false
+  label: ケース
+  fields:
+  - name: Id
+    type: id
+    label: ケース ID
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsDeleted
+    type: boolean
+    label: 削除
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CaseNumber
+    type: string
+    label: ケース番号
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ContactId
+    type: reference
+    label: 取引先責任者 ID
+    relationshipname: Contact
+    custom: false
+    referenceto:
+    - Contact
+  - name: AccountId
+    type: reference
+    label: 取引先 ID
+    relationshipname: Account
+    custom: false
+    referenceto:
+    - Account
+  - name: AssetId
+    type: reference
+    label: 納入商品 ID
+    relationshipname: Asset
+    custom: false
+    referenceto:
+    - Asset
+  - name: ParentId
+    type: reference
+    label: 親ケース ID
+    relationshipname: Parent
+    custom: false
+    referenceto:
+    - Case
+  - name: SuppliedName
+    type: string
+    label: 名前
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: SuppliedEmail
+    type: email
+    label: メールアドレス
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: SuppliedPhone
+    type: string
+    label: 電話
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: SuppliedCompany
+    type: string
+    label: 会社名
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Type
+    type: picklist
+    label: ケース種別
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Status
+    type: picklist
+    label: 状況
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Reason
+    type: picklist
+    label: 原因
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Origin
+    type: picklist
+    label: 発生源
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Subject
+    type: string
+    label: 件名
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Priority
+    type: picklist
+    label: 優先度
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Description
+    type: textarea
+    label: 説明
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsClosed
+    type: boolean
+    label: クローズフラグ
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ClosedDate
+    type: datetime
+    label: 完了日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsEscalated
+    type: boolean
+    label: エスカレーション済フラグ
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: OwnerId
+    type: reference
+    label: 所有者 ID
+    relationshipname: Owner
+    custom: false
+    referenceto:
+    - Group
+    - User
+  - name: CreatedDate
+    type: datetime
+    label: 作成日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CreatedById
+    type: reference
+    label: 作成者 ID
+    relationshipname: CreatedBy
+    custom: false
+    referenceto:
+    - User
+  - name: LastModifiedDate
+    type: datetime
+    label: 最終更新日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastModifiedById
+    type: reference
+    label: 最終更新者 ID
+    relationshipname: LastModifiedBy
+    custom: false
+    referenceto:
+    - User
+  - name: SystemModstamp
+    type: datetime
+    label: System Modstamp
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ContactPhone
+    type: phone
+    label: 取引先責任者 電話
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ContactMobile
+    type: phone
+    label: 取引先責任者 携帯
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ContactEmail
+    type: email
+    label: 取引先責任者 メール
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ContactFax
+    type: phone
+    label: 取引先責任者 Fax
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Comments
+    type: textarea
+    label: 社内コメント
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastViewedDate
+    type: datetime
+    label: 最終閲覧日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastReferencedDate
+    type: datetime
+    label: 最終参照日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: EngineeringReqNumber__c
+    type: string
+    label: Engineering Req Number
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: SLAViolation__c
+    type: picklist
+    label: SLA Violation
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: Product__c
+    type: picklist
+    label: Product
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: PotentialLiability__c
+    type: picklist
+    label: Potential Liability
+    relationshipname: ""
+    custom: true
+    referenceto: []
+Contact:
+  name: Contact
+  custom: false
+  customsetting: false
+  label: 取引先責任者
+  fields:
+  - name: Id
+    type: id
+    label: 取引先責任者 ID
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsDeleted
+    type: boolean
+    label: 削除
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: MasterRecordId
+    type: reference
+    label: マスタレコード ID
+    relationshipname: MasterRecord
+    custom: false
+    referenceto:
+    - Contact
+  - name: AccountId
+    type: reference
+    label: 取引先 ID
+    relationshipname: Account
+    custom: false
+    referenceto:
+    - Account
+  - name: LastName
+    type: string
+    label: 姓
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: FirstName
+    type: string
+    label: 名
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Salutation
+    type: picklist
+    label: 敬称
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Name
+    type: string
+    label: 氏名
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: OtherStreet
+    type: textarea
+    label: 町名・番地(その他)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: OtherCity
+    type: string
+    label: 市区郡(その他)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: OtherState
+    type: string
+    label: 都道府県(その他)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: OtherPostalCode
+    type: string
+    label: 郵便番号(その他)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: OtherCountry
+    type: string
+    label: 国(その他)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: OtherLatitude
+    type: double
+    label: 緯度(その他)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: OtherLongitude
+    type: double
+    label: 経度(その他)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: OtherGeocodeAccuracy
+    type: picklist
+    label: Other Geocode Accuracy
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: MailingStreet
+    type: textarea
+    label: 町名・番地(郵送先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: MailingCity
+    type: string
+    label: 市区郡(郵送先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: MailingState
+    type: string
+    label: 都道府県(郵送先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: MailingPostalCode
+    type: string
+    label: 郵便番号(郵送先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: MailingCountry
+    type: string
+    label: 国(郵送先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: MailingLatitude
+    type: double
+    label: 緯度(郵送先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: MailingLongitude
+    type: double
+    label: 経度(郵送先)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: MailingGeocodeAccuracy
+    type: picklist
+    label: Mailing Geocode Accuracy
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Phone
+    type: phone
+    label: 電話
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Fax
+    type: phone
+    label: Fax
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: MobilePhone
+    type: phone
+    label: 携帯電話
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: HomePhone
+    type: phone
+    label: 自宅電話
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: OtherPhone
+    type: phone
+    label: その他の電話
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: AssistantPhone
+    type: phone
+    label: アシスタント電話
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ReportsToId
+    type: reference
+    label: 上司 ID
+    relationshipname: ReportsTo
+    custom: false
+    referenceto:
+    - Contact
+  - name: Email
+    type: email
+    label: メール
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Title
+    type: string
+    label: 役職
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Department
+    type: string
+    label: 部署
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: AssistantName
+    type: string
+    label: アシスタント名
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LeadSource
+    type: picklist
+    label: リードソース
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Birthdate
+    type: date
+    label: 誕生日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Description
+    type: textarea
+    label: 取引先責任者 説明
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: OwnerId
+    type: reference
+    label: 所有者 ID
+    relationshipname: Owner
+    custom: false
+    referenceto:
+    - User
+  - name: CreatedDate
+    type: datetime
+    label: 作成日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CreatedById
+    type: reference
+    label: 作成者 ID
+    relationshipname: CreatedBy
+    custom: false
+    referenceto:
+    - User
+  - name: LastModifiedDate
+    type: datetime
+    label: 最終更新日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastModifiedById
+    type: reference
+    label: 最終更新者 ID
+    relationshipname: LastModifiedBy
+    custom: false
+    referenceto:
+    - User
+  - name: SystemModstamp
+    type: datetime
+    label: System Modstamp
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastActivityDate
+    type: date
+    label: 最終活動日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastCURequestDate
+    type: datetime
+    label: 登録情報照会 最終依頼日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastCUUpdateDate
+    type: datetime
+    label: 登録情報照会 最終更新日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastViewedDate
+    type: datetime
+    label: 最終閲覧日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastReferencedDate
+    type: datetime
+    label: 最終参照日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: EmailBouncedReason
+    type: string
+    label: メール不達の理由
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: EmailBouncedDate
+    type: datetime
+    label: メール不達発生日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsEmailBounced
+    type: boolean
+    label: メール不達
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: PhotoUrl
+    type: url
+    label: 写真の URL
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Jigsaw
+    type: string
+    label: Data.com キー
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: JigsawContactId
+    type: string
+    label: Jigsaw Contact ID
+    relationshipname: JigsawContact
+    custom: false
+    referenceto: []
+  - name: CleanStatus
+    type: picklist
+    label: 状況をクリーンアップ
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Level__c
+    type: picklist
+    label: Level
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: Languages__c
+    type: string
+    label: Languages
+    relationshipname: ""
+    custom: true
+    referenceto: []
+Lead:
+  name: Lead
+  custom: false
+  customsetting: false
+  label: リード
+  fields:
+  - name: Id
+    type: id
+    label: リード ID
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsDeleted
+    type: boolean
+    label: 削除
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: MasterRecordId
+    type: reference
+    label: マスタレコード ID
+    relationshipname: MasterRecord
+    custom: false
+    referenceto:
+    - Lead
+  - name: LastName
+    type: string
+    label: 姓
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: FirstName
+    type: string
+    label: 名
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Salutation
+    type: picklist
+    label: 敬称
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Name
+    type: string
+    label: 氏名
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Title
+    type: string
+    label: 役職
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Company
+    type: string
+    label: 会社名
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Street
+    type: textarea
+    label: 町名・番地
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: City
+    type: string
+    label: 市区郡
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: State
+    type: string
+    label: 都道府県
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: PostalCode
+    type: string
+    label: 郵便番号
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Country
+    type: string
+    label: 国
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Latitude
+    type: double
+    label: 緯度
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Longitude
+    type: double
+    label: 緯度
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: GeocodeAccuracy
+    type: picklist
+    label: Geocode Accuracy
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Phone
+    type: phone
+    label: 電話
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: MobilePhone
+    type: phone
+    label: 携帯電話
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Fax
+    type: phone
+    label: Fax
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Email
+    type: email
+    label: メール
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Website
+    type: url
+    label: Web サイト
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: PhotoUrl
+    type: url
+    label: 写真の URL
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Description
+    type: textarea
+    label: 説明
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LeadSource
+    type: picklist
+    label: リードソース
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Status
+    type: picklist
+    label: 状況
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Industry
+    type: picklist
+    label: 業種
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Rating
+    type: picklist
+    label: 評価
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: AnnualRevenue
+    type: currency
+    label: 年間売上
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: NumberOfEmployees
+    type: int
+    label: 従業員数
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: OwnerId
+    type: reference
+    label: 所有者 ID
+    relationshipname: Owner
+    custom: false
+    referenceto:
+    - Group
+    - User
+  - name: IsConverted
+    type: boolean
+    label: 取引開始済み
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ConvertedDate
+    type: date
+    label: 取引開始日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ConvertedAccountId
+    type: reference
+    label: 取引開始済みの取引先 ID
+    relationshipname: ConvertedAccount
+    custom: false
+    referenceto:
+    - Account
+  - name: ConvertedContactId
+    type: reference
+    label: 取引開始済みの取引先責任者 ID
+    relationshipname: ConvertedContact
+    custom: false
+    referenceto:
+    - Contact
+  - name: ConvertedOpportunityId
+    type: reference
+    label: 取引開始済みの商談 ID
+    relationshipname: ConvertedOpportunity
+    custom: false
+    referenceto:
+    - Opportunity
+  - name: IsUnreadByOwner
+    type: boolean
+    label: 所有者 未読フラグ
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CreatedDate
+    type: datetime
+    label: 作成日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CreatedById
+    type: reference
+    label: 作成者 ID
+    relationshipname: CreatedBy
+    custom: false
+    referenceto:
+    - User
+  - name: LastModifiedDate
+    type: datetime
+    label: 最終更新日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastModifiedById
+    type: reference
+    label: 最終更新者 ID
+    relationshipname: LastModifiedBy
+    custom: false
+    referenceto:
+    - User
+  - name: SystemModstamp
+    type: datetime
+    label: System Modstamp
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastActivityDate
+    type: date
+    label: 最終活動日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastViewedDate
+    type: datetime
+    label: 最終閲覧日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastReferencedDate
+    type: datetime
+    label: 最終参照日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Jigsaw
+    type: string
+    label: Data.com キー
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: JigsawContactId
+    type: string
+    label: Jigsaw Contact ID
+    relationshipname: JigsawContact
+    custom: false
+    referenceto: []
+  - name: CleanStatus
+    type: picklist
+    label: 状況をクリーンアップ
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CompanyDunsNumber
+    type: string
+    label: 会社 D-U-N-S 番号
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: DandbCompanyId
+    type: reference
+    label: D&B 企業 ID
+    relationshipname: DandbCompany
+    custom: false
+    referenceto:
+    - DandBCompany
+  - name: EmailBouncedReason
+    type: string
+    label: メール不達の理由
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: EmailBouncedDate
+    type: datetime
+    label: メール不達発生日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: SICCode__c
+    type: string
+    label: SIC Code
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: ProductInterest__c
+    type: picklist
+    label: Product Interest
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: Primary__c
+    type: picklist
+    label: Primary
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: CurrentGenerators__c
+    type: string
+    label: Current Generator(s)
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: NumberofLocations__c
+    type: double
+    label: Number of Locations
+    relationshipname: ""
+    custom: true
+    referenceto: []
+Opportunity:
+  name: Opportunity
+  custom: false
+  customsetting: false
+  label: 商談
+  fields:
+  - name: Id
+    type: id
+    label: 商談 ID
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsDeleted
+    type: boolean
+    label: 削除
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: AccountId
+    type: reference
+    label: 取引先 ID
+    relationshipname: Account
+    custom: false
+    referenceto:
+    - Account
+  - name: IsPrivate
+    type: boolean
+    label: 非公開
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Name
+    type: string
+    label: 商談名
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Description
+    type: textarea
+    label: 説明
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: StageName
+    type: picklist
+    label: フェーズ
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Amount
+    type: currency
+    label: 金額
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Probability
+    type: percent
+    label: 確度(%)
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ExpectedRevenue
+    type: currency
+    label: 期待収益
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: TotalOpportunityQuantity
+    type: double
+    label: 数量
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CloseDate
+    type: date
+    label: 完了予定日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Type
+    type: picklist
+    label: 商談 種別
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: NextStep
+    type: string
+    label: 次のステップ
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LeadSource
+    type: picklist
+    label: リードソース
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsClosed
+    type: boolean
+    label: 完了フラグ
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsWon
+    type: boolean
+    label: 成立フラグ
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ForecastCategory
+    type: picklist
+    label: 売上予測分類
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ForecastCategoryName
+    type: picklist
+    label: 売上予測分類
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CampaignId
+    type: reference
+    label: キャンペーン ID
+    relationshipname: Campaign
+    custom: false
+    referenceto:
+    - Campaign
+  - name: HasOpportunityLineItem
+    type: boolean
+    label: 商品フラグ
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Pricebook2Id
+    type: reference
+    label: Price Book ID
+    relationshipname: Pricebook2
+    custom: false
+    referenceto:
+    - Pricebook2
+  - name: OwnerId
+    type: reference
+    label: 所有者 ID
+    relationshipname: Owner
+    custom: false
+    referenceto:
+    - User
+  - name: CreatedDate
+    type: datetime
+    label: 作成日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CreatedById
+    type: reference
+    label: 作成者 ID
+    relationshipname: CreatedBy
+    custom: false
+    referenceto:
+    - User
+  - name: LastModifiedDate
+    type: datetime
+    label: 最終更新日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastModifiedById
+    type: reference
+    label: 最終更新者 ID
+    relationshipname: LastModifiedBy
+    custom: false
+    referenceto:
+    - User
+  - name: SystemModstamp
+    type: datetime
+    label: System Modstamp
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastActivityDate
+    type: date
+    label: 最終活動日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: FiscalQuarter
+    type: int
+    label: 会計四半期
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: FiscalYear
+    type: int
+    label: 会計年度
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Fiscal
+    type: string
+    label: 会計期間
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastViewedDate
+    type: datetime
+    label: 最終閲覧日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastReferencedDate
+    type: datetime
+    label: 最終参照日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: HasOpenActivity
+    type: boolean
+    label: 進行中活動があります
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: HasOverdueTask
+    type: boolean
+    label: 期限切れ ToDo があります
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: DeliveryInstallationStatus__c
+    type: picklist
+    label: Delivery/Installation Status
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: TrackingNumber__c
+    type: string
+    label: Tracking Number
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: OrderNumber__c
+    type: string
+    label: Order Number
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: CurrentGenerators__c
+    type: string
+    label: Current Generator(s)
+    relationshipname: ""
+    custom: true
+    referenceto: []
+  - name: MainCompetitors__c
+    type: string
+    label: Main Competitor(s)
+    relationshipname: ""
+    custom: true
+    referenceto: []
+Task:
+  name: Task
+  custom: false
+  customsetting: false
+  label: ToDo
+  fields:
+  - name: Id
+    type: id
+    label: 活動 ID
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: WhoId
+    type: reference
+    label: 名前 ID
+    relationshipname: Who
+    custom: false
+    referenceto:
+    - Contact
+    - Lead
+  - name: WhatId
+    type: reference
+    label: 関連先 ID
+    relationshipname: What
+    custom: false
+    referenceto:
+    - Account
+    - Asset
+    - AssetRelationship
+    - Campaign
+    - Case
+    - Contract
+    - ListEmail
+    - Opportunity
+    - Order
+    - Product2
+    - Solution
+  - name: Subject
+    type: combobox
+    label: 件名
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ActivityDate
+    type: date
+    label: 期日のみ
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Status
+    type: picklist
+    label: 状況
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: Priority
+    type: picklist
+    label: 優先度
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsHighPriority
+    type: boolean
+    label: 優先度高
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: OwnerId
+    type: reference
+    label: 所有者 ID
+    relationshipname: Owner
+    custom: false
+    referenceto:
+    - User
+  - name: Description
+    type: textarea
+    label: 説明
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsDeleted
+    type: boolean
+    label: 削除
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: AccountId
+    type: reference
+    label: 取引先 ID
+    relationshipname: Account
+    custom: false
+    referenceto:
+    - Account
+  - name: IsClosed
+    type: boolean
+    label: 完了フラグ
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CreatedDate
+    type: datetime
+    label: 作成日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CreatedById
+    type: reference
+    label: 作成者 ID
+    relationshipname: CreatedBy
+    custom: false
+    referenceto:
+    - User
+  - name: LastModifiedDate
+    type: datetime
+    label: 最終更新日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: LastModifiedById
+    type: reference
+    label: 最終更新者 ID
+    relationshipname: LastModifiedBy
+    custom: false
+    referenceto:
+    - User
+  - name: SystemModstamp
+    type: datetime
+    label: System Modstamp
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsArchived
+    type: boolean
+    label: アーカイブ済み
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CallDurationInSeconds
+    type: int
+    label: 通話時間
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CallType
+    type: picklist
+    label: 通話種別
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CallDisposition
+    type: string
+    label: 通話結果
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: CallObject
+    type: string
+    label: 通話オブジェクト ID
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: ReminderDateTime
+    type: datetime
+    label: アラーム日付/時間
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: IsReminderSet
+    type: boolean
+    label: アラーム設定
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: RecurrenceActivityId
+    type: reference
+    label: 定期的な活動の ID
+    relationshipname: ""
+    custom: false
+    referenceto:
+    - Task
+  - name: IsRecurrence
+    type: boolean
+    label: 定期的なToDoを作成
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: RecurrenceStartDateOnly
+    type: date
+    label: 繰り返しの開始
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: RecurrenceEndDateOnly
+    type: date
+    label: 繰り返しの終了
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: RecurrenceTimeZoneSidKey
+    type: picklist
+    label: 繰り返しタイムゾーン
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: RecurrenceType
+    type: picklist
+    label: 繰り返し種別
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: RecurrenceInterval
+    type: int
+    label: 繰り返し期間
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: RecurrenceDayOfWeekMask
+    type: int
+    label: 繰り返し曜日マスク
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: RecurrenceDayOfMonth
+    type: int
+    label: 繰り返し日
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: RecurrenceInstance
+    type: picklist
+    label: 繰り返しインスタンス
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: RecurrenceMonthOfYear
+    type: picklist
+    label: 繰り返し月
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: RecurrenceRegeneratedType
+    type: picklist
+    label: この ToDo を繰り返す
+    relationshipname: ""
+    custom: false
+    referenceto: []
+  - name: TaskSubtype
+    type: picklist
+    label: ToDo のサブ種別
+    relationshipname: ""
+    custom: false
+    referenceto: []

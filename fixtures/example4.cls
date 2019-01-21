@@ -16,6 +16,6 @@ public with sharing class Foo {
             OFFSET
                 1000
         ];
-        System.debug(accounts[0]);
+//        System.debug(accounts[0]);
     }
 }

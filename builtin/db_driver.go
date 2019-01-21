@@ -137,31 +137,108 @@ func (d *databaseDriver) Execute(dmlType string, sObjectType string, records []*
 	}
 }
 
-func (d *databaseDriver) ExecuteRaw(query string) {
-	d.db.Exec(query)
+func (d *databaseDriver) ExecuteRaw(query string, args ...interface{}) error {
+	_, err := d.db.Exec(query, args...)
+	return err
 }
 
-func Seed() {
-	DatabaseDriver.ExecuteRaw(`
-INSERT INTO Account(id, name) VALUES ('12345', 'hoge');
-INSERT INTO Account(id, name) VALUES ('abcde', 'fuga');
-INSERT INTO Contact(id, lastname, firstname, accountid) VALUES ('a', 'l1', 'r1', '12345');
-INSERT INTO Contact(id, lastname, firstname, accountid) VALUES ('b', 'l2', 'r2', 'abcde');
-`)
+var dbTypeMapper = map[string]string{
+	"string":                     "TEXT",
+	"picklist":                   "TEXT",
+	"multipicklist":              "TEXT",
+	"combobox":                   "TEXT",
+	"reference":                  "TEXT",
+	"boolean":                    "INT",
+	"currency":                   "REAL",
+	"textarea":                   "TEXT",
+	"int":                        "INT",
+	"double":                     "REAL",
+	"percent":                    "REAL",
+	"id":                         "TEXT",
+	"date":                       "TEXT",
+	"datetime":                   "TEXT",
+	"time":                       "TEXT",
+	"url":                        "TEXT",
+	"email":                      "TEXT",
+	"encryptedstring":            "TEXT",
+	"datacategorygroupreference": "TEXT",
+	"location":                   "TEXT",
+	"address":                    "TEXT",
+	"anyType":                    "TEXT",
+	"complexvalue":               "TEXT",
+	"phone":                      "TEXT",
 }
 
-func Setup() {
-	DatabaseDriver.ExecuteRaw(`
-CREATE TABLE IF NOT EXISTS Account (
-	id VARCHAR NOT NULL PRIMARY KEY,
-	name TEXT
-);
+func CreateDatabase(src string) error {
+	loader := newMetaFileLoader(src)
+	sobjects, err := loader.Load()
+	if err != nil {
+		return err
+	}
+	for name, sobject := range sobjects {
+		fields := make([]string, len(sobject.Fields))
+		for i, field := range sobject.Fields {
+			if field.Name == "id" {
+				fields[i] = "id VARCHAR NOT NULL PRIMARY KEY"
+			} else {
+				if _, ok := dbTypeMapper[field.Type]; !ok {
+					return fmt.Errorf("undefined type mapper %s", field.Type)
+				}
+				fields[i] = fmt.Sprintf("`%s` %s", field.Name, dbTypeMapper[field.Type])
+			}
+		}
+		query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS `%s` (%s);", name, strings.Join(fields, ", "))
+		err := DatabaseDriver.ExecuteRaw(query)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-CREATE TABLE IF NOT EXISTS Contact (
-	id VARCHAR NOT NULL PRIMARY KEY,
-	lastname TEXT,
-	firstname TEXT,
-	accountid TEXT	
-);
-`)
+func Seed(username, password, endpoint, src string) error {
+	loader := newMetaFileLoader(src)
+	sobjects, err := loader.Load()
+	if err != nil {
+		return err
+	}
+	client := NewSoapClient(username, password, endpoint)
+	client.SetDebug(true)
+	for name, sobject := range sobjects {
+		fields := make([]string, len(sobject.Fields))
+		for i, field := range sobject.Fields {
+			fields[i] = fmt.Sprintf("%s", field.Name)
+		}
+		soql := fmt.Sprintf("SELECT %s FROM %s", strings.Join(fields, ","), name)
+		r, err := client.Query(soql)
+		if err != nil {
+			return err
+		}
+		for _, record := range r.Records {
+			insertFields := make([]string, len(record.Fields)+1)
+			insertValues := make([]interface{}, len(record.Fields)+1)
+			placeholders := make([]string, len(record.Fields)+1)
+			insertFields[0] = "`id`"
+			insertValues[0] = "'" + record.Id + "'"
+			placeholders[0] = "?"
+			i := 1
+			for key, insertField := range record.Fields {
+				insertFields[i] = "`" + key + "`"
+				insertValues[i] = "'" + insertField.(string) + "'"
+				placeholders[i] = "?"
+				i++
+			}
+			query := fmt.Sprintf(
+				"INSERT INTO `%s`(%s) VALUES (%s);",
+				name,
+				strings.Join(insertFields, ", "),
+				strings.Join(placeholders, ", "),
+			)
+			err := DatabaseDriver.ExecuteRaw(query, insertValues...)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

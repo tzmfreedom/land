@@ -68,7 +68,7 @@ func init() {
 			for k, v := range sobj.InstanceFields.All() {
 				record.Fields[k] = v.Value()
 			}
-			client := NewSoapClient()
+			client := extra["client"].(*soapforce.Client)
 			rawSaveResults, err := client.Create([]*soapforce.SObject{record})
 			if err != nil {
 				panic(err)

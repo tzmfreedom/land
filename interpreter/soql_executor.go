@@ -44,8 +44,3 @@ func (e *SoqlExecutor) getListFromResponse(n *ast.Soql, records []*ast.Object) (
 	}
 	return list, nil
 }
-
-func executeQuery(soql string) (*soapforce.QueryResult, error) {
-	client := builtin.NewSoapClient()
-	return client.Query(soql)
-}

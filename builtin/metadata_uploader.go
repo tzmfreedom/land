@@ -1,32 +1,43 @@
 package builtin
 
 import (
-	"encoding/json"
 	"io/ioutil"
+	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
-func createMetadata() (map[string]Sobject, error) {
-	client := NewSoapClient()
+func createMetadata(username, password, endpoint string, standardObjects []string) (map[string]Sobject, error) {
+	client := NewSoapClient(username, password, endpoint)
 	r, err := client.DescribeGlobal()
 	if err != nil {
 		return nil, err
 	}
 	sobjects := map[string]Sobject{}
 	for _, sobj := range r.Sobjects {
+		if !sobj.Custom && !contains(sobj.Name, standardObjects) {
+			continue
+		}
 		r, err := client.DescribeSObject(sobj.Name)
 		if err != nil {
 			return nil, err
 		}
-		fields := make([]SobjectField, len(r.Fields))
-		for i, f := range r.Fields {
-			fields[i] = SobjectField{
-				Name:             f.Name,
-				Label:            f.Label,
-				RelationshipName: f.RelationshipName,
-				Type:             string(*f.Type_),
-				Custom:           f.Custom,
-				ReferenceTo:      f.ReferenceTo,
+		fields := []SobjectField{}
+		for _, f := range r.Fields {
+			if string(*f.Type_) == "address" {
+				continue
 			}
+			fields = append(
+				fields,
+				SobjectField{
+					Name:             f.Name,
+					Label:            f.Label,
+					RelationshipName: f.RelationshipName,
+					Type:             string(*f.Type_),
+					Custom:           f.Custom,
+					ReferenceTo:      f.ReferenceTo,
+				},
+			)
 		}
 		sobjects[sobj.Name] = Sobject{
 			Name:          sobj.Name,
@@ -39,12 +50,21 @@ func createMetadata() (map[string]Sobject, error) {
 	return sobjects, nil
 }
 
-func CreateMetadataFile(filename string) error {
-	sobjects, err := createMetadata()
+func contains(name string, array []string) bool {
+	for _, elem := range array {
+		if strings.ToLower(elem) == strings.ToLower(name) {
+			return true
+		}
+	}
+	return false
+}
+
+func CreateMetadataFile(username, password, endpoint, filename string, standardObjects []string) error {
+	sobjects, err := createMetadata(username, password, endpoint, standardObjects)
 	if err != nil {
 		return err
 	}
-	b, err := json.Marshal(sobjects)
+	b, err := yaml.Marshal(sobjects)
 	if err != nil {
 		return err
 	}
@@ -57,6 +77,6 @@ func readMetadataFile(filename string) (map[string]Sobject, error) {
 		return nil, err
 	}
 	sobjects := &map[string]Sobject{}
-	err = json.Unmarshal(b, sobjects)
+	err = yaml.Unmarshal(b, sobjects)
 	return *sobjects, err
 }

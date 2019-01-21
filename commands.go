@@ -16,6 +16,7 @@ import (
 
 	"path/filepath"
 
+	"github.com/Songmu/prompter"
 	"github.com/chzyer/readline"
 	"github.com/fsnotify/fsnotify"
 	"github.com/mattn/go-colorable"
@@ -54,38 +55,110 @@ var interactiveFlag = cli.BoolFlag{
 	Name: "interactive, i",
 }
 
+var usernameFlag = cli.StringFlag{
+	Name:   "username, u",
+	EnvVar: "SALESFORCE_USERNAME",
+}
+
+var passwordFlag = cli.StringFlag{
+	Name:   "password, p",
+	EnvVar: "SALESFORCE_PASSWORD",
+}
+
+var endpointFlag = cli.StringFlag{
+	Name:   "endpoint",
+	EnvVar: "SALESFORCE_ENDPOINT",
+	Value:  "login.salesforce.com",
+}
+
 var metaFileFlag = cli.StringFlag{
 	Name:   "metafile, m",
-	EnvVar: "SALESFORCE_METADATA",
+	EnvVar: "SALESFORCE_METAFILE",
 	Value:  builtin.DefaultMetafileName,
 }
 
 var dbSetupCommand = cli.Command{
 	Name:  "db:setup",
 	Usage: "",
+	Flags: []cli.Flag{
+		usernameFlag,
+		passwordFlag,
+		endpointFlag,
+		metaFileFlag,
+	},
 	Action: func(c *cli.Context) error {
-		builtin.Setup()
-		return nil
+		username := c.String("username")
+		password := c.String("password")
+		endpoint := c.String("endpoint")
+		metafile := c.String("metafile")
+		if username == "" {
+			username = prompter.Prompt("Salesforce username", "")
+		}
+		if password == "" {
+			password = prompter.Password("Salesforce password")
+		}
+		standardObjects := []string{
+			"Account",
+			"Contact",
+			"Opportunity",
+			"Case",
+			"Campaign",
+			"Lead",
+			"Task",
+			"Activity",
+		}
+		// fetch sobject
+		err := builtin.CreateMetadataFile(username, password, endpoint, metafile, standardObjects)
+		if err != nil {
+			return err
+		}
+		// db create
+		err = builtin.CreateDatabase(metafile)
+		if err != nil {
+			return err
+		}
+		// db seed
+		return builtin.Seed(username, password, endpoint, metafile)
 	},
 }
 
 var dbSeedCommand = cli.Command{
 	Name:  "db:seed",
 	Usage: "",
+	Flags: []cli.Flag{
+		metaFileFlag,
+	},
 	Action: func(c *cli.Context) error {
-		builtin.Seed()
-		return nil
+		username := prompter.Prompt("Salesforce username", "")
+		password := prompter.Password("Salesforce password")
+		endpoint := prompter.Prompt("Login Endpoint", "login.salesforce.com")
+		metafile := c.String("metafile")
+		return builtin.Seed(username, password, endpoint, metafile)
 	},
 }
 
 var dbFetchCommand = cli.Command{
-	Name:  "db:fetch",
+	Name:  "db:meta",
 	Usage: "",
 	Flags: []cli.Flag{
 		metaFileFlag,
 	},
 	Action: func(c *cli.Context) error {
-		return builtin.CreateMetadataFile(c.String("metafile"))
+		username := prompter.Prompt("Salesforce username", "")
+		password := prompter.Password("Salesforce password")
+		endpoint := prompter.Prompt("Login Endpoint", "login.salesforce.com")
+		metafile := c.String("metafile")
+		standardObjects := []string{
+			"Account",
+			"Contact",
+			"Opportunity",
+			"Case",
+			"Campaign",
+			"Lead",
+			"Task",
+			"Activity",
+		}
+		return builtin.CreateMetadataFile(username, password, endpoint, metafile, standardObjects)
 	},
 }
 

@@ -1,13 +1,14 @@
 package builtin
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"regexp"
+
+	"gopkg.in/yaml.v2"
 )
 
-const DefaultMetafileName = "sobjects.json"
+const DefaultMetafileName = "sobjects.yml"
 
 type MetaFileLoader struct {
 	src string
@@ -40,6 +41,6 @@ func (m *MetaFileLoader) Load() (map[string]Sobject, error) {
 		}
 	}
 	sobjects := &map[string]Sobject{}
-	err = json.Unmarshal(body, sobjects)
+	err = yaml.Unmarshal(body, sobjects)
 	return *sobjects, err
 }

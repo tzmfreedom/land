@@ -1,8 +1,6 @@
 package builtin
 
 import (
-	"os"
-
 	"github.com/tzmfreedom/go-soapforce"
 	"github.com/tzmfreedom/goland/ast"
 )
@@ -26,16 +24,16 @@ type SobjectField struct {
 
 var soapClient *soapforce.Client
 
-func NewSoapClient() *soapforce.Client {
+func NewSoapClient(username, password, endpoint string) *soapforce.Client {
 	if soapClient != nil {
 		return soapClient
 	}
 	soapClient := soapforce.NewClient()
-	username := os.Getenv("SALESFORCE_USERNAME")
-	password := os.Getenv("SALESFORCE_PASSWORD")
-	endpoint := os.Getenv("SALESFORCE_ENDPOINT")
 	soapClient.SetLoginUrl(endpoint)
-	soapClient.Login(username, password)
+	_, err := soapClient.Login(username, password)
+	if err != nil {
+		panic(err)
+	}
 	return soapClient
 }
 

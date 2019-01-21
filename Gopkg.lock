@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  digest = "1:cf8e4e10e49fef1330e60c780258ea3c1471747f62e52e52c7e96307a1fea34b"
+  name = "github.com/Songmu/prompter"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "b5721e8d556682bcef33262731d98a39dee14dc4"
+  version = "0.1.0"
+
+[[projects]]
   digest = "1:d04889482897652dedae6d8575b479c06fa3eb3c3abe248163b25d3df5fab43e"
   name = "github.com/antlr/antlr4"
   packages = ["runtime/Go/antlr"]
@@ -108,11 +116,22 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f6f6d9d6f80c9e32acc0f4f3b904e0b9f5b18a7757c2ef941121bd79a10e7bdf"
-  name = "golang.org/x/sys"
-  packages = ["unix"]
+  digest = "1:38f553aff0273ad6f367cb0a0f8b6eecbaef8dc6cb8b50e57b6a81c1d5b1e332"
+  name = "golang.org/x/crypto"
+  packages = ["ssh/terminal"]
   pruneopts = "UT"
-  revision = "11f53e03133963fb11ae0588e08b5e0b85be8be5"
+  revision = "ff983b9c42bc9fbf91556e191cc8efb585c16908"
+
+[[projects]]
+  branch = "master"
+  digest = "1:72f402ba458cb14ed7964c8b9a38d992f27834b3cf3479f3b08ea9e5334811b3"
+  name = "golang.org/x/sys"
+  packages = [
+    "unix",
+    "windows",
+  ]
+  pruneopts = "UT"
+  revision = "770c60269bf0ef965e9e7ac8bedcb6bca2a1cefd"
 
 [[projects]]
   digest = "1:b24d38b282bacf9791408a080f606370efa3d364e4b5fd9ba0f7b87786d3b679"
@@ -126,6 +145,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/Songmu/prompter",
     "github.com/antlr/antlr4/runtime/Go/antlr",
     "github.com/chzyer/readline",
     "github.com/fsnotify/fsnotify",

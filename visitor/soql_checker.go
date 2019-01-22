@@ -9,6 +9,22 @@ import (
 type SoqlChecker struct{}
 
 func (v *SoqlChecker) VisitClassType(n *ast.ClassType) (interface{}, error) {
+	for _, methods := range n.InstanceMethods.All() {
+		for _, method := range methods {
+			_, err := method.Statements.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	for _, methods := range n.StaticMethods.All() {
+		for _, method := range methods {
+			_, err := method.Statements.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 	return nil, nil
 }
 
@@ -77,7 +93,7 @@ func (v *SoqlChecker) VisitFinally(n *ast.Finally) (interface{}, error) {
 }
 
 func (v *SoqlChecker) VisitFor(n *ast.For) (interface{}, error) {
-	return ast.VisitFor(v, n)
+	return n.Statements.Accept(v)
 }
 
 func (v *SoqlChecker) VisitForControl(n *ast.ForControl) (interface{}, error) {
@@ -158,11 +174,21 @@ func (v *SoqlChecker) VisitTriggerTiming(n *ast.TriggerTiming) (interface{}, err
 }
 
 func (v *SoqlChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (interface{}, error) {
-	return ast.VisitVariableDeclaration(v, n)
+	for _, d := range n.Declarators {
+		_, err := d.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return nil, nil
 }
 
 func (v *SoqlChecker) VisitVariableDeclarator(n *ast.VariableDeclarator) (interface{}, error) {
-	return ast.VisitVariableDeclarator(v, n)
+	_, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
 }
 
 func (v *SoqlChecker) VisitWhen(n *ast.When) (interface{}, error) {
@@ -194,7 +220,13 @@ func (v *SoqlChecker) VisitType(n *ast.TypeRef) (interface{}, error) {
 }
 
 func (v *SoqlChecker) VisitBlock(n *ast.Block) (interface{}, error) {
-	return ast.VisitBlock(v, n)
+	for _, stmt := range n.Statements {
+		_, err := stmt.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return nil, nil
 }
 
 func (v *SoqlChecker) VisitGetterSetter(n *ast.GetterSetter) (interface{}, error) {

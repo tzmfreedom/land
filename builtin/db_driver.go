@@ -211,7 +211,6 @@ func Seed(username, password, endpoint, src string) error {
 		return err
 	}
 	client := NewSoapClient(username, password, endpoint)
-	client.SetDebug(true)
 	for name, sobject := range sobjects {
 		fields := make([]string, len(sobject.Fields))
 		for i, field := range sobject.Fields {

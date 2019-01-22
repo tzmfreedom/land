@@ -380,7 +380,10 @@ var checkCommand = cli.Command{
 			return err
 		}
 		for _, classType := range classTypes {
-			check(classType)
+			err := check(classType)
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	},

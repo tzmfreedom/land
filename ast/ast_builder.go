@@ -417,6 +417,7 @@ func (v *Builder) VisitVariableDeclarator(ctx *parser.VariableDeclaratorContext)
 	decl.Name = ctx.VariableDeclaratorId().Accept(v).(string)
 	if init := ctx.VariableInitializer(); init != nil {
 		decl.Expression = init.Accept(v).(Node)
+		decl.Expression.SetParent(decl)
 	}
 	return decl
 }
@@ -666,6 +667,9 @@ func (v *Builder) VisitLocalVariableDeclaration(ctx *parser.LocalVariableDeclara
 	}
 	decl.TypeRef = ctx.ApexType().Accept(v).(*TypeRef)
 	decl.Declarators = ctx.VariableDeclarators().Accept(v).([]*VariableDeclarator)
+	for _, d := range decl.Declarators {
+		d.SetParent(decl)
+	}
 	return decl
 }
 

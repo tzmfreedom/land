@@ -333,6 +333,10 @@ func (m *ClassMap) Get(k string) (*ClassType, bool) {
 	return n, ok
 }
 
+func (m *ClassMap) Delete(k string) {
+	delete(m.Data, strings.ToLower(k))
+}
+
 func (m *ClassMap) Clear() {
 	m.Data = map[string]*ClassType{}
 }

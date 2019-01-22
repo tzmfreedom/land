@@ -202,34 +202,7 @@ var testCommand = cli.Command{
 			for _, methods := range classType.StaticMethods.All() {
 				for _, m := range methods {
 					if m.IsTestMethod() {
-						action := fmt.Sprintf("%s#%s", classType.Name, m.Name)
-						fmt.Printf("(%d) %s: ", i, action)
-						var ret *interpreter.Interpreter
-						err = run(action, classTypes, func(i *interpreter.Interpreter) {
-							ret = i
-							i.Extra["stdout"] = new(bytes.Buffer)
-						})
-						if err != nil {
-							return err
-						}
-						stdout := colorable.NewColorableStdout()
-						errors := ret.Extra["errors"].([]*builtin.TestError)
-						if len(errors) > 0 {
-							fmt.Println("")
-							for _, error := range errors {
-								loc := error.Node.GetLocation()
-								str := fmt.Sprintf("  %s at %d:%d\n", loc.FileName, loc.Line, loc.Column)
-								fmt.Fprintf(stdout, builtin.NoticeColor, str)
-								str = fmt.Sprintf(`    Failure/Error: %s
-
-%s
-`, ast.ToString(error.Node), error.Message)
-								fmt.Fprintf(stdout, builtin.ErrorColor, str)
-							}
-						} else {
-							fmt.Fprintf(stdout, builtin.InfoColor, "pass\n")
-						}
-						fmt.Println("")
+						runTest(classTypes, classType, m, i)
 						i++
 					}
 				}
@@ -244,10 +217,14 @@ var watchCommand = cli.Command{
 	Usage: "",
 	Flags: []cli.Flag{
 		fileFlag,
-		directoryFlag,
+		cli.StringFlag{
+			Name: "directory, d",
+			Value: "classes",
+		},
 		metaFileFlag,
 	},
 	Action: func(c *cli.Context) error {
+		directory := c.String("directory")
 		builtin.LoadSObjectClass(c.String("metafile"))
 
 		files, err := parseFileOption(c)
@@ -262,7 +239,7 @@ var watchCommand = cli.Command{
 		if err != nil {
 			return err
 		}
-		return watchAndRunTest(classTypes)
+		return watchAndRunTest(classTypes, directory)
 	},
 }
 
@@ -462,14 +439,14 @@ func check(n *ast.ClassType) error {
 	return err
 }
 
-func register(n ast.Node) (*ast.ClassType, error) {
+func register(n ast.Node, reset bool) (*ast.ClassType, error) {
 	register := &compiler.ClassRegisterVisitor{}
 	t, err := n.Accept(register)
 	if err != nil {
 		return nil, err
 	}
 	classType := t.(*ast.ClassType)
-	if _, ok := classMap.Get(classType.Name); ok {
+	if _, ok := classMap.Get(classType.Name); ok && !reset {
 		return nil, fmt.Errorf("Class %s is already defined", classType.Name)
 	}
 	classMap.Set(classType.Name, classType)
@@ -639,7 +616,7 @@ public static void action() { %s; }
 }`, statement)
 }
 
-func watchAndRunTest(classTypes []*ast.ClassType) error {
+func watchAndRunTest(classTypes []*ast.ClassType, directory string) error {
 	interpreter := interpreter.NewInterpreterWithBuiltin(classTypes)
 
 	watcher, err := fsnotify.NewWatcher()
@@ -648,7 +625,7 @@ func watchAndRunTest(classTypes []*ast.ClassType) error {
 	}
 	defer watcher.Close()
 
-	err = watcher.Add("./classes")
+	err = watcher.Add(directory)
 	for {
 		select {
 		case event, ok := <-watcher.Events:
@@ -657,16 +634,19 @@ func watchAndRunTest(classTypes []*ast.ClassType) error {
 			}
 			if event.Op&fsnotify.Write == fsnotify.Write ||
 				event.Op&fsnotify.Create == fsnotify.Create {
+				fmt.Println(">> running test...")
+				fmt.Println("")
 				classType, err := buildFile(interpreter, event.Name)
 				if err != nil {
 					fmt.Printf("Error: %s\n", err.Error())
 				} else {
+					i := 0
 					for _, methods := range classType.StaticMethods.Data {
 						for _, m := range methods {
-							fmt.Println(m.IsTestMethod())
 							if m.IsTestMethod() {
-								runAction(interpreter, []string{classType.Name, m.Name})
+								runTest(classTypes, classType, m, i)
 							}
+							i++
 						}
 					}
 				}
@@ -695,7 +675,7 @@ func runAction(interpreter *interpreter.Interpreter, expression []string) error 
 
 func buildFile(interpreter *interpreter.Interpreter, file string) (*ast.ClassType, error) {
 	t, err := ast.ParseFile(file, preprocessors...)
-	classType, err := register(t)
+	classType, err := register(t, true)
 	if err != nil {
 		return nil, fmt.Errorf("Build Error: %s\n", err.Error())
 	}
@@ -719,7 +699,7 @@ func buildAllFile(trees []ast.Node) ([]*ast.ClassType, error) {
 	classTypes := make([]*ast.ClassType, len(trees))
 	var err error
 	for i, t := range trees {
-		classTypes[i], err = register(t)
+		classTypes[i], err = register(t, false)
 		if err != nil {
 			return nil, err
 		}
@@ -753,7 +733,7 @@ func buildAllFile(trees []ast.Node) ([]*ast.ClassType, error) {
 
 func execFile(code string, env *interpreter.Env) *interpreter.Env {
 	t, err := ast.ParseString(code, preprocessors...)
-	classType, err := register(t)
+	classType, err := register(t, false)
 	if err != nil {
 		panic(err)
 	}
@@ -795,7 +775,7 @@ func reloadAll(interpreter *interpreter.Interpreter, files []string) error {
 	}
 	classTypes := make([]*ast.ClassType, len(trees))
 	for i, t := range trees {
-		classTypes[i], err = register(t)
+		classTypes[i], err = register(t, false)
 		if err != nil {
 			return err
 		}
@@ -822,5 +802,37 @@ func reloadAll(interpreter *interpreter.Interpreter, files []string) error {
 	for _, classType := range classTypes {
 		interpreter.Context.ClassTypes.Set(classType.Name, classType)
 	}
+	return nil
+}
+
+func runTest(classTypes []*ast.ClassType, classType *ast.ClassType, m *ast.Method, i int) error {
+	action := fmt.Sprintf("%s#%s", classType.Name, m.Name)
+	fmt.Printf("(%d) %s: ", i, action)
+	var ret *interpreter.Interpreter
+	err := run(action, classTypes, func(i *interpreter.Interpreter) {
+		ret = i
+		i.Extra["stdout"] = new(bytes.Buffer)
+	})
+	if err != nil {
+		return err
+	}
+	stdout := colorable.NewColorableStdout()
+	errors := ret.Extra["errors"].([]*builtin.TestError)
+	if len(errors) > 0 {
+		fmt.Println("")
+		for _, error := range errors {
+			loc := error.Node.GetLocation()
+			str := fmt.Sprintf("  %s at %d:%d\n", loc.FileName, loc.Line, loc.Column)
+			fmt.Fprintf(stdout, builtin.NoticeColor, str)
+			str = fmt.Sprintf(`    Failure/Error: %s
+
+%s
+`, ast.ToString(error.Node), error.Message)
+			fmt.Fprintf(stdout, builtin.ErrorColor, str)
+		}
+	} else {
+		fmt.Fprintf(stdout, builtin.InfoColor, "pass\n")
+	}
+	fmt.Println("")
 	return nil
 }

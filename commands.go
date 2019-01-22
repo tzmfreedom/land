@@ -218,7 +218,7 @@ var watchCommand = cli.Command{
 	Flags: []cli.Flag{
 		fileFlag,
 		cli.StringFlag{
-			Name: "directory, d",
+			Name:  "directory, d",
 			Value: "classes",
 		},
 		metaFileFlag,

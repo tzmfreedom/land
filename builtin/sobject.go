@@ -87,9 +87,70 @@ func LoadSObjectClass(src string) {
 			})
 		}
 		primitiveClassMap.Set(name, &ast.ClassType{
-			Name:           sobj.Name,
-			Constructors:   []*ast.Method{},
-			InstanceFields: fields,
+			Name:            sobj.Name,
+			SuperClass:      SObjectType,
+			Constructors:    []*ast.Method{},
+			InstanceFields:  fields,
+			StaticFields:    ast.NewFieldMap(),
+			InstanceMethods: ast.NewMethodMap(),
+			StaticMethods:   ast.NewMethodMap(),
 		})
 	}
+}
+
+var SObjectType = &ast.ClassType{Name: "SObject"}
+
+func init() {
+	instanceMethods := ast.NewMethodMap()
+	instanceMethods.Set(
+		"put",
+		[]*ast.Method{
+			ast.CreateMethod(
+				"put",
+				nil,
+				[]*ast.Parameter{
+					stringTypeParameter,
+					objectTypeParameter,
+				},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					key := params[0].StringValue()
+					this.InstanceFields.Set(key, params[1])
+					return nil
+				},
+			),
+		},
+	)
+	instanceMethods.Set(
+		"get",
+		[]*ast.Method{
+			ast.CreateMethod(
+				"get",
+				ObjectType,
+				[]*ast.Parameter{stringTypeParameter},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					key := params[0].StringValue()
+					value, ok := this.InstanceFields.Get(key)
+					if !ok {
+						// TODO: impl
+					}
+					return value
+				},
+			),
+		},
+	)
+
+	SObjectType.Constructors = []*ast.Method{
+		{
+			Modifiers:  []*ast.Modifier{ast.PublicModifier()},
+			Parameters: []*ast.Parameter{},
+			NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+				return nil
+			},
+		},
+	}
+	SObjectType.InstanceFields = ast.NewFieldMap()
+	SObjectType.StaticFields = ast.NewFieldMap()
+	SObjectType.InstanceMethods = instanceMethods
+	SObjectType.StaticMethods = ast.NewMethodMap()
+	primitiveClassMap.Set("SObject", SObjectType)
 }

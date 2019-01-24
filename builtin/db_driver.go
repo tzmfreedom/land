@@ -101,7 +101,7 @@ func (d *databaseDriver) Execute(dmlType string, sObjectType string, records []*
 					continue
 				}
 				fields = append(fields, name)
-				values = append(values, field.StringValue())
+				values = append(values, fmt.Sprintf("'%s'", field.StringValue()))
 			}
 			query = fmt.Sprintf(
 				"INSERT INTO %s(%s) VALUES (%s)",
@@ -141,7 +141,10 @@ func (d *databaseDriver) Execute(dmlType string, sObjectType string, records []*
 				id.StringValue(),
 			)
 		}
-		d.db.Exec(query)
+		_, err := d.db.Exec(query)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 

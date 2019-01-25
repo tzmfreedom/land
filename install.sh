@@ -2,7 +2,7 @@
 
 NAME="goland"
 BIN_NAME="land"
-VERSION="0.1.1"
+VERSION="0.1.2"
 PREFIX="/usr/local"
 COMP_PREFIX="/usr/local/share/zsh/site-functions"
 GITHUB_USER="tzmfreedom"

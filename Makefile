@@ -1,6 +1,6 @@
 NAME := land
 SRCS := $(shell find . -type d -name vendor -prune -o -type f -name "*.go" -print)
-VERSION := 0.1.1
+VERSION := 0.1.2
 LDFLAGS := -ldflags="-s -w -X \"main.Version=$(VERSION)\""
 DIST_DIRS := find * -type d -exec
 ANTLR := java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$(CLASSPATH)" org.antlr.v4.Tool
@@ -64,7 +64,7 @@ cross-build: deps
 	@gofmt -w $(SRCS)
 	@for os in darwin linux windows; do \
 	    for arch in amd64; do \
-	        GOOS=$$os GOARCH=$$arch CGO_ENABLED=0 go build -a -tags netgo \
+	        GOOS=$$os GOARCH=$$arch CGO_ENABLED=1 go build -a -tags netgo \
 	        -installsuffix netgo $(LDFLAGS) -o dist/$$os-$$arch/$(NAME); \
 	    done; \
 	done

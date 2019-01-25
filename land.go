@@ -8,10 +8,16 @@ import (
 	"gopkg.in/urfave/cli.v1"
 )
 
+var Version string
+
 func main() {
 	godotenv.Load()
 
+	cli.VersionPrinter = func(c *cli.Context) {
+		fmt.Println(Version)
+	}
 	app := cli.NewApp()
+	app.Version = Version
 	app.Commands = []cli.Command{
 		dbSetupCommand,
 		dbCreateCommand,

@@ -64,7 +64,7 @@ cross-build: deps
 	@gofmt -w $(SRCS)
 	@for os in darwin linux windows; do \
 	    for arch in amd64; do \
-	        GOOS=$$os GOARCH=$$arch CGO_ENABLED=1 go build -a -tags netgo \
+	        CC=clang GOOS=$$os GOARCH=$$arch CGO_ENABLED=1 go build -a -tags netgo \
 	        -installsuffix netgo $(LDFLAGS) -o dist/$$os-$$arch/$(NAME); \
 	    done; \
 	done

@@ -17,6 +17,8 @@ func main() {
 		fmt.Println(Version)
 	}
 	app := cli.NewApp()
+	app.Name = "land"
+	app.Usage = "Salesforce Apex Execution Environment on Local System"
 	app.Version = Version
 	app.Commands = []cli.Command{
 		dbSetupCommand,

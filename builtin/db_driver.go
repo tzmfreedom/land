@@ -9,6 +9,8 @@ import (
 	"github.com/k0kubun/pp"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/tzmfreedom/goland/ast"
+	"time"
+	"math/rand"
 )
 
 type databaseDriver struct {
@@ -95,6 +97,8 @@ func (d *databaseDriver) Execute(dmlType string, sObjectType string, records []*
 		case "insert":
 			fields := []string{}
 			values := []string{}
+			rand.Seed(time.Now().UnixNano())
+			record.InstanceFields.Set("Id", NewString(string(rand.Int())))
 			for name, field := range record.InstanceFields.All() {
 				// TODO: convert type
 				if field == Null {
@@ -181,7 +185,7 @@ var dbTypeMapper = map[string]string{
 }
 
 func CreateDatabase(src string) error {
-	loader := newMetaFileLoader(src)
+	loader := NewMetaFileLoader(src)
 	sobjects, err := loader.Load()
 	if err != nil {
 		return err
@@ -208,7 +212,7 @@ func CreateDatabase(src string) error {
 }
 
 func Seed(username, password, endpoint, src string) error {
-	loader := newMetaFileLoader(src)
+	loader := NewMetaFileLoader(src)
 	sobjects, err := loader.Load()
 	if err != nil {
 		return err

@@ -3,6 +3,8 @@ package interpreter
 import (
 	"os"
 
+	"strconv"
+
 	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
@@ -1096,4 +1098,58 @@ func (v *Interpreter) Equals(o, other *ast.Object) bool {
 	r, _ := method.Statements.Accept(v) // TODO
 	v.Context.Env = prev
 	return r.(*ast.Object).BoolValue()
+}
+
+// @return controller object, pageref object, error
+func (i *Interpreter) BindAndRun(name, method string, params map[string][]string, state map[string]*ast.Object) (*ast.Object, *ast.Object, error) {
+	classType, ok := i.Context.ClassTypes.Get(name)
+	if !ok {
+		panic("no exist class: " + name)
+	}
+	newNode := &ast.New{
+		Type:       classType,
+		Parameters: []ast.Node{},
+		Init:       nil,
+	}
+	r, err := i.VisitNew(newNode)
+	if err != nil {
+		return nil, nil, err
+	}
+	controller := r.(*ast.Object)
+	for k, v := range state {
+		controller.InstanceFields.Set(k, v)
+	}
+	for k, v := range params {
+		value, _ := controller.InstanceFields.Get(k)
+		switch value.ClassType {
+		case builtin.StringType:
+			controller.InstanceFields.Set(k, builtin.NewString(v[0]))
+		case builtin.IntegerType:
+			intValue, err := strconv.Atoi(v[0])
+			if err != nil {
+				panic(err)
+			}
+			controller.InstanceFields.Set(k, builtin.NewInteger(intValue))
+		case builtin.BooleanType:
+			controller.InstanceFields.Set(k, builtin.NewBoolean(v[0] == "true"))
+		case builtin.DoubleType:
+			floatValue, err := strconv.ParseFloat(v[0], 64)
+			if err != nil {
+				panic(err)
+			}
+			controller.InstanceFields.Set(k, builtin.NewDouble(floatValue))
+		}
+	}
+	if method == "" {
+		return controller, nil, nil
+	}
+	i.Context.StaticField.Add("_", classType.Name, "_context", controller)
+	retValue, err := i.VisitMethodInvocation(&ast.MethodInvocation{
+		NameOrExpression: &ast.Name{Value: []string{"_context", method}},
+		Parameters:       []ast.Node{},
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return controller, retValue.(*ast.Object), nil
 }

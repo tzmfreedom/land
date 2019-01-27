@@ -26,6 +26,7 @@ import (
 	"github.com/tzmfreedom/goland/interpreter"
 	"github.com/tzmfreedom/goland/server"
 	"github.com/tzmfreedom/goland/visitor"
+	"github.com/tzmfreedom/goland/visualforce"
 	"gopkg.in/urfave/cli.v1"
 )
 
@@ -385,6 +386,36 @@ var checkCommand = cli.Command{
 				return err
 			}
 		}
+		return nil
+	},
+}
+
+var visualforceCommand = cli.Command{
+	Name:  "visualforce",
+	Usage: "",
+	Flags: []cli.Flag{
+		fileFlag,
+		directoryFlag,
+		metaFileFlag,
+	},
+	Action: func(c *cli.Context) error {
+		builtin.LoadSObjectClass(c.String("metafile"))
+
+		files, err := parseFileOption(c)
+		if err != nil {
+			return err
+		}
+		trees, err := parseFiles(files)
+		if err != nil {
+			return err
+		}
+		classTypes, err := buildAllFile(trees)
+		if err != nil {
+			return err
+		}
+		i := interpreter.NewInterpreterWithBuiltin(classTypes)
+		i.LoadStaticField()
+		visualforce.Server(i)
 		return nil
 	},
 }

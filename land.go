@@ -32,6 +32,7 @@ func main() {
 		formatCommand,
 		runCommand,
 		checkCommand,
+		visualforceCommand,
 	}
 	err := app.Run(os.Args)
 	if err != nil {

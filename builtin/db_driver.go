@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"strings"
 
+	"math/rand"
+	"time"
+
 	"github.com/k0kubun/pp"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/tzmfreedom/goland/ast"
-	"time"
-	"math/rand"
 )
 
 type databaseDriver struct {

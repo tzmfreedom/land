@@ -16,6 +16,7 @@ import (
 	"github.com/tzmfreedom/goland/builtin"
 	"github.com/tzmfreedom/goland/compiler"
 	"github.com/tzmfreedom/goland/interpreter"
+	"encoding/json"
 )
 
 type Node struct {
@@ -85,7 +86,9 @@ func handleRequest(i *interpreter.Interpreter, r *http.Request, w http.ResponseW
 	if method == "" {
 		panic("method not blank")
 	}
+	viewstate := r.Form["__viewstate"][0]
 	state := map[string]*ast.Object{}
+	json.Unmarshal([]byte(viewstate), state)
 	// run action method
 	c, retValue, err := i.BindAndRun(controller, method, r.Form, state)
 	if err != nil {
@@ -305,7 +308,8 @@ func init() {
 		actionName, _ := bindMethod(attrAction, c)
 
 		return fmt.Sprintf(`<input type="hidden" name="__action" value="%s" />
-<input type="submit" name="%s" value="%s" />`, actionName, name, value)
+<input type="hidden" name="__viewstate" value="%s" />
+<input type="submit" name="%s" value="%s" />`, actionName, viewstate, name, value)
 	}
 	renderFunction["inputField"] = func(n Node, c *ast.Object) string {
 		attr := attributeValues(n)
@@ -342,6 +346,39 @@ func createTemplate(name string) *template.Template {
 		panic(err)
 	}
 	return tmpl
+}
+
+func serializeViewState(o *ast.Object) interface{} {
+	switch o.ClassType {
+	case builtin.StringType, builtin.IntegerType, builtin.DoubleType, builtin.BooleanType:
+		return o.Value()
+	}
+	data := map[string]interface{}{}
+	for k, v := range o.InstanceFields.All() {
+		data[k] = serializeViewState(v)
+	}
+	return data
+}
+
+func applyViewState(o *ast.Object, params map[string]interface{}) {
+	for k, v := range params {
+		switch value := v.(type) {
+		case string:
+			o.InstanceFields.Set(k, builtin.NewString(value))
+		case int:
+			o.InstanceFields.Set(k, builtin.NewInteger(value))
+		case bool:
+			o.InstanceFields.Set(k, builtin.NewBoolean(value))
+		case float64:
+			o.InstanceFields.Set(k, builtin.NewDouble(value))
+		case map[string]interface{}:
+			field, ok := o.InstanceFields.Get(k)
+			if !ok {
+				panic("field not found: " + k)
+			}
+			applyViewState(field, value)
+		}
+	}
 }
 
 func init() {

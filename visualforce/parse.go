@@ -10,6 +10,8 @@ import (
 
 	"net/http"
 
+	"html/template"
+
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 	"github.com/tzmfreedom/goland/compiler"
@@ -43,6 +45,30 @@ func (n *Node) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 }
 
 var renderFunction = map[string]func(n Node, c *ast.Object) string{}
+
+var pageTmpl *template.Template
+var formTmpl *template.Template
+var inputFieldTmpl *template.Template
+var labelTmpl *template.Template
+
+type PageParameter struct {
+	ShowHeader bool
+	Body       string
+}
+
+type LabelParameter struct {
+	Value string
+}
+
+type InputFieldParameter struct {
+	Type  string
+	Name  string
+	Value string
+}
+
+type FormParameter struct {
+	Body string
+}
 
 func handleRequest(i *interpreter.Interpreter, r *http.Request, w http.ResponseWriter) {
 	// initialize page to specify controller
@@ -87,16 +113,10 @@ func handleRequest(i *interpreter.Interpreter, r *http.Request, w http.ResponseW
 	}
 	attrs = attributeValues(n)
 	body := renderNodes(n.Nodes, c)
-	if attrs.Get("showHeader") == "false" {
-		fmt.Fprint(w, body)
-		return
-	}
-	fmt.Fprintf(w, `<html>
-<head></head>
-<body>
-%s
-</body>
-</html>`, body)
+	pageTmpl.Execute(w, PageParameter{
+		Body:       body,
+		ShowHeader: attrs.Get("showHeader") != "false",
+	})
 }
 
 func renderPage(n Node, i *interpreter.Interpreter) (string, error) {
@@ -110,15 +130,10 @@ func renderPage(n Node, i *interpreter.Interpreter) (string, error) {
 		return "", err
 	}
 	body := renderNodes(n.Nodes, controller)
-	if attrs.Get("showHeader") == "false" {
-		return body, nil
-	}
-	return fmt.Sprintf(`<html>
-<head></head>
-<body>
-%s
-</body>
-</html>`, body), nil
+	return renderTemplate(pageTmpl, PageParameter{
+		Body:       body,
+		ShowHeader: attrs.Get("showHeader") != "false",
+	}), nil
 }
 
 func renderNodes(nodes []Node, c *ast.Object) string {
@@ -269,14 +284,16 @@ func Server(i *interpreter.Interpreter) {
 func init() {
 	renderFunction["form"] = func(n Node, c *ast.Object) string {
 		body := renderNodes(n.Nodes, c)
-		return fmt.Sprintf(`<form method="post" >
-%s
-</form>`, body)
+		return renderTemplate(formTmpl, FormParameter{
+			Body: body,
+		})
 	}
 	renderFunction["outputLabel"] = func(n Node, c *ast.Object) string {
 		attr := attributeValues(n)
 		_, valueObj := bindInstanceField(attr.Get("value"), c)
-		return fmt.Sprintf(`<label>%s</label>`, builtin.String(valueObj))
+		return renderTemplate(labelTmpl, LabelParameter{
+			Value: builtin.String(valueObj),
+		})
 	}
 	renderFunction["commandButton"] = func(n Node, c *ast.Object) string {
 		attr := attributeValues(n)
@@ -296,18 +313,40 @@ func init() {
 		name, valueObj := bindInstanceField(attrValue, c)
 		value := builtin.String(valueObj)
 		classType := getClassType(c, attrValue)
-		switch classType {
-		case builtin.IntegerType:
-			return fmt.Sprintf(`<input type="text" name="%s" class="text-field" value="%s" />`, name, value)
-		case builtin.StringType:
-			return fmt.Sprintf(`<input type="text" name="%s" class="text-field" value="%s" />`, name, value)
-		case builtin.DoubleType:
-			return fmt.Sprintf(`<input type="text" name="%s" class="text-field" value="%s" />`, name, value)
-		case builtin.BooleanType:
-			return fmt.Sprintf(`<input type="checkbox" name="%s" class="checkbox-field" value="%s" />`, name, value)
-		case builtin.DateType:
-			return fmt.Sprintf(`<input type="text" name="%s" class="date-field" value="%s" />`, name, value)
-		}
-		panic("not support: " + valueObj.ClassType.Name)
+		return renderTemplate(inputFieldTmpl, InputFieldParameter{
+			Type:  classType.Name,
+			Name:  name,
+			Value: value,
+		})
 	}
+}
+
+func renderTemplate(tmpl *template.Template, param interface{}) string {
+	buf := new(bytes.Buffer)
+	tmpl.Execute(buf, param)
+	return buf.String()
+}
+
+var funcMap = template.FuncMap{
+	"safehtml": func(text string) template.HTML { return template.HTML(text) },
+}
+
+func createTemplate(name string) *template.Template {
+	pagePath := "./visualforce/templates/" + name + ".html"
+	content, err := ioutil.ReadFile(pagePath)
+	if err != nil {
+		panic(err)
+	}
+	tmpl, err := template.New(name).Funcs(funcMap).Parse(string(content))
+	if err != nil {
+		panic(err)
+	}
+	return tmpl
+}
+
+func init() {
+	pageTmpl = createTemplate("page")
+	formTmpl = createTemplate("form")
+	inputFieldTmpl = createTemplate("inputField")
+	labelTmpl = createTemplate("label")
 }

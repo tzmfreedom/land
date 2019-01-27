@@ -1,0 +1,11 @@
+{{ if .ShowHeader }}
+<html>
+<head></head>
+<body>
+aaa
+{{ .Body | safehtml}}
+</body>
+</html>
+{{ else }}
+{{ .Body | safehtml}}
+{{ end }}

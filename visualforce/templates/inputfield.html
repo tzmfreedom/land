@@ -1,0 +1,13 @@
+{{ if eq .Type "String" }}
+<input type="text" name="{{ .Name }}" value="{{ .Value }}" />
+{{ else if eq .Type "Integer" }}
+<input type="text" name="{{ .Name }}" value="{{ .Value }}" />
+{{ else if eq .Type "Double" }}
+<input type="text" name="{{ .Name }}" value="{{ .Value }}" />
+{{ else if eq .Type "Boolean" }}
+<input type="checkbox" name="{{ .Name }}" value="{{ .Value }}" />
+{{ else if eq .Type "DateTime" }}
+<input type="text" name="{{ .Name }}" value="{{ .Value }}" />
+{{ else if eq .Type "Date" }}
+<input type="text" name="{{ .Name }}" value="{{ .Value }}" />
+{{ end }}

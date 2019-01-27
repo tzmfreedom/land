@@ -14,7 +14,7 @@ type MetaFileLoader struct {
 	src string
 }
 
-func newMetaFileLoader(src string) *MetaFileLoader {
+func NewMetaFileLoader(src string) *MetaFileLoader {
 	return &MetaFileLoader{src: src}
 }
 

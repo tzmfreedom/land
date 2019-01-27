@@ -70,7 +70,7 @@ type Loader interface {
 var sObjects map[string]Sobject
 
 func LoadSObjectClass(src string) {
-	loader := newMetaFileLoader(src)
+	loader := NewMetaFileLoader(src)
 	// TODO: sObject declaration
 	var err error
 	sObjects, err = loader.Load()

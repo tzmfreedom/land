@@ -11,17 +11,15 @@ var dateTypeRef = &ast.TypeRef{
 	Parameters: []*ast.TypeRef{},
 }
 
-func init() {
-	instanceMethods := ast.NewMethodMap()
-	staticMethods := ast.NewMethodMap()
-	dateType := ast.CreateClass(
-		"Date",
-		[]*ast.Method{},
-		instanceMethods,
-		staticMethods,
-	)
+var DateType = ast.CreateClass(
+	"Date",
+	[]*ast.Method{},
+	ast.NewMethodMap(),
+	ast.NewMethodMap(),
+)
 
-	instanceMethods.Set(
+func init() {
+	DateType.InstanceMethods.Set(
 		"format",
 		[]*ast.Method{
 			ast.CreateMethod(
@@ -36,15 +34,15 @@ func init() {
 		},
 	)
 
-	staticMethods.Set(
+	DateType.StaticMethods.Set(
 		"today",
 		[]*ast.Method{
 			ast.CreateMethod(
 				"today",
-				dateType,
+				DateType,
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-					obj := ast.CreateObject(dateType)
+					obj := ast.CreateObject(DateType)
 					obj.Extra["value"] = time.Now()
 					return obj
 				},
@@ -52,5 +50,5 @@ func init() {
 		},
 	)
 
-	primitiveClassMap.Set("Date", dateType)
+	primitiveClassMap.Set("Date", DateType)
 }

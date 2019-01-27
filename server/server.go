@@ -112,7 +112,7 @@ func (s *EvalServer) Run() {
 	http.HandleFunc("/code/", func(w http.ResponseWriter, r *http.Request) {
 		id := strings.TrimPrefix(r.URL.Path, "/code/")
 		switch r.Method {
-		case "POST":
+		case http.MethodPost:
 			req := map[string]string{}
 			buf := new(bytes.Buffer)
 			buf.ReadFrom(r.Body)
@@ -125,7 +125,7 @@ func (s *EvalServer) Run() {
 				"id": id,
 			})
 			fmt.Fprintf(w, string(body))
-		case "GET":
+		case http.MethodGet:
 			rows, err := db.Query("SELECT code FROM snippets WHERE id = $1", id)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())

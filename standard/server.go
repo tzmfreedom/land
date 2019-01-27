@@ -18,10 +18,10 @@ func main() {
 	//	// /Account GET, POST
 	//	if len(paths) == 1 {
 	//		switch r.Method {
-	//		case "GET":
+	//		case http.MethodGet:
 	//			objects := SearchObjects(paths[0])
 	//			Render("index", w, objects)
-	//		case "POST":
+	//		case http.MethodPost:
 	//			id := CreateObject(paths[0])
 	//			http.Redirect(w, r, fmt.Sprintf("/%s/%s", paths[0], id), http.StatusFound)
 	//			return

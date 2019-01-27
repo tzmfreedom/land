@@ -45,29 +45,41 @@ func (n *Node) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 var renderFunction = map[string]func(n Node, c *ast.Object) string{}
 
 func handleRequest(i *interpreter.Interpreter, r *http.Request, w http.ResponseWriter) {
-	page := ""
-	n, err := createNode(page)
+	// initialize page to specify controller
+	pagePath := r.URL.Path[1:]
+	n, err := createNode(pagePath)
 	if err != nil {
 		w.WriteHeader(400)
 		return
 	}
 	attrs := attributeValues(n)
 	controller := attrs.Get("controller")
-	method := ""
+	r.ParseForm()
+	method := r.Form["__action"][0]
+	if method == "" {
+		panic("method not blank")
+	}
 	state := map[string]*ast.Object{}
+	// run action method
 	c, retValue, err := i.BindAndRun(controller, method, r.Form, state)
 	if err != nil {
 		panic(err)
 	}
-	location := retValue.Extra["url"].(string)
-	if location != r.Referer() {
-		http.Redirect(w, r, location, http.StatusFound)
-		return
+	// evaluate return value
+	if retValue == builtin.Null {
+		pagePath = r.URL.Path[1:]
+	} else {
+		pagePath = retValue.Extra["url"].(*ast.Object).StringValue()
+		if pagePath != r.Referer() {
+			http.Redirect(w, r, pagePath, http.StatusFound)
+			return
+		}
 	}
+	// render page if return value is same page
 	for k, v := range c.InstanceFields.All() {
 		state[k] = v
 	}
-	n, err = createNode(location)
+	n, err = createNode(pagePath)
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write([]byte(err.Error()))
@@ -77,6 +89,7 @@ func handleRequest(i *interpreter.Interpreter, r *http.Request, w http.ResponseW
 	body := renderNodes(n.Nodes, c)
 	if attrs.Get("showHeader") == "false" {
 		fmt.Fprint(w, body)
+		return
 	}
 	fmt.Fprintf(w, `<html>
 <head></head>
@@ -237,13 +250,19 @@ func Render(pagePath string, i *interpreter.Interpreter) (string, error) {
 
 func Server(i *interpreter.Interpreter) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		body, err := Render(r.URL.Path[1:], i)
-		if err != nil {
-			w.WriteHeader(404)
-			return
+		switch r.Method {
+		case http.MethodGet:
+			body, err := Render(r.URL.Path[1:], i)
+			if err != nil {
+				w.WriteHeader(404)
+				return
+			}
+			fmt.Fprint(w, body)
+		case http.MethodPost:
+			handleRequest(i, r, w)
 		}
-		fmt.Fprint(w, body)
 	})
+	fmt.Println("listening to 0.0.0.0:8080")
 	http.ListenAndServe(":8080", nil)
 }
 

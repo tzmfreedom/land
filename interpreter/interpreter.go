@@ -5,6 +5,8 @@ import (
 
 	"strconv"
 
+	"strings"
+
 	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
@@ -341,31 +343,30 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		v.Extra["node"] = nil
 		Publish("method_end", v.Context, n)
 		return r, nil
-	} else {
-		prev := v.Context.Env
-		v.Context.Env = NewEnv(nil)
-		for i, param := range m.Parameters {
-			v.Context.Env.Define(param.Name, evaluated[i])
-		}
-		switch obj := receiver.(type) {
-		case *ast.Object:
-			v.Context.Env.Define("this", obj)
-		}
-		r, err := m.Statements.Accept(v)
-		Publish("method_end", v.Context, n)
-		if err != nil {
-			return nil, err
-		}
-		v.Context.Env = prev
+	}
+	prev := v.Context.Env
+	v.Context.Env = NewEnv(nil)
+	for i, param := range m.Parameters {
+		v.Context.Env.Define(param.Name, evaluated[i])
+	}
+	switch obj := receiver.(type) {
+	case *ast.Object:
+		v.Context.Env.Define("this", obj)
+	}
+	r, err := m.Statements.Accept(v)
+	Publish("method_end", v.Context, n)
+	if err != nil {
+		return nil, err
+	}
+	v.Context.Env = prev
 
-		if r != nil {
-			obj := r.(*ast.Object)
-			switch obj.ClassType {
-			case builtin.ReturnType:
-				return obj.Value(), nil
-			case builtin.RaiseType:
-				return obj, nil
-			}
+	if r != nil {
+		obj := r.(*ast.Object)
+		switch obj.ClassType {
+		case builtin.ReturnType:
+			return obj.Value(), nil
+		case builtin.RaiseType:
+			return obj, nil
 		}
 	}
 	return nil, nil
@@ -1120,7 +1121,21 @@ func (i *Interpreter) BindAndRun(name, method string, params map[string][]string
 		controller.InstanceFields.Set(k, v)
 	}
 	for k, v := range params {
-		value, _ := controller.InstanceFields.Get(k)
+		if k == "__action" {
+			continue
+		}
+		names := strings.Split(k, ".")
+		value := controller
+		var ok bool
+		for _, name := range names {
+			value, ok = value.InstanceFields.Get(name)
+			if !ok {
+				panic("not found: " + name)
+			}
+		}
+		if !ok {
+			panic("not found: " + k)
+		}
 		switch value.ClassType {
 		case builtin.StringType:
 			controller.InstanceFields.Set(k, builtin.NewString(v[0]))
@@ -1145,7 +1160,7 @@ func (i *Interpreter) BindAndRun(name, method string, params map[string][]string
 	}
 	i.Context.StaticField.Add("_", classType.Name, "_context", controller)
 	retValue, err := i.VisitMethodInvocation(&ast.MethodInvocation{
-		NameOrExpression: &ast.Name{Value: []string{"_context", method}},
+		NameOrExpression: &ast.Name{Value: []string{classType.Name, "_context", method}},
 		Parameters:       []ast.Node{},
 	})
 	if err != nil {

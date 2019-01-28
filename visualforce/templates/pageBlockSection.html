@@ -1,0 +1,10 @@
+<div class="slds-section slds-is-open slds-col slds-size_1-of-1">
+    {{ if ne .Title "" }}
+    <h3 class="slds-section__title">
+        <span class="slds-truncate" title="Section Title">{{ .Title }}</span>
+    </h3>
+    {{ end }}
+    <div class="slds-section__content">
+    {{ .Body | safehtml }}
+    </div>
+</div>

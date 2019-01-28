@@ -1102,7 +1102,7 @@ func (v *Interpreter) Equals(o, other *ast.Object) bool {
 }
 
 // @return controller object, pageref object, error
-func (i *Interpreter) BindAndRun(name, method string, params map[string][]string, state map[string]*ast.Object) (*ast.Object, *ast.Object, error) {
+func (i *Interpreter) BindAndRun(name, method string, params map[string][]string, state map[string]interface{}) (*ast.Object, *ast.Object, error) {
 	classType, ok := i.Context.ClassTypes.Get(name)
 	if !ok {
 		panic("no exist class: " + name)
@@ -1117,42 +1117,41 @@ func (i *Interpreter) BindAndRun(name, method string, params map[string][]string
 		return nil, nil, err
 	}
 	controller := r.(*ast.Object)
-	for k, v := range state {
-		controller.InstanceFields.Set(k, v)
-	}
+	applyViewState(controller, state)
 	for k, v := range params {
-		if k == "__action" {
+		if k == "__action" || k == "__viewstate" {
 			continue
 		}
 		names := strings.Split(k, ".")
 		value := controller
 		var ok bool
-		for _, name := range names {
+		for _, name := range names[:len(names)-1] {
 			value, ok = value.InstanceFields.Get(name)
 			if !ok {
 				panic("not found: " + name)
 			}
 		}
-		if !ok {
+		fieldName := names[len(names)-1]
+		if _, ok := value.ClassType.InstanceFields.Get(fieldName); !ok {
 			panic("not found: " + k)
 		}
 		switch value.ClassType {
 		case builtin.StringType:
-			controller.InstanceFields.Set(k, builtin.NewString(v[0]))
+			value.InstanceFields.Set(fieldName, builtin.NewString(v[0]))
 		case builtin.IntegerType:
 			intValue, err := strconv.Atoi(v[0])
 			if err != nil {
 				panic(err)
 			}
-			controller.InstanceFields.Set(k, builtin.NewInteger(intValue))
+			value.InstanceFields.Set(fieldName, builtin.NewInteger(intValue))
 		case builtin.BooleanType:
-			controller.InstanceFields.Set(k, builtin.NewBoolean(v[0] == "true"))
+			value.InstanceFields.Set(fieldName, builtin.NewBoolean(v[0] == "true"))
 		case builtin.DoubleType:
 			floatValue, err := strconv.ParseFloat(v[0], 64)
 			if err != nil {
 				panic(err)
 			}
-			controller.InstanceFields.Set(k, builtin.NewDouble(floatValue))
+			value.InstanceFields.Set(fieldName, builtin.NewDouble(floatValue))
 		}
 	}
 	if method == "" {
@@ -1167,4 +1166,32 @@ func (i *Interpreter) BindAndRun(name, method string, params map[string][]string
 		return nil, nil, err
 	}
 	return controller, retValue.(*ast.Object), nil
+}
+
+func applyViewState(o *ast.Object, params map[string]interface{}) {
+	if params == nil {
+		return
+	}
+	for k, v := range params {
+		if v == nil {
+			o.InstanceFields.Set(k, builtin.Null)
+			continue
+		}
+		switch value := v.(type) {
+		case string:
+			o.InstanceFields.Set(k, builtin.NewString(value))
+		case int:
+			o.InstanceFields.Set(k, builtin.NewInteger(value))
+		case bool:
+			o.InstanceFields.Set(k, builtin.NewBoolean(value))
+		case float64:
+			o.InstanceFields.Set(k, builtin.NewDouble(value))
+		case map[string]interface{}:
+			field, ok := o.InstanceFields.Get(k)
+			if !ok {
+				panic("field not found: " + k)
+			}
+			applyViewState(field, value)
+		}
+	}
 }

@@ -1,0 +1,20 @@
+<div class="slds-form__item" role="listitem">
+    <div class="slds-form-element slds-form-element_horizontal">
+        <label class="slds-form-element__label" for="text-input-id-1">{{ .Label }}</label>
+        <div class="slds-form-element__control">
+        {{ if eq .Type "String" }}
+            <input type="text" class="slds-input" name="{{ .Name }}" value="{{ .Value }}" />
+        {{ else if eq .Type "Integer" }}
+            <input type="text" class="slds-input" name="{{ .Name }}" value="{{ .Value }}" />
+        {{ else if eq .Type "Double" }}
+            <input type="text" class="slds-input" name="{{ .Name }}" value="{{ .Value }}" />
+        {{ else if eq .Type "Boolean" }}
+            <input type="checkbox" class="slds-input" name="{{ .Name }}" value="{{ .Value }}" />
+        {{ else if eq .Type "DateTime" }}
+            <input type="text" class="slds-input" name="{{ .Name }}" value="{{ .Value }}" />
+        {{ else if eq .Type "Date" }}
+            <input type="text" class="slds-input" name="{{ .Name }}" value="{{ .Value }}" />
+        {{ end }}
+        </div>
+    </div>
+</div>

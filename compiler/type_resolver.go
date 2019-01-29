@@ -45,10 +45,9 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*ast.C
 			if err != nil {
 				return nil, err
 			}
-			if instanceField == nil {
-				return nil, fmt.Errorf("Field %s is not found", f)
+			if instanceField != nil {
+				return instanceField.Type, nil
 			}
-			return instanceField.Type, nil
 		}
 		return nil, errors.Errorf("%s is not found in this scope", names[0])
 	} else {

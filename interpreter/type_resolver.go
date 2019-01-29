@@ -33,8 +33,7 @@ func (r *TypeResolver) SetVariable(names []string, setValue *ast.Object) error {
 		}
 		// this
 		if val, ok := r.Context.Env.Get("this"); ok {
-			val.InstanceFields.Set(names[0], setValue)
-			return nil
+			return setVariable(val, names[0], setValue)
 		}
 		return errors.Errorf("%s is not found in this scope", names[0])
 	} else {
@@ -51,8 +50,7 @@ func (r *TypeResolver) SetVariable(names []string, setValue *ast.Object) error {
 			if !ok {
 				return errors.Errorf("%s is not found in this scope", last)
 			}
-			val.InstanceFields.Set(last, setValue)
-			return nil
+			return setVariable(val, last, setValue)
 		}
 		// this
 		if val, ok := r.Context.Env.Get("this"); ok {
@@ -67,18 +65,22 @@ func (r *TypeResolver) SetVariable(names []string, setValue *ast.Object) error {
 			if !ok {
 				return errors.Errorf("%s is not found in this scope", last)
 			}
-			val.InstanceFields.Set(last, setValue)
-			return nil
+			return setVariable(val, last, setValue)
 		}
 		if v, ok := r.Context.StaticField.Get("_", name); ok {
 			if val, ok := v.Get(names[1]); ok {
-				for _, f := range names[2:] {
+				for _, f := range names[2:len(names)-1] {
 					val, ok = val.InstanceFields.Get(f)
 					if !ok {
 						return errors.Errorf("%s is not found in this scope", f)
 					}
 				}
-				return nil
+				last := names[len(names)-1]
+				_, ok = val.InstanceFields.Get(last)
+				if !ok {
+					return errors.Errorf("%s is not found in this scope", last)
+				}
+				return setVariable(val, last, setValue)
 			}
 		}
 		//if v, ok := r.Context.NameSpaces.Get(name); ok {
@@ -98,6 +100,15 @@ func (r *TypeResolver) SetVariable(names []string, setValue *ast.Object) error {
 		//	}
 		//}
 	}
+	return nil
+}
+
+func setVariable(receiver *ast.Object, name string, value *ast.Object) error {
+	v, _ := receiver.InstanceFields.Get(name)
+	if v.Final {
+		return errors.New("Final variable has already been initialized")
+	}
+	receiver.InstanceFields.Set(name, value)
 	return nil
 }
 

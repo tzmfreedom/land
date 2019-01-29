@@ -5,6 +5,7 @@ import "strings"
 type Object struct {
 	ClassType      *ClassType
 	InstanceFields *ObjectMap
+	Final          bool
 	Extra          map[string]interface{}
 }
 

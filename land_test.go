@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/tzmfreedom/goland/ast"
 	"os"
+
+	"github.com/tzmfreedom/goland/ast"
 )
 
 func setup() {

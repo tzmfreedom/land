@@ -129,6 +129,10 @@ func (f *Field) AccessModifier(checkSetter bool) string {
 	return ""
 }
 
+func (f *Field) IsFinal() bool {
+	return f.Is("final")
+}
+
 func (f *Field) IsOverride() bool {
 	return f.Is("override")
 }
@@ -180,6 +184,7 @@ type Method struct {
 	Parameters    []*Parameter
 	Throws        []Node
 	Statements    *Block
+	IsConstructor bool
 	// func(receiver, value, options)
 	NativeFunction func(*Object, []*Object, map[string]interface{}) interface{}
 	Location       *Location
@@ -208,6 +213,7 @@ func NewConstructor(owner *ClassType, decl *ConstructorDeclaration) *Method {
 		Parameters:  decl.Parameters,
 		Throws:      decl.Throws,
 		Statements:  decl.Statements,
+		IsConstructor: true,
 		Location:    decl.Location,
 		Parent:      owner,
 	}

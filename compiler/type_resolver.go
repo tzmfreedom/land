@@ -40,6 +40,16 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*ast.C
 		if v, ok := r.Context.Env.Get(names[0]); ok {
 			return v, nil
 		}
+		if v, ok := r.Context.Env.Get("this"); ok {
+			instanceField, err := FindInstanceField(v, names[0], MODIFIER_ALL_OK, checkSetter)
+			if err != nil {
+				return nil, err
+			}
+			if instanceField == nil {
+				return nil, fmt.Errorf("Field %s is not found", f)
+			}
+			return instanceField.Type, nil
+		}
 		return nil, errors.Errorf("%s is not found in this scope", names[0])
 	} else {
 		name := names[0]
@@ -65,6 +75,15 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*ast.C
 					return nil, fmt.Errorf("Field %s is not found", f)
 				}
 				fieldType = instanceField.Type
+			}
+			if checkSetter && instanceField.IsFinal() {
+				if r.Context.CurrentMethod.IsConstructor || r.Context.CurrentMethod == nil {
+					if len(names) == 2 && names[0] == "this" {
+					// OK
+					} else {
+					// NG
+					}
+				}
 			}
 			return fieldType, nil
 		}

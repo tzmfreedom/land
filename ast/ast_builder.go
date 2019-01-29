@@ -1306,7 +1306,7 @@ func (v *Builder) VisitQuery(ctx *parser.QueryContext) interface{} {
 		n.Where = where.Accept(v).(Node)
 	}
 	if group := ctx.GroupClause(); group != nil {
-		n.Group = group.Accept(v).([]Node)
+		n.Group = group.Accept(v).(*Group)
 	}
 	if order := ctx.OrderClause(); order != nil {
 		n.Order = order.Accept(v).(Node)
@@ -1446,11 +1446,18 @@ func (v *Builder) VisitGroupClause(ctx *parser.GroupClauseContext) interface{} {
 	for i, f := range ctx.AllSoqlField() {
 		fields[i] = f.Accept(v).(Node)
 	}
-	return fields
+	var having Node
+	if ctx.HavingConditionExpression() != nil {
+		having = ctx.HavingConditionExpression().Accept(v).(Node)
+	}
+	return &Group{
+		Fields: fields,
+		Having: having,
+	}
 }
 
 func (v *Builder) VisitHavingConditionExpression(ctx *parser.HavingConditionExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	return ctx.WhereFields().Accept(v)
 }
 
 func (v *Builder) VisitOffsetClause(ctx *parser.OffsetClauseContext) interface{} {

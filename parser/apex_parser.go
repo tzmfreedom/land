@@ -686,9 +686,9 @@ var parserATN = []uint16{
 	2, 2, 1404, 1407, 3, 2, 2, 2, 1405, 1403, 3, 2, 2, 2, 1405, 1406, 3, 2,
 	2, 2, 1406, 1410, 3, 2, 2, 2, 1407, 1405, 3, 2, 2, 2, 1408, 1409, 7, 79,
 	2, 2, 1409, 1411, 5, 238, 120, 2, 1410, 1408, 3, 2, 2, 2, 1410, 1411, 3,
-	2, 2, 2, 1411, 237, 3, 2, 2, 2, 1412, 1413, 3, 2, 2, 2, 1413, 239, 3, 2,
-	2, 2, 1414, 1417, 7, 72, 2, 2, 1415, 1418, 7, 107, 2, 2, 1416, 1418, 5,
-	228, 115, 2, 1417, 1415, 3, 2, 2, 2, 1417, 1416, 3, 2, 2, 2, 1418, 241,
+	2, 2, 2, 1411, 237, 3, 2, 2, 2, 1412, 1413, 5, 220, 111, 2, 1413, 239,
+	3, 2, 2, 2, 1414, 1417, 7, 72, 2, 2, 1415, 1418, 7, 107, 2, 2, 1416, 1418,
+	5, 228, 115, 2, 1417, 1415, 3, 2, 2, 2, 1417, 1416, 3, 2, 2, 2, 1418, 241,
 	3, 2, 2, 2, 1419, 1420, 7, 24, 2, 2, 1420, 1423, 9, 19, 2, 2, 1421, 1422,
 	7, 90, 2, 2, 1422, 1424, 9, 20, 2, 2, 1423, 1421, 3, 2, 2, 2, 1423, 1424,
 	3, 2, 2, 2, 1424, 243, 3, 2, 2, 2, 1425, 1426, 7, 116, 2, 2, 1426, 1427,
@@ -21153,6 +21153,17 @@ func NewHavingConditionExpressionContext(parser antlr.Parser, parent antlr.Parse
 }
 
 func (s *HavingConditionExpressionContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *HavingConditionExpressionContext) WhereFields() IWhereFieldsContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IWhereFieldsContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IWhereFieldsContext)
+}
+
 func (s *HavingConditionExpressionContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -21204,6 +21215,10 @@ func (p *apexParser) HavingConditionExpression() (localctx IHavingConditionExpre
 	}()
 
 	p.EnterOuterAlt(localctx, 1)
+	{
+		p.SetState(1410)
+		p.whereFields(0)
+	}
 
 	return localctx
 }

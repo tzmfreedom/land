@@ -244,7 +244,7 @@ type Soql struct {
 	SelectFields []Node
 	FromObject   string
 	Where        Node
-	Group        []Node
+	Group        *Group
 	Order        Node
 	Limit        Node
 	Offset       Node
@@ -292,6 +292,11 @@ type Order struct {
 	Location *Location
 	Parent   Node
 	*NoopAccepter
+}
+
+type Group struct {
+	Fields []Node
+	Having Node
 }
 
 type Sosl struct {

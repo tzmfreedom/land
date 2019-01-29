@@ -24,19 +24,54 @@ func (b *SqlBuilder) Build(n *ast.Soql) (string, [][]string, map[string]Relation
 	if whereClause != "" {
 		whereClause = " WHERE " + whereClause
 	}
+	groupByClause := b.createGroupBy(n.Group.Fields, tmpTableMap)
+	havingClause := b.createHaving(n.Group.Having, tmpTableMap)
+	if havingClause != "" {
+		whereClause = " HAVING " + havingClause
+	}
 
 	relations := createRelations(n.FromObject, tmpTableMap)
 
 	leftJoinClause := createLeftJoins(relations)
 
 	sql := fmt.Sprintf(
-		"SELECT %s FROM %s t0%s%s",
+		"SELECT %s FROM %s t0%s%s%s%s",
 		selectClause,
 		n.FromObject,
 		leftJoinClause,
 		whereClause,
+		groupByClause,
+		havingClause,
 	)
 	return sql, selectFields, relations
+}
+
+func (b *SqlBuilder) createGroupBy(groups []ast.Node, tmpTableMap map[string]string) string {
+	groupFields := make([]string, len(groups))
+	// TODO: case insensitive
+	for i, group := range groups {
+		v := group.(*ast.SelectField).Value
+		if len(v) == 1 {
+			groupFields[i] = fmt.Sprintf("t0.%s", v[0])
+		} else {
+			tmpTable, ok := tmpTableMap[v[0]]
+			if !ok {
+				// TODO: key from string to integer?
+				tmpTableIndex := len(tmpTable) + 1
+				tmpTable = fmt.Sprintf("t%d", tmpTableIndex)
+				tmpTableMap[v[0]] = tmpTable
+			}
+			groupFields[i] = fmt.Sprintf("%s.%s", tmpTable, strings.Join(v[1:], "."))
+		}
+	}
+	if len(groupFields) == 0 {
+		return ""
+	}
+	return fmt.Sprintf(" GROUP BY %s", strings.Join(groupFields, ", "))
+}
+
+func (b *SqlBuilder) createHaving(n ast.Node, tmpTableMap map[string]string) string {
+	return b.createWhere(n, tmpTableMap)
 }
 
 func (b *SqlBuilder) createWhere(n ast.Node, tmpTableMap map[string]string) string {

@@ -700,7 +700,7 @@ groupClause
     ;
 
 havingConditionExpression
-    :
+    : whereFields
     ;
 
 offsetClause

@@ -6,6 +6,7 @@ import (
 
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
+	"strings"
 )
 
 type TypeChecker struct {
@@ -331,6 +332,9 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		if err != nil {
 			return nil, v.compileError(err.Error(), n)
 		}
+		if err := v.checkAddError(n, receiverType, method); err != nil {
+			return nil, err
+		}
 		if method.ReturnType != nil {
 			retType := method.ReturnType
 			if retType == builtin.T1type {
@@ -354,6 +358,9 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		)
 		if err != nil {
 			return nil, v.compileError(err.Error(), n)
+		}
+		if err := v.checkAddError(n, receiverType, method); err != nil {
+			return nil, err
 		}
 		if method.ReturnType != nil {
 			// TODO: duplicate code
@@ -767,4 +774,60 @@ func (v *TypeChecker) NewEnv(f func() (interface{}, error)) (interface{}, error)
 type Error struct {
 	Message string
 	Node    ast.Node
+}
+
+var notImplementAddErrorError = errors.New("not implement add error")
+
+func (v *TypeChecker) checkAddError(n *ast.MethodInvocation, receiver *ast.ClassType, method *ast.Method) error {
+	if strings.ToLower(method.Name) != "adderror" {
+		return nil
+	}
+	if isTypeSObjectField(receiver) {
+		resolver := NewTypeResolver(v.Context)
+		switch exp := n.NameOrExpression.(type) {
+		case *ast.Name:
+			if len(exp.Value) < 3 {
+				return notImplementAddErrorError
+			}
+			classType, err := resolver.ResolveVariable(exp.Value[:len(exp.Value)-2], false)
+			if err != nil {
+				return err
+			}
+			if classType.SuperClass != nil && classType.SuperClass == builtin.SObjectType {
+				return nil
+			}
+			return notImplementAddErrorError
+		case *ast.FieldAccess:
+			switch fieldExp := exp.Expression.(type) {
+			case *ast.Name:
+				classType, err := resolver.ResolveVariable(fieldExp.Value[:len(fieldExp.Value)-1], false)
+				if err != nil {
+					return err
+				}
+				if classType.SuperClass != nil && classType.SuperClass == builtin.SObjectType {
+					return nil
+				}
+			case *ast.FieldAccess:
+				c, err := fieldExp.Expression.Accept(v)
+				if err != nil {
+					return err
+				}
+				classType := c.(*ast.ClassType)
+				if classType.SuperClass != nil && classType.SuperClass == builtin.SObjectType {
+					return nil
+				}
+			}
+			return notImplementAddErrorError
+		}
+		panic("not pass")
+	}
+	return nil
+}
+
+func isTypeSObjectField(classType *ast.ClassType) bool {
+	return classType == builtin.IntegerType ||
+		classType == builtin.StringType ||
+		classType == builtin.BooleanType ||
+		classType == builtin.DateType ||
+		classType == builtin.DoubleType
 }

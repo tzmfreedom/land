@@ -11,6 +11,8 @@ import (
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 	"github.com/tzmfreedom/goland/compiler"
+	"errors"
+	"fmt"
 )
 
 type Interpreter struct {
@@ -60,22 +62,18 @@ func (v *Interpreter) LoadStaticField() {
 
 func (v *Interpreter) VisitClassDeclaration(n *ast.ClassDeclaration) (interface{}, error) {
 	panic("not pass")
-	return ast.VisitClassDeclaration(v, n)
 }
 
 func (v *Interpreter) VisitModifier(n *ast.Modifier) (interface{}, error) {
 	panic("not pass")
-	return ast.VisitModifier(v, n)
 }
 
 func (v *Interpreter) VisitAnnotation(n *ast.Annotation) (interface{}, error) {
 	panic("not pass")
-	return ast.VisitAnnotation(v, n)
 }
 
 func (v *Interpreter) VisitInterfaceDeclaration(n *ast.InterfaceDeclaration) (interface{}, error) {
 	panic("not pass")
-	return ast.VisitInterfaceDeclaration(v, n)
 }
 
 func (v *Interpreter) VisitIntegerLiteral(n *ast.IntegerLiteral) (interface{}, error) {
@@ -84,7 +82,6 @@ func (v *Interpreter) VisitIntegerLiteral(n *ast.IntegerLiteral) (interface{}, e
 
 func (v *Interpreter) VisitParameter(n *ast.Parameter) (interface{}, error) {
 	panic("not pass")
-	return ast.VisitParameter(v, n)
 }
 
 func (v *Interpreter) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) {
@@ -143,7 +140,6 @@ func (v *Interpreter) VisitDoubleLiteral(n *ast.DoubleLiteral) (interface{}, err
 
 func (v *Interpreter) VisitFieldDeclaration(n *ast.FieldDeclaration) (interface{}, error) {
 	panic("not pass")
-	return ast.VisitFieldDeclaration(v, n)
 }
 
 func (v *Interpreter) VisitTry(n *ast.Try) (interface{}, error) {
@@ -183,7 +179,7 @@ func (v *Interpreter) VisitCatch(n *ast.Catch) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitFinally(n *ast.Finally) (interface{}, error) {
-	return ast.VisitFinally(v, n)
+	panic("not pass")
 }
 
 func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
@@ -256,11 +252,11 @@ func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitForControl(n *ast.ForControl) (interface{}, error) {
-	return ast.VisitForControl(v, n)
+	panic("not pass")
 }
 
 func (v *Interpreter) VisitEnhancedForControl(n *ast.EnhancedForControl) (interface{}, error) {
-	return ast.VisitEnhancedForControl(v, n)
+	panic("not pass")
 }
 
 func (v *Interpreter) VisitIf(n *ast.If) (interface{}, error) {
@@ -911,6 +907,15 @@ func (v *Interpreter) VisitThrow(n *ast.Throw) (interface{}, error) {
 func (v *Interpreter) VisitSoql(n *ast.Soql) (interface{}, error) {
 	executor := &SoqlExecutor{}
 	objects, err := executor.Execute(n, v)
+	if n.ExactlyOne {
+		records := objects.Extra["records"].([]*ast.Object)
+		if len(records) == 0 {
+			return nil, errors.New("List has no rows for assignment to SObject")
+		}
+		if len(records) > 1 {
+			return nil, errors.New("List has more than 1 row for assignment to SObject")
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -918,6 +923,7 @@ func (v *Interpreter) VisitSoql(n *ast.Soql) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitSosl(n *ast.Sosl) (interface{}, error) {
+	// TODO: impl
 	return ast.VisitSosl(v, n)
 }
 
@@ -1015,11 +1021,19 @@ func (v *Interpreter) VisitWhile(n *ast.While) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitNothingStatement(n *ast.NothingStatement) (interface{}, error) {
-	return ast.VisitNothingStatement(v, n)
+	return nil, nil
 }
 
 func (v *Interpreter) VisitCastExpression(n *ast.CastExpression) (interface{}, error) {
-	return ast.VisitCastExpression(v, n)
+	exp, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	expObj := exp.(*ast.Object)
+	if !builtin.Equals(n.CastType, expObj.ClassType) {
+		return nil, fmt.Errorf("Cast type is not match %s != %s", n.CastType.Name, expObj.ClassType.Name)
+	}
+	return nil, nil
 }
 
 func (v *Interpreter) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) {
@@ -1035,7 +1049,7 @@ func (v *Interpreter) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) 
 }
 
 func (v *Interpreter) VisitType(n *ast.TypeRef) (interface{}, error) {
-	return ast.VisitType(v, n)
+	panic("not pass")
 }
 
 func (v *Interpreter) VisitBlock(n *ast.Block) (interface{}, error) {
@@ -1062,23 +1076,23 @@ func (v *Interpreter) VisitBlock(n *ast.Block) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitGetterSetter(n *ast.GetterSetter) (interface{}, error) {
-	return ast.VisitGetterSetter(v, n)
+	panic("not pass")
 }
 
 func (v *Interpreter) VisitPropertyDeclaration(n *ast.PropertyDeclaration) (interface{}, error) {
-	return ast.VisitPropertyDeclaration(v, n)
+	panic("not pass")
 }
 
 func (v *Interpreter) VisitArrayInitializer(n *ast.ArrayInitializer) (interface{}, error) {
-	return ast.VisitArrayInitializer(v, n)
+	panic("not pass")
 }
 
 func (v *Interpreter) VisitArrayCreator(n *ast.ArrayCreator) (interface{}, error) {
-	return ast.VisitArrayCreator(v, n)
+	panic("not pass")
 }
 
 func (v *Interpreter) VisitSoqlBindVariable(n *ast.SoqlBindVariable) (interface{}, error) {
-	return ast.VisitSoqlBindVariable(v, n)
+	panic("not pass")
 }
 
 func (v *Interpreter) VisitTernalyExpression(n *ast.TernalyExpression) (interface{}, error) {
@@ -1093,11 +1107,11 @@ func (v *Interpreter) VisitTernalyExpression(n *ast.TernalyExpression) (interfac
 }
 
 func (v *Interpreter) VisitMapCreator(n *ast.MapCreator) (interface{}, error) {
-	return ast.VisitMapCreator(v, n)
+	panic("not pass")
 }
 
 func (v *Interpreter) VisitSetCreator(n *ast.SetCreator) (interface{}, error) {
-	return ast.VisitSetCreator(v, n)
+	panic("not pass")
 }
 
 func (v *Interpreter) VisitName(n *ast.Name) (interface{}, error) {
@@ -1106,7 +1120,7 @@ func (v *Interpreter) VisitName(n *ast.Name) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitConstructorDeclaration(n *ast.ConstructorDeclaration) (interface{}, error) {
-	return ast.VisitConstructorDeclaration(v, n)
+	panic("not pass")
 }
 
 func (v *Interpreter) NewEnv(f func() (interface{}, error)) (interface{}, error) {

@@ -248,6 +248,7 @@ type Soql struct {
 	Order        Node
 	Limit        Node
 	Offset       Node
+	ExactlyOne   bool
 	Location     *Location
 	Parent       Node
 }

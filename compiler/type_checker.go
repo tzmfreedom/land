@@ -522,6 +522,11 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		if r != nil && !builtin.Equals(l, r.(*ast.ClassType)) {
 			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", l.String(), r.(*ast.ClassType).String()), n.Left)
 		}
+		if soql, ok := n.Right.(*ast.Soql); ok {
+			if l.SuperClass.Name == "SObject" {
+				soql.ExactlyOne = true
+			}
+		}
 		return l, nil
 	} else {
 		l, err := n.Left.Accept(v)
@@ -669,6 +674,11 @@ func (v *TypeChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (inte
 		v.Context.Env.Set(d.Name, n.Type)
 		if !builtin.Equals(n.Type, t.(*ast.ClassType)) {
 			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", n.Type.String(), t.(*ast.ClassType).String()), n)
+		}
+		if soql, ok := d.Expression.(*ast.Soql); ok {
+			if n.Type.SuperClass.Name == "SObject" {
+				soql.ExactlyOne = true
+			}
 		}
 	}
 	return nil, nil

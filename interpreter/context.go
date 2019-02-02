@@ -86,7 +86,10 @@ func NewStaticFieldMap() *StaticFieldMap {
 }
 
 func (m *StaticFieldMap) Add(ns, k, f string, n *ast.Object) {
-	objMap, _ := m.Get(ns, k)
+	objMap, ok := m.Get(ns, k)
+	if !ok {
+		panic("StaticFieldMap#Add failed")
+	}
 	objMap.Set(f, n)
 }
 

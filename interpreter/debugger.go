@@ -31,12 +31,15 @@ func (d *debugger) Debug(ctx *Context, n ast.Node) {
 	d.Frame = 0
 
 	showCurrent(n)
-	l, _ := readline.NewEx(&readline.Config{
+	l, err := readline.NewEx(&readline.Config{
 		Prompt:          "\033[31m>>\033[0m ",
 		HistoryFile:     "/tmp/land_debugger.tmp",
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
 	})
+	if err != nil {
+		panic(err)
+	}
 	for {
 		line, err := l.Readline()
 		if err != nil {

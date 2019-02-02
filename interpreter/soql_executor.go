@@ -15,7 +15,10 @@ func (e *SoqlExecutor) Execute(n *ast.Soql, visitor ast.Visitor) (*ast.Object, e
 
 func getRecords(n *ast.Soql, records []*soapforce.SObject) []*ast.Object {
 	objects := make([]*ast.Object, len(records))
-	classType, _ := builtin.PrimitiveClassMap().Get(n.FromObject)
+	classType, ok := builtin.PrimitiveClassMap().Get(n.FromObject)
+	if !ok {
+		panic(n.FromObject + "not found")
+	}
 	for i, r := range records {
 		object := &ast.Object{}
 		object.ClassType = classType
@@ -34,7 +37,10 @@ func getRecords(n *ast.Soql, records []*soapforce.SObject) []*ast.Object {
 
 func (e *SoqlExecutor) getListFromResponse(n *ast.Soql, records []*ast.Object) (*ast.Object, error) {
 	// TODO: implement
-	classType, _ := builtin.PrimitiveClassMap().Get(n.FromObject)
+	classType, ok := builtin.PrimitiveClassMap().Get(n.FromObject)
+	if !ok {
+		panic(n.FromObject + "not found")
+	}
 	list := &ast.Object{
 		ClassType:      builtin.CreateListType(classType),
 		InstanceFields: ast.NewObjectMap(),

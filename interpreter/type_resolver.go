@@ -104,7 +104,10 @@ func (r *TypeResolver) SetVariable(names []string, setValue *ast.Object) error {
 }
 
 func setVariable(receiver *ast.Object, name string, value *ast.Object) error {
-	v, _ := receiver.InstanceFields.Get(name)
+	v, ok := receiver.InstanceFields.Get(name)
+	if !ok {
+		panic("InstanceFields#Get failed")
+	}
 	if v.Final {
 		return errors.New("Final variable has already been initialized")
 	}

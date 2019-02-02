@@ -34,7 +34,7 @@ func (v *Builder) VisitTypeDeclaration(ctx *parser.TypeDeclarationContext) inter
 
 	if n := ctx.ClassDeclaration(); n != nil {
 		cd := n.Accept(v)
-		decl, _ := cd.(*ClassDeclaration)
+		decl := cd.(*ClassDeclaration)
 		decl.Modifiers = setParentNodeToModifiers(modifiers, decl)
 		decl.Annotations = setParentNodeToAnnotations(annotations, decl)
 		return decl
@@ -556,7 +556,7 @@ func (v *Builder) VisitQualifiedName(ctx *parser.QualifiedNameContext) interface
 	identifiers := make([]string, len(allIdentifiers))
 	for i, identifier := range allIdentifiers {
 		ident := identifier.Accept(v)
-		identifiers[i], _ = ident.(string)
+		identifiers[i] = ident.(string)
 	}
 	n := &TypeRef{Location: v.newLocation(ctx)}
 	n.Name = identifiers
@@ -1415,7 +1415,10 @@ func (v *Builder) VisitWhereField(ctx *parser.WhereFieldContext) interface{} {
 
 func (v *Builder) VisitLimitClause(ctx *parser.LimitClauseContext) interface{} {
 	if l := ctx.IntegerLiteral(); l != nil {
-		val, _ := strconv.Atoi(l.GetText())
+		val, err := strconv.Atoi(l.GetText())
+		if err != nil {
+			panic(err)
+		}
 		return &IntegerLiteral{Value: val, Location: v.newLocation(ctx)}
 	}
 	return ctx.BindVariable().Accept(v)
@@ -1477,7 +1480,10 @@ func (v *Builder) VisitHavingConditionExpression(ctx *parser.HavingConditionExpr
 
 func (v *Builder) VisitOffsetClause(ctx *parser.OffsetClauseContext) interface{} {
 	if l := ctx.IntegerLiteral(); l != nil {
-		val, _ := strconv.Atoi(l.GetText())
+		val, err := strconv.Atoi(l.GetText())
+		if err != nil {
+			panic(err)
+		}
 		return &IntegerLiteral{Value: val, Location: v.newLocation(ctx)}
 	}
 	return ctx.BindVariable().Accept(v)

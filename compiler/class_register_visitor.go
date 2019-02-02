@@ -362,7 +362,10 @@ func (v *ClassRegisterVisitor) setDeclaration(declarations []ast.Node, t *ast.Cl
 				}
 			}
 		case *ast.ClassDeclaration:
-			r, _ := decl.Accept(v)
+			r, err := decl.Accept(v)
+			if err != nil {
+				return err
+			}
 			class := r.(*ast.ClassType)
 			if _, ok := t.InnerClasses.Get(class.Name); ok {
 				return fmt.Errorf("Class %s is already defined", class.Name)

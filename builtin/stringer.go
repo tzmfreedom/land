@@ -60,7 +60,10 @@ func (v *ToStringer) String(o *ast.Object) string {
 		for i, name := range names {
 			obj := ""
 			v.AddIndent(func() {
-				r, _ := o.InstanceFields.Get(name)
+				r, ok := o.InstanceFields.Get(name)
+				if !ok {
+					panic("InstanceFields.Get#failed")
+				}
 				obj = v.String(r)
 			})
 			fields[i] = v.withIndent(fmt.Sprintf("%s: %s", name, obj))

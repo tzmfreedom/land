@@ -94,7 +94,10 @@ func NewStaticFieldMap() *StaticFieldMap {
 }
 
 func (m *StaticFieldMap) Add(k string, n *ast.ClassType) {
-	typeMap, _ := m.Get(k)
+	typeMap, ok := m.Get(k)
+	if !ok {
+		panic("StaticFieldMap#Add failed")
+	}
 	typeMap.Set(k, n)
 }
 

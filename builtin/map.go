@@ -84,7 +84,10 @@ func createMapType() *ast.ClassType {
 					for key, _ := range this.Extra["values"].(map[string]*ast.Object) {
 						keySets[key] = struct{}{}
 					}
-					setClass, _ := PrimitiveClassMap().Get("Set")
+					setClass, ok := PrimitiveClassMap().Get("Set")
+					if !ok {
+						panic("Set is not defined")
+					}
 					object := ast.CreateObject(setClass)
 					object.Extra["values"] = keySets
 					object.Extra["generices"] = nil // TODO: implement

@@ -55,7 +55,10 @@ func NewNameSpaceStore() *NameSpaceStore {
 }
 
 func (m *NameSpaceStore) Add(k string, n *ast.ClassType) {
-	classMap, _ := m.Get(k)
+	classMap, ok := m.Get(k)
+	if !ok {
+		panic("NameSpaceStore#Add failed")
+	}
 	classMap.Set(k, n)
 }
 

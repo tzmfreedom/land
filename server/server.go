@@ -178,7 +178,7 @@ func (s *EvalServer) Run() {
 		}
 		// format
 		visitor := &ast.TosVisitor{}
-		str, _ := root.Accept(visitor)
+		str, err := root.Accept(visitor)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error")
 		}

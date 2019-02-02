@@ -22,7 +22,10 @@ func (v *TosVisitor) withIndent(src string) string {
 func (v *TosVisitor) VisitClassDeclaration(n *ClassDeclaration) (interface{}, error) {
 	annotations := make([]string, len(n.Annotations))
 	for i, a := range n.Annotations {
-		r, _ := a.Accept(v)
+		r, err := a.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		annotations[i] = r.(string)
 	}
 	annotationStr := ""
@@ -31,26 +34,37 @@ func (v *TosVisitor) VisitClassDeclaration(n *ClassDeclaration) (interface{}, er
 	}
 	modifiers := make([]string, len(n.Modifiers))
 	for i, m := range n.Modifiers {
-		r, _ := m.Accept(v)
+		r, err := m.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		modifiers[i] = r.(string)
 	}
 	declarations := make([]string, len(n.Declarations))
 	v.AddIndent(func() {
 		for i, d := range n.Declarations {
-			r, _ := d.Accept(v)
-			declarations[i], _ = r.(string)
+			r, err := d.Accept(v)
+			if err != nil {
+				panic(err)
+			}
+			declarations[i] = r.(string)
 		}
 	})
 	super := ""
 	if n.SuperClassRef != nil {
-		r, _ := n.SuperClassRef.Accept(v)
-		super, _ = r.(string)
-		super = "extends " + super
+		r, err := n.SuperClassRef.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+		super = "extends " + r.(string)
 	}
 	implements := make([]string, len(n.ImplementClassRefs))
 	for i, impl := range n.ImplementClassRefs {
-		r, _ := impl.Accept(v)
-		implements[i], _ = r.(string)
+		r, err := impl.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+		implements[i] = r.(string)
 	}
 	implString := ""
 	if len(implements) != 0 {
@@ -84,14 +98,20 @@ func (v *TosVisitor) VisitAnnotation(n *Annotation) (interface{}, error) {
 func (v *TosVisitor) VisitInterfaceDeclaration(n *InterfaceDeclaration) (interface{}, error) {
 	modifiers := make([]string, len(n.Modifiers))
 	for i, m := range n.Modifiers {
-		r, _ := m.Accept(v)
+		r, err := m.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		modifiers[i] = r.(string)
 	}
 	methods := make([]string, len(n.Methods))
 	v.AddIndent(func() {
 		for i, m := range n.Methods {
-			r, _ := m.Accept(v)
-			methods[i], _ = r.(string)
+			r, err := m.Accept(v)
+			if err != nil {
+				panic(err)
+			}
+			methods[i] = r.(string)
 		}
 	})
 	body := ""
@@ -114,7 +134,10 @@ func (v *TosVisitor) VisitIntegerLiteral(n *IntegerLiteral) (interface{}, error)
 }
 
 func (v *TosVisitor) VisitParameter(n *Parameter) (interface{}, error) {
-	r, _ := n.TypeRef.Accept(v)
+	r, err := n.TypeRef.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	return fmt.Sprintf(
 		"%s %s",
 		r.(string),
@@ -123,8 +146,14 @@ func (v *TosVisitor) VisitParameter(n *Parameter) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitArrayAccess(n *ArrayAccess) (interface{}, error) {
-	r, _ := n.Receiver.Accept(v)
-	k, _ := n.Key.Accept(v)
+	r, err := n.Receiver.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	k, err := n.Key.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	return fmt.Sprintf(
 		"%s[%s]",
 		r.(string),
@@ -149,7 +178,10 @@ func (v *TosVisitor) VisitContinue(n *Continue) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitDml(n *Dml) (interface{}, error) {
-	r, _ := n.Expression.Accept(v)
+	r, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	return fmt.Sprintf("%s %s", n.Type, r.(string)), nil
 }
 
@@ -160,13 +192,22 @@ func (v *TosVisitor) VisitDoubleLiteral(n *DoubleLiteral) (interface{}, error) {
 func (v *TosVisitor) VisitFieldDeclaration(n *FieldDeclaration) (interface{}, error) {
 	modifiers := make([]string, len(n.Modifiers))
 	for i, m := range n.Modifiers {
-		r, _ := m.Accept(v)
+		r, err := m.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		modifiers[i] = r.(string)
 	}
-	r, _ := n.TypeRef.Accept(v)
+	r, err := n.TypeRef.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	declarators := make([]string, len(n.Declarators))
 	for i, decl := range n.Declarators {
-		r, _ := decl.Accept(v)
+		r, err := decl.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		declarators[i] = r.(string)
 	}
 
@@ -182,15 +223,24 @@ func (v *TosVisitor) VisitFieldDeclaration(n *FieldDeclaration) (interface{}, er
 func (v *TosVisitor) VisitTry(n *Try) (interface{}, error) {
 	stmt := ""
 	v.AddIndent(func() {
-		r, _ := n.Block.Accept(v)
+		r, err := n.Block.Accept(v)
+		if err != nil {
+			panic(err)
+		}
 		stmt = r.(string)
 	})
 	catches := make([]string, len(n.CatchClause))
 	for i, c := range n.CatchClause {
-		r, _ := c.Accept(v)
+		r, err := c.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		catches[i] = r.(string)
 	}
-	f, _ := n.FinallyBlock.Accept(v)
+	f, err := n.FinallyBlock.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	return fmt.Sprintf(
 		`try {
 %s%s%s
@@ -203,10 +253,16 @@ func (v *TosVisitor) VisitTry(n *Try) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitCatch(n *Catch) (interface{}, error) {
-	t, _ := n.TypeRef.Accept(v)
+	t, err := n.TypeRef.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	stmt := ""
 	v.AddIndent(func() {
-		r, _ := n.Block.Accept(v)
+		r, err := n.Block.Accept(v)
+		if err != nil {
+			panic(err)
+		}
 		stmt = r.(string)
 	})
 	if stmt != "" {
@@ -225,7 +281,10 @@ func (v *TosVisitor) VisitCatch(n *Catch) (interface{}, error) {
 func (v *TosVisitor) VisitFinally(n *Finally) (interface{}, error) {
 	stmt := ""
 	v.AddIndent(func() {
-		r, _ := n.Block.Accept(v)
+		r, err := n.Block.Accept(v)
+		if err != nil {
+			panic(err)
+		}
 		stmt = r.(string)
 	})
 	if stmt != "" {
@@ -240,10 +299,16 @@ func (v *TosVisitor) VisitFinally(n *Finally) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitFor(n *For) (interface{}, error) {
-	control, _ := n.Control.Accept(v)
+	control, err := n.Control.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	stmt := ""
 	v.AddIndent(func() {
-		r, _ := n.Statements.Accept(v)
+		r, err := n.Statements.Accept(v)
+		if err != nil {
+			panic(err)
+		}
 		stmt = r.(string)
 	})
 	if stmt != "" {
@@ -261,13 +326,22 @@ func (v *TosVisitor) VisitFor(n *For) (interface{}, error) {
 func (v *TosVisitor) VisitForControl(n *ForControl) (interface{}, error) {
 	inits := make([]string, len(n.ForInit))
 	for i, forInit := range n.ForInit {
-		exp, _ := forInit.Accept(v)
+		exp, err := forInit.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		inits[i] = exp.(string)
 	}
-	exp, _ := n.Expression.Accept(v)
+	exp, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	updates := make([]string, len(n.ForUpdate))
 	for i, u := range n.ForUpdate {
-		r, _ := u.Accept(v)
+		r, err := u.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		updates[i] = r.(string)
 	}
 	return fmt.Sprintf(
@@ -279,8 +353,14 @@ func (v *TosVisitor) VisitForControl(n *ForControl) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitEnhancedForControl(n *EnhancedForControl) (interface{}, error) {
-	t, _ := n.TypeRef.Accept(v)
-	exp, _ := n.Expression.Accept(v)
+	t, err := n.TypeRef.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	exp, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	return fmt.Sprintf(
 		`%s %s : %s`,
 		t.(string),
@@ -290,10 +370,16 @@ func (v *TosVisitor) VisitEnhancedForControl(n *EnhancedForControl) (interface{}
 }
 
 func (v *TosVisitor) VisitIf(n *If) (interface{}, error) {
-	cond, _ := n.Condition.Accept(v)
+	cond, err := n.Condition.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	ifStmt := ""
 	v.AddIndent(func() {
-		r, _ := n.IfStatement.Accept(v)
+		r, err := n.IfStatement.Accept(v)
+		if err != nil {
+			panic(err)
+		}
 		ifStmt = r.(string)
 	})
 	if ifStmt != "" {
@@ -302,7 +388,10 @@ func (v *TosVisitor) VisitIf(n *If) (interface{}, error) {
 	elseStmt := ""
 	if n.ElseStatement != nil {
 		v.AddIndent(func() {
-			r, _ := n.IfStatement.Accept(v)
+			r, err := n.IfStatement.Accept(v)
+			if err != nil {
+				panic(err)
+			}
 			elseStmt = r.(string)
 		})
 		if elseStmt != "" {
@@ -329,7 +418,10 @@ func (v *TosVisitor) VisitIf(n *If) (interface{}, error) {
 func (v *TosVisitor) VisitMethodDeclaration(n *MethodDeclaration) (interface{}, error) {
 	annotations := make([]string, len(n.Annotations))
 	for i, a := range n.Annotations {
-		r, _ := a.Accept(v)
+		r, err := a.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		annotations[i] = r.(string)
 	}
 	annotationStr := ""
@@ -338,22 +430,34 @@ func (v *TosVisitor) VisitMethodDeclaration(n *MethodDeclaration) (interface{}, 
 	}
 	modifiers := make([]string, len(n.Modifiers))
 	for i, m := range n.Modifiers {
-		r, _ := m.Accept(v)
+		r, err := m.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		modifiers[i] = r.(string)
 	}
 	returnType := "void"
 	if n.ReturnType != nil {
-		r, _ := n.ReturnType.Accept(v)
+		r, err := n.ReturnType.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		returnType = r.(string)
 	}
 	parameters := make([]string, len(n.Parameters))
 	for i, p := range n.Parameters {
-		r, _ := p.Accept(v)
+		r, err := p.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		parameters[i] = r.(string)
 	}
 	block := ""
 	v.AddIndent(func() {
-		r, _ := n.Statements.Accept(v)
+		r, err := n.Statements.Accept(v)
+		if err != nil {
+			panic(err)
+		}
 		block = r.(string)
 	})
 	if block != "" {
@@ -373,10 +477,16 @@ func (v *TosVisitor) VisitMethodDeclaration(n *MethodDeclaration) (interface{}, 
 }
 
 func (v *TosVisitor) VisitMethodInvocation(n *MethodInvocation) (interface{}, error) {
-	exp, _ := n.NameOrExpression.Accept(v)
+	exp, err := n.NameOrExpression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	parameters := make([]string, len(n.Parameters))
 	for i, p := range n.Parameters {
-		r, _ := p.Accept(v)
+		r, err := p.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		parameters[i] = r.(string)
 	}
 	return fmt.Sprintf(
@@ -387,10 +497,16 @@ func (v *TosVisitor) VisitMethodInvocation(n *MethodInvocation) (interface{}, er
 }
 
 func (v *TosVisitor) VisitNew(n *New) (interface{}, error) {
-	t, _ := n.TypeRef.Accept(v)
+	t, err := n.TypeRef.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	parameters := make([]string, len(n.Parameters))
 	for i, p := range n.Parameters {
-		r, _ := p.Accept(v)
+		r, err := p.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		parameters[i] = r.(string)
 	}
 	return fmt.Sprintf(
@@ -405,7 +521,10 @@ func (v *TosVisitor) VisitNullLiteral(n *NullLiteral) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitUnaryOperator(n *UnaryOperator) (interface{}, error) {
-	val, _ := n.Expression.Accept(v)
+	val, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	if n.IsPrefix {
 		return fmt.Sprintf("%s%s", n.Op, val.(string)), nil
 	}
@@ -413,14 +532,23 @@ func (v *TosVisitor) VisitUnaryOperator(n *UnaryOperator) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitBinaryOperator(n *BinaryOperator) (interface{}, error) {
-	l, _ := n.Left.Accept(v)
-	r, _ := n.Right.Accept(v)
+	l, err := n.Left.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	r, err := n.Right.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	return fmt.Sprintf("%s %s %s", l.(string), n.Op, r.(string)), nil
 }
 
 func (v *TosVisitor) VisitReturn(n *Return) (interface{}, error) {
 	if n.Expression != nil {
-		exp, _ := n.Expression.Accept(v)
+		exp, err := n.Expression.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		return fmt.Sprintf("return %s", exp.(string)), nil
 	}
 	return "return", nil
@@ -428,7 +556,10 @@ func (v *TosVisitor) VisitReturn(n *Return) (interface{}, error) {
 
 func (v *TosVisitor) VisitThrow(n *Throw) (interface{}, error) {
 	if n.Expression != nil {
-		exp, _ := n.Expression.Accept(v)
+		exp, err := n.Expression.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		return fmt.Sprintf("throw %s", exp.(string)), nil
 	}
 	return "throw", nil
@@ -468,7 +599,10 @@ func (v *TosVisitor) VisitSoql(n *Soql) (interface{}, error) {
 	groupBy := ""
 	limit := ""
 	if n.Limit != nil {
-		i, _ := n.Limit.Accept(v)
+		i, err := n.Limit.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		v.AddIndent(func() {
 			v.AddIndent(func() {
 				limit = "\n" + indent + "LIMIT\n" + v.withIndent(i.(string))
@@ -503,7 +637,10 @@ func (v *TosVisitor) createWhere(n Node) string {
 		case *SoqlFunction:
 			field = f.Name + "()"
 		}
-		value, _ := val.Expression.Accept(v)
+		value, err := val.Expression.Accept(v)
+		if err != nil {
+			panic(err)
+		}
 		return fmt.Sprintf("%s %s %s", field, val.Op, value.(string))
 	case *WhereBinaryOperator:
 		where := ""
@@ -527,17 +664,26 @@ func (v *TosVisitor) VisitStringLiteral(n *StringLiteral) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitSwitch(n *Switch) (interface{}, error) {
-	exp, _ := n.Expression.Accept(v)
+	exp, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	whenStmts := make([]string, len(n.WhenStatements))
 	v.AddIndent(func() {
 		for i, stmt := range n.WhenStatements {
-			r, _ := stmt.Accept(v)
+			r, err := stmt.Accept(v)
+			if err != nil {
+				panic(err)
+			}
 			whenStmts[i] = r.(string)
 		}
 	})
 	elseStmt := ""
 	v.AddIndent(func() {
-		r, _ := n.ElseStatement.Accept(v)
+		r, err := n.ElseStatement.Accept(v)
+		if err != nil {
+			panic(err)
+		}
 		elseStmt = r.(string)
 	})
 	if elseStmt != "" {
@@ -564,10 +710,16 @@ func (v *TosVisitor) VisitSwitch(n *Switch) (interface{}, error) {
 func (v *TosVisitor) VisitTrigger(n *Trigger) (interface{}, error) {
 	timings := make([]string, len(n.TriggerTimings))
 	for i, t := range n.TriggerTimings {
-		r, _ := t.Accept(v)
+		r, err := t.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		timings[i] = r.(string)
 	}
-	stmt, _ := n.Statements.Accept(v)
+	stmt, err := n.Statements.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	return fmt.Sprintf(
 		`trigger %s on %s (%s) {
 %s
@@ -585,10 +737,16 @@ func (v *TosVisitor) VisitTriggerTiming(n *TriggerTiming) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitVariableDeclaration(n *VariableDeclaration) (interface{}, error) {
-	t, _ := n.TypeRef.Accept(v)
+	t, err := n.TypeRef.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	declarators := make([]string, len(n.Declarators))
 	for i, decl := range n.Declarators {
-		r, _ := decl.Accept(v)
+		r, err := decl.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		declarators[i] = r.(string)
 	}
 	return fmt.Sprintf(
@@ -602,19 +760,28 @@ func (v *TosVisitor) VisitVariableDeclarator(n *VariableDeclarator) (interface{}
 	if n.Expression == nil {
 		return fmt.Sprintf("%s", n.Name), nil
 	}
-	exp, _ := n.Expression.Accept(v)
+	exp, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	return fmt.Sprintf("%s = %s", n.Name, exp.(string)), nil
 }
 
 func (v *TosVisitor) VisitWhen(n *When) (interface{}, error) {
 	conditions := make([]string, len(n.Condition))
 	for i, cond := range n.Condition {
-		r, _ := cond.Accept(v)
+		r, err := cond.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		conditions[i] = r.(string)
 	}
 	stmt := ""
 	v.AddIndent(func() {
-		r, _ := n.Statements.Accept(v)
+		r, err := n.Statements.Accept(v)
+		if err != nil {
+			panic(err)
+		}
 		stmt = r.(string)
 	})
 	return fmt.Sprintf(
@@ -630,7 +797,10 @@ func (v *TosVisitor) VisitWhen(n *When) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitWhenType(n *WhenType) (interface{}, error) {
-	r, _ := n.TypeRef.Accept(v)
+	r, err := n.TypeRef.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	return fmt.Sprintf(
 		"%s %s",
 		r.(string),
@@ -639,10 +809,16 @@ func (v *TosVisitor) VisitWhenType(n *WhenType) (interface{}, error) {
 }
 
 func (v *TosVisitor) VisitWhile(n *While) (interface{}, error) {
-	cond, _ := n.Condition.Accept(v)
+	cond, err := n.Condition.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	statements := ""
 	v.AddIndent(func() {
-		r, _ := n.Statements.Accept(v)
+		r, err := n.Statements.Accept(v)
+		if err != nil {
+			panic(err)
+		}
 		statements = r.(string)
 	})
 	return fmt.Sprintf(
@@ -660,13 +836,22 @@ func (v *TosVisitor) VisitNothingStatement(n *NothingStatement) (interface{}, er
 }
 
 func (v *TosVisitor) VisitCastExpression(n *CastExpression) (interface{}, error) {
-	t, _ := n.CastTypeRef.Accept(v)
-	exp, _ := n.Expression.Accept(v)
+	t, err := n.CastTypeRef.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	exp, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	return fmt.Sprintf("(%s)%s", t.(string), exp.(string)), nil
 }
 
 func (v *TosVisitor) VisitFieldAccess(n *FieldAccess) (interface{}, error) {
-	exp, _ := n.Expression.Accept(v)
+	exp, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	return fmt.Sprintf("%s.%s", exp.(string), n.FieldName), nil
 }
 
@@ -674,7 +859,10 @@ func (v *TosVisitor) VisitType(n *TypeRef) (interface{}, error) {
 	paramString := ""
 	params := make([]string, len(n.Parameters))
 	for i, param := range n.Parameters {
-		r, _ := param.Accept(v)
+		r, err := param.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		params[i] = r.(string)
 	}
 	if len(params) != 0 {
@@ -690,7 +878,10 @@ func (v *TosVisitor) VisitType(n *TypeRef) (interface{}, error) {
 func (v *TosVisitor) VisitBlock(n *Block) (interface{}, error) {
 	statements := make([]string, len(n.Statements))
 	for i, s := range n.Statements {
-		r, _ := s.Accept(v)
+		r, err := s.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		statements[i] = v.withIndent(r.(string)) + ";"
 	}
 	return strings.Join(statements, "\n"), nil
@@ -738,6 +929,9 @@ func (v *TosVisitor) VisitConstructorDeclaration(n *ConstructorDeclaration) (int
 
 func ToString(n Node) string {
 	visitor := &TosVisitor{}
-	r, _ := n.Accept(visitor)
+	r, err := n.Accept(visitor)
+	if err != nil {
+		panic(err)
+	}
 	return r.(string)
 }

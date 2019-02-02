@@ -47,7 +47,10 @@ func (v *Interpreter) LoadStaticField() {
 		objectMap := ast.NewObjectMap()
 		if classType.StaticFields != nil {
 			for _, f := range classType.StaticFields.Data {
-				val, _ := f.Expression.Accept(v)
+				val, err := f.Expression.Accept(v)
+				if err != nil {
+					panic(err)
+				}
 				objectMap.Set(f.Name, val.(*ast.Object))
 			}
 		}
@@ -225,7 +228,10 @@ func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
 			if err != nil {
 				return nil, err
 			}
-			iterator, _ := control.Expression.Accept(v)
+			iterator, err := control.Expression.Accept(v)
+			if err != nil {
+				return nil, err
+			}
 			records := iterator.(*ast.Object).Extra["records"].([]*ast.Object)
 			for _, record := range records {
 				v.Context.Env.Define(control.VariableDeclaratorId, record)
@@ -383,7 +389,10 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 		if f.Expression == nil {
 			newObj.InstanceFields.Set(f.Name, builtin.Null)
 		} else {
-			r, _ := f.Expression.Accept(v)
+			r, err := f.Expression.Accept(v)
+			if err != nil {
+				return nil, err
+			}
 			newObj.InstanceFields.Set(f.Name, r.(*ast.Object))
 		}
 	}
@@ -481,7 +490,10 @@ func (v *Interpreter) VisitNullLiteral(n *ast.NullLiteral) (interface{}, error) 
 func (v *Interpreter) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, error) {
 	if n.Op == "++" {
 		name := n.Expression.(*ast.Name)
-		l, _ := name.Accept(v)
+		l, err := name.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		exp := builtin.NewInteger(l.(*ast.Object).IntegerValue() + 1)
 		// TODO: implement
 		v.Context.Env.Update(name.Value[0], exp)
@@ -489,7 +501,10 @@ func (v *Interpreter) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, err
 	}
 	if n.Op == "--" {
 		name := n.Expression.(*ast.Name)
-		l, _ := name.Accept(v)
+		l, err := name.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 		exp := builtin.NewInteger(l.(*ast.Object).IntegerValue() - 1)
 		// TODO: implement
 		v.Context.Env.Update(name.Value[0], exp)
@@ -1012,7 +1027,10 @@ func (v *Interpreter) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) 
 	if err != nil {
 		return nil, err
 	}
-	f, _ := r.(*ast.Object).InstanceFields.Get(n.FieldName)
+	f, ok := r.(*ast.Object).InstanceFields.Get(n.FieldName)
+	if !ok {
+		panic("InstanceFields#Get failed")
+	}
 	return f, nil
 }
 
@@ -1116,7 +1134,10 @@ func (v *Interpreter) Equals(o, other *ast.Object) bool {
 	v.Context.Env = NewEnv(nil)
 	v.Context.Env.Define(method.Parameters[0].Name, other)
 	v.Context.Env.Define("this", o)
-	r, _ := method.Statements.Accept(v) // TODO
+	r, err := method.Statements.Accept(v) // TODO
+	if err != nil {
+		panic(err)
+	}
 	v.Context.Env = prev
 	return r.(*ast.Object).BoolValue()
 }

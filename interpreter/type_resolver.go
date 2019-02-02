@@ -69,7 +69,7 @@ func (r *TypeResolver) SetVariable(names []string, setValue *ast.Object) error {
 		}
 		if v, ok := r.Context.StaticField.Get("_", name); ok {
 			if val, ok := v.Get(names[1]); ok {
-				for _, f := range names[2:len(names)-1] {
+				for _, f := range names[2 : len(names)-1] {
 					val, ok = val.InstanceFields.Get(f)
 					if !ok {
 						return errors.Errorf("%s is not found in this scope", f)

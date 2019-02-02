@@ -276,7 +276,9 @@ func (v *TypeRefResolver) VisitBinaryOperator(n *ast.BinaryOperator) (interface{
 }
 
 func (v *TypeRefResolver) VisitReturn(n *ast.Return) (interface{}, error) {
-	n.Expression.Accept(v)
+	if n.Expression != nil {
+		n.Expression.Accept(v)
+	}
 	return nil, nil
 }
 
@@ -302,7 +304,9 @@ func (v *TypeRefResolver) VisitSwitch(n *ast.Switch) (interface{}, error) {
 	for _, w := range n.WhenStatements {
 		w.Accept(v)
 	}
-	n.ElseStatement.Accept(v)
+	if n.ElseStatement != nil {
+		n.ElseStatement.Accept(v)
+	}
 	return nil, nil
 }
 
@@ -409,6 +413,7 @@ func (v *TypeRefResolver) VisitType(n *ast.TypeRef) (interface{}, error) {
 			InstanceMethods: classType.InstanceMethods,
 			StaticMethods:   classType.StaticMethods,
 			Generics:        paramTypes,
+			ToString:        classType.ToString,
 		}, nil
 	}
 	return classType, nil

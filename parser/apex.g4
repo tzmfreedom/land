@@ -356,7 +356,7 @@ localVariableDeclaration
 statement
     :   block
     |   IF parExpression statement (ELSE statement)?
-    |   SWITCH ON expression '{' whenStatements  (ELSE block)? '}'
+    |   SWITCH ON expression '{' whenStatements  (WHEN ELSE block)? '}'
     |   FOR '(' forControl ')' statement
     |   WHILE parExpression statement
     |   DO statement WHILE parExpression

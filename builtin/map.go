@@ -19,6 +19,7 @@ func CreateMapType(keyClass, valueClass *ast.ClassType) *ast.ClassType {
 		StaticFields:    MapType.StaticFields,
 		StaticMethods:   MapType.StaticMethods,
 		Generics:        []*ast.ClassType{keyClass, valueClass},
+		ToString:        MapType.ToString,
 	}
 }
 
@@ -107,7 +108,10 @@ func createMapType() *ast.ClassType {
 			parameters[i] = fmt.Sprintf("%s => %s", k, String(v))
 			i++
 		}
-		return strings.Join(parameters, ", ")
+		if len(parameters) > 0 {
+			return fmt.Sprintf("<Map> { %s }", strings.Join(parameters, ", "))
+		}
+		return fmt.Sprintf("<Map> {}")
 	}
 	return classType
 }

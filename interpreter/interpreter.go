@@ -100,7 +100,7 @@ func (v *Interpreter) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) 
 		return records[key.IntegerValue()], nil
 	}
 
-	records := receiver.Extra["values"].(map[string]ast.Object)
+	records := receiver.Extra["values"].(map[string]*ast.Object)
 	return records[key.StringValue()], nil
 }
 
@@ -452,10 +452,10 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 			}
 		}
 	}
-	if classType == builtin.MapType {
+	if classType.Name == "Map" {
 		if n.Init == nil {
 			newObj.Extra["values"] = map[string]*ast.Object{}
-		} else if len(n.Init.Values) != 0 {
+		} else {
 			values := map[string]*ast.Object{}
 			for key, value := range n.Init.Values {
 				mapValue, err := value.Accept(v)
@@ -911,7 +911,27 @@ func (v *Interpreter) VisitStringLiteral(n *ast.StringLiteral) (interface{}, err
 }
 
 func (v *Interpreter) VisitSwitch(n *ast.Switch) (interface{}, error) {
-	return ast.VisitSwitch(v, n)
+	exp, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	expObj := exp.(*ast.Object)
+	for _, when := range n.WhenStatements {
+		for _, cond := range when.Condition {
+			c, err := cond.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+			condObj := c.(*ast.Object)
+			if v.Equals(expObj, condObj) {
+				return when.Statements.Accept(v)
+			}
+		}
+	}
+	if n.ElseStatement != nil {
+		return n.ElseStatement.Accept(v)
+	}
+	return nil, nil
 }
 
 func (v *Interpreter) VisitTrigger(n *ast.Trigger) (interface{}, error) {

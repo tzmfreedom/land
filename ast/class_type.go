@@ -207,15 +207,15 @@ func NewMethod(owner *ClassType, decl *MethodDeclaration) *Method {
 
 func NewConstructor(owner *ClassType, decl *ConstructorDeclaration) *Method {
 	return &Method{
-		Name:        decl.GetParent().(*ClassDeclaration).Name,
-		Modifiers:   decl.Modifiers,
-		Annotations: decl.Annotations,
-		Parameters:  decl.Parameters,
-		Throws:      decl.Throws,
-		Statements:  decl.Statements,
+		Name:          decl.GetParent().(*ClassDeclaration).Name,
+		Modifiers:     decl.Modifiers,
+		Annotations:   decl.Annotations,
+		Parameters:    decl.Parameters,
+		Throws:        decl.Throws,
+		Statements:    decl.Statements,
 		IsConstructor: true,
-		Location:    decl.Location,
-		Parent:      owner,
+		Location:      decl.Location,
+		Parent:        owner,
 	}
 }
 

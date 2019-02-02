@@ -312,8 +312,8 @@ type StringLiteral struct {
 
 type Switch struct {
 	Expression     Node
-	WhenStatements []Node
-	ElseStatement  Node
+	WhenStatements []*When
+	ElseStatement  *Block
 	Location       *Location
 	Parent         Node
 }

@@ -4,9 +4,10 @@ import (
 	"errors"
 	"fmt"
 
+	"strings"
+
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
-	"strings"
 )
 
 type TypeChecker struct {
@@ -389,6 +390,43 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 	typeResolver := NewTypeResolver(v.Context)
 	classType := n.Type
 
+	if classType.Name == "List" {
+		elemClass := classType.Generics[0]
+		for _, record := range n.Init.Records {
+			r, err := record.Accept(v)
+			paramElemClass := r.(*ast.ClassType)
+			if err != nil {
+				return nil, err
+			}
+			if builtin.Equals(paramElemClass, elemClass) {
+				v.AddError(fmt.Sprintf("initialization is not match type %s != %s", elemClass.Name, paramElemClass.Name), n)
+			}
+		}
+	}
+
+	if classType.Name == "Map" {
+		keyClass := classType.Generics[0]
+		valueClass := classType.Generics[1]
+		for key, value := range n.Init.Values {
+			r, err := key.Accept(v)
+			paramKeyClass := r.(*ast.ClassType)
+			if err != nil {
+				return nil, err
+			}
+			if builtin.Equals(paramKeyClass, keyClass) {
+				v.AddError(fmt.Sprintf("initialization is not match type %s != %s", keyClass.Name, paramKeyClass.Name), n)
+			}
+			r, err = value.Accept(v)
+			paramValueClass := r.(*ast.ClassType)
+			if err != nil {
+				return nil, err
+			}
+			if builtin.Equals(paramValueClass, valueClass) {
+				v.AddError(fmt.Sprintf("initialization is not match type %s != %s", valueClass.Name, paramValueClass.Name), n)
+			}
+		}
+	}
+
 	if classType.IsAbstract() || classType.Constructors == nil {
 		v.AddError(fmt.Sprintf("Type cannot be constructed: %s", classType.Name), n)
 		return n.Type, nil
@@ -424,7 +462,10 @@ func (v *TypeChecker) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, err
 }
 
 func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, error) {
-	r, _ := n.Right.Accept(v)
+	r, err := n.Right.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	if n.Op == "=" ||
 		n.Op == "=+" ||
 		n.Op == "=-" ||
@@ -441,8 +482,14 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			}
 			l = left
 		case *ast.FieldAccess:
-			classType, _ := leftNode.Expression.Accept(v)
-			f, _ := FindInstanceField(classType.(*ast.ClassType), leftNode.FieldName, MODIFIER_PUBLIC_ONLY, true)
+			classType, err := leftNode.Expression.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+			f, err := FindInstanceField(classType.(*ast.ClassType), leftNode.FieldName, MODIFIER_PUBLIC_ONLY, true)
+			if err != nil {
+				return nil, err
+			}
 			l = f.Type
 		case *ast.ArrayAccess:
 			left, err := leftNode.Accept(v)

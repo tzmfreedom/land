@@ -23,6 +23,7 @@ func CreateListType(classType *ast.ClassType) *ast.ClassType {
 		StaticFields:    ListType.StaticFields,
 		StaticMethods:   ListType.StaticMethods,
 		Generics:        []*ast.ClassType{classType},
+		ToString:        ListType.ToString,
 	}
 }
 

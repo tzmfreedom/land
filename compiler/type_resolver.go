@@ -78,9 +78,9 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*ast.C
 			if checkSetter && instanceField.IsFinal() {
 				if r.Context.CurrentMethod.IsConstructor || r.Context.CurrentMethod == nil {
 					if len(names) == 2 && names[0] == "this" {
-					// OK
+						// OK
 					} else {
-					// NG
+						// NG
 					}
 				}
 			}

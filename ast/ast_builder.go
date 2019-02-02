@@ -677,43 +677,56 @@ func (v *Builder) VisitStatement(ctx *parser.StatementContext) interface{} {
 	if t := ctx.TRY(); t != nil {
 		try := &Try{Location: v.newLocation(ctx)}
 		try.Block = ctx.Block().Accept(v).(*Block)
+		try.Block.SetParent(try)
 		if clauses := ctx.AllCatchClause(); len(clauses) != 0 {
 			try.CatchClause = make([]*Catch, len(clauses))
 			for i, c := range clauses {
 				try.CatchClause[i] = c.Accept(v).(*Catch)
+				try.CatchClause[i].SetParent(try)
 			}
 		} else {
 			try.CatchClause = []*Catch{}
 		}
 		if b := ctx.FinallyBlock(); b != nil {
 			try.FinallyBlock = b.Accept(v).(*Block)
+			try.FinallyBlock.SetParent(try)
 		}
 		return try
 	} else if t := ctx.IF(); t != nil {
 		n := &If{Location: v.newLocation(ctx)}
 		n.Condition = ctx.ParExpression().Accept(v).(Node)
+		n.Condition.SetParent(n)
 		n.IfStatement = ctx.Statement(0).Accept(v).(Node)
 		if ctx.Statement(1) != nil {
 			n.ElseStatement = ctx.Statement(1).Accept(v).(Node)
+			n.ElseStatement.SetParent(n)
 		}
+		n.IfStatement.SetParent(n)
 		return n
 	} else if s := ctx.SWITCH(); s != nil {
 		n := &Switch{Location: v.newLocation(ctx)}
 		n.Expression = ctx.Expression().Accept(v).(Node)
-		n.WhenStatements = ctx.WhenStatements().Accept(v).([]Node)
+		n.Expression.SetParent(n)
+		n.WhenStatements = ctx.WhenStatements().Accept(v).([]*When)
+		for _, when := range n.WhenStatements {
+			when.SetParent(n)
+		}
 		if b := ctx.Block(); b != nil {
-			n.ElseStatement = b.Accept(v).(Node)
+			n.ElseStatement = b.Accept(v).(*Block)
+			n.ElseStatement.SetParent(n)
 		}
 		return n
 	} else if s := ctx.FOR(); s != nil {
 		n := &For{Location: v.newLocation(ctx)}
 		n.Control = ctx.ForControl().Accept(v).(Node)
+		n.Control.SetParent(n)
 		n.Statements = ctx.Statement(0).Accept(v).(*Block)
 		n.Statements.SetParent(n)
 		return n
 	} else if s := ctx.WHILE(); s != nil {
 		n := &While{Location: v.newLocation(ctx)}
 		n.Condition = ctx.ParExpression().Accept(v).(Node)
+		n.Condition.SetParent(n)
 		n.Statements = ctx.Statement(0).Accept(v).(*Block)
 		n.Statements.SetParent(n)
 		n.IsDo = ctx.DO() != nil
@@ -722,11 +735,13 @@ func (v *Builder) VisitStatement(ctx *parser.StatementContext) interface{} {
 		n := &Return{Location: v.newLocation(ctx)}
 		if e := ctx.Expression(); e != nil {
 			n.Expression = e.Accept(v).(Node)
+			n.Expression.SetParent(n)
 		}
 		return n
 	} else if s := ctx.THROW(); s != nil {
 		n := &Throw{Location: v.newLocation(ctx)}
 		n.Expression = ctx.Expression().Accept(v).(Node)
+		n.Expression.SetParent(n)
 		return n
 	} else if s := ctx.BREAK(); s != nil {
 		return &Break{Location: v.newLocation(ctx)}
@@ -793,9 +808,9 @@ func (v *Builder) VisitFinallyBlock(ctx *parser.FinallyBlockContext) interface{}
 
 func (v *Builder) VisitWhenStatements(ctx *parser.WhenStatementsContext) interface{} {
 	whenStatements := ctx.AllWhenStatement()
-	statements := make([]Node, len(whenStatements))
+	statements := make([]*When, len(whenStatements))
 	for i, s := range whenStatements {
-		statements[i] = s.Accept(v).(Node)
+		statements[i] = s.Accept(v).(*When)
 	}
 	return statements
 }

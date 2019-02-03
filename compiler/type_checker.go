@@ -179,7 +179,7 @@ func (v *TypeChecker) VisitDml(n *ast.Dml) (interface{}, error) {
 		return nil, err
 	}
 	if t != builtin.ListType {
-// TODO: impl
+		// TODO: impl
 	}
 	return nil, nil
 }
@@ -410,14 +410,16 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 
 	if classType.Name == "List" {
 		elemClass := classType.Generics[0]
-		for _, record := range n.Init.Records {
-			r, err := record.Accept(v)
-			paramElemClass := r.(*ast.ClassType)
-			if err != nil {
-				return nil, err
-			}
-			if builtin.Equals(paramElemClass, elemClass) {
-				v.AddError(fmt.Sprintf("initialization is not match type %s != %s", elemClass.Name, paramElemClass.Name), n)
+		if n.Init != nil {
+			for _, record := range n.Init.Records {
+				r, err := record.Accept(v)
+				paramElemClass := r.(*ast.ClassType)
+				if err != nil {
+					return nil, err
+				}
+				if builtin.Equals(paramElemClass, elemClass) {
+					v.AddError(fmt.Sprintf("initialization is not match type %s != %s", elemClass.Name, paramElemClass.Name), n)
+				}
 			}
 		}
 	}
@@ -425,22 +427,24 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 	if classType.Name == "Map" {
 		keyClass := classType.Generics[0]
 		valueClass := classType.Generics[1]
-		for key, value := range n.Init.Values {
-			r, err := key.Accept(v)
-			paramKeyClass := r.(*ast.ClassType)
-			if err != nil {
-				return nil, err
-			}
-			if builtin.Equals(paramKeyClass, keyClass) {
-				v.AddError(fmt.Sprintf("initialization is not match type %s != %s", keyClass.Name, paramKeyClass.Name), n)
-			}
-			r, err = value.Accept(v)
-			paramValueClass := r.(*ast.ClassType)
-			if err != nil {
-				return nil, err
-			}
-			if builtin.Equals(paramValueClass, valueClass) {
-				v.AddError(fmt.Sprintf("initialization is not match type %s != %s", valueClass.Name, paramValueClass.Name), n)
+		if n.Init != nil {
+			for key, value := range n.Init.Values {
+				r, err := key.Accept(v)
+				paramKeyClass := r.(*ast.ClassType)
+				if err != nil {
+					return nil, err
+				}
+				if builtin.Equals(paramKeyClass, keyClass) {
+					v.AddError(fmt.Sprintf("initialization is not match type %s != %s", keyClass.Name, paramKeyClass.Name), n)
+				}
+				r, err = value.Accept(v)
+				paramValueClass := r.(*ast.ClassType)
+				if err != nil {
+					return nil, err
+				}
+				if builtin.Equals(paramValueClass, valueClass) {
+					v.AddError(fmt.Sprintf("initialization is not match type %s != %s", valueClass.Name, paramValueClass.Name), n)
+				}
 			}
 		}
 	}

@@ -7,12 +7,13 @@ import (
 
 	"strings"
 
+	"errors"
+	"fmt"
+
 	"github.com/k0kubun/pp"
 	"github.com/tzmfreedom/goland/ast"
 	"github.com/tzmfreedom/goland/builtin"
 	"github.com/tzmfreedom/goland/compiler"
-	"errors"
-	"fmt"
 )
 
 type Interpreter struct {

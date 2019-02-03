@@ -434,7 +434,7 @@ public void action(){
     when Account a {
       false;
     }
-    else {
+    when else {
       1;
     }
   }
@@ -488,8 +488,8 @@ public void action(){
 					Expression: &Name{
 						Value: []string{"i"},
 					},
-					WhenStatements: []Node{
-						&When{
+					WhenStatements: []*When{
+						{
 							Condition: []Node{
 								&IntegerLiteral{
 									Value: 1,
@@ -503,7 +503,7 @@ public void action(){
 								},
 							},
 						},
-						&When{
+						{
 							Condition: []Node{
 								&IntegerLiteral{
 									Value: 2,
@@ -520,7 +520,7 @@ public void action(){
 								},
 							},
 						},
-						&When{
+						{
 							Condition: []Node{
 								&WhenType{
 									TypeRef: &TypeRef{

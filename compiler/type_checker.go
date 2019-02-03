@@ -397,16 +397,52 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 }
 
 func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
-	params := make([]*ast.ClassType, len(n.Parameters))
-	for i, p := range n.Parameters {
-		param, err := p.Accept(v)
-		if err != nil {
-			return nil, err
-		}
-		params[i] = param.(*ast.ClassType)
-	}
-	typeResolver := NewTypeResolver(v.Context)
 	classType := n.Type
+
+	params := make([]*ast.ClassType, len(n.Parameters))
+	if classType.SuperClass == builtin.SObjectType {
+		for _, p := range n.Parameters {
+			binOp, ok := p.(*ast.BinaryOperator)
+			if !ok {
+				v.AddError(fmt.Sprintf("Type requires name=value pair construction: %s", n.Type.Name), n)
+				continue
+			}
+			if binOp.Op != "=" {
+				v.AddError(fmt.Sprintf("Type requires name=value pair construction: %s", n.Type.Name), n)
+				continue
+			}
+			name, ok := binOp.Left.(*ast.Name)
+			if !ok {
+				v.AddError(fmt.Sprintf("Type requires name=value pair construction: %s", n.Type.Name), n)
+				continue
+			}
+			if len(name.Value) > 1 {
+				v.AddError("Unexpected token '.'", n)
+				continue
+			}
+			f, ok := classType.InstanceFields.Get(name.Value[0])
+			if !ok {
+				v.AddError(fmt.Sprintf("Field does not exist: %s on %s", name.Value[0], n.Type.Name), n)
+				continue
+			}
+			value, err := binOp.Right.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+			valueType := value.(*ast.ClassType)
+			if !builtin.Equals(f.Type, valueType) {
+				v.AddError(fmt.Sprintf("Ileegal assignment from %s to %s", valueType.Name, f.Type.Name), n)
+			}
+		}
+	} else {
+		for i, p := range n.Parameters {
+			param, err := p.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+			params[i] = param.(*ast.ClassType)
+		}
+	}
 
 	if classType.Name == "List" {
 		elemClass := classType.Generics[0]
@@ -453,9 +489,10 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 		v.AddError(fmt.Sprintf("Type cannot be constructed: %s", classType.Name), n)
 		return n.Type, nil
 	}
-	if !classType.HasConstructor() {
+	if !classType.HasConstructor() || classType.SuperClass == builtin.SObjectType {
 		return n.Type, nil
 	}
+	typeResolver := NewTypeResolver(v.Context)
 	_, method, err := typeResolver.SearchConstructor(classType, params)
 	if err != nil {
 		return nil, err
@@ -527,7 +564,7 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", l.String(), r.(*ast.ClassType).String()), n.Left)
 		}
 		if soql, ok := n.Right.(*ast.Soql); ok {
-			if l.SuperClass.Name == "SObject" {
+			if l.SuperClass == builtin.SObjectType {
 				soql.ExactlyOne = true
 			}
 		}
@@ -680,7 +717,7 @@ func (v *TypeChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (inte
 			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", n.Type.String(), t.(*ast.ClassType).String()), n)
 		}
 		if soql, ok := d.Expression.(*ast.Soql); ok {
-			if n.Type.SuperClass.Name == "SObject" {
+			if n.Type.SuperClass == builtin.SObjectType {
 				soql.ExactlyOne = true
 			}
 		}

@@ -424,6 +424,25 @@ func (v *Interpreter) VisitNew(n *ast.New) (interface{}, error) {
 			v.Context.Env = prev
 		}
 	}
+
+	if classType.SuperClass == builtin.SObjectType {
+		for _, p := range n.Parameters {
+			binOp, ok := p.(*ast.BinaryOperator)
+			if !ok {
+				panic("not pass")
+			}
+			name, ok := binOp.Left.(*ast.Name)
+			if !ok {
+				panic("not pass")
+			}
+			value, err := binOp.Right.Accept(v)
+			if err != nil {
+				return nil, err
+			}
+			newObj.InstanceFields.Set(name.Value[0], value.(*ast.Object))
+		}
+	}
+
 	if classType.Name == "List" {
 		newObj.Extra["records"] = []*ast.Object{}
 		if n.Init != nil {

@@ -1,6 +1,10 @@
 package builtin
 
 import (
+	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/tzmfreedom/go-soapforce"
 	"github.com/tzmfreedom/goland/ast"
 )
@@ -94,6 +98,7 @@ func LoadSObjectClass(src string) {
 			StaticFields:    ast.NewFieldMap(),
 			InstanceMethods: ast.NewMethodMap(),
 			StaticMethods:   ast.NewMethodMap(),
+			ToString:        SObjectType.ToString,
 		})
 	}
 }
@@ -139,18 +144,44 @@ func init() {
 		},
 	)
 
-	SObjectType.Constructors = []*ast.Method{
-		{
-			Modifiers:  []*ast.Modifier{ast.PublicModifier()},
-			Parameters: []*ast.Parameter{},
-			NativeFunction: func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-				return nil
-			},
-		},
-	}
+	SObjectType.Constructors = []*ast.Method{}
 	SObjectType.InstanceFields = ast.NewFieldMap()
 	SObjectType.StaticFields = ast.NewFieldMap()
 	SObjectType.InstanceMethods = instanceMethods
 	SObjectType.StaticMethods = ast.NewMethodMap()
+	SObjectType.ToString = func(o *ast.Object) string {
+		i := 0
+		names := make([]string, len(o.InstanceFields.Data))
+		for name, _ := range o.InstanceFields.Data {
+			names[i] = name
+			i++
+		}
+		sort.Slice(names, func(i, j int) bool {
+			return names[i] < names[j]
+		})
+
+		fields := []string{}
+		for _, name := range names {
+			r, ok := o.InstanceFields.Get(name)
+			if !ok {
+				panic("InstanceFields.Get#failed")
+			}
+			if r == Null {
+				continue
+			}
+			fields = append(fields, fmt.Sprintf("  %s: %s", name, String(r)))
+		}
+		fieldStr := ""
+		if len(fields) != 0 {
+			fieldStr = fmt.Sprintf("\n%s\n", strings.Join(fields, "\n"))
+		}
+
+		return fmt.Sprintf(
+			`<%s> {%s%s`,
+			o.ClassType.Name,
+			fieldStr,
+			"}",
+		)
+	}
 	primitiveClassMap.Set("SObject", SObjectType)
 }

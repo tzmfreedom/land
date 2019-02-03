@@ -1,11 +1,6 @@
 package builtin
 
-import (
-	"fmt"
-	"io"
-
-	"github.com/tzmfreedom/goland/ast"
-)
+import "github.com/tzmfreedom/goland/ast"
 
 var schemaSObjectType *ast.ClassType
 var describeSObjectResultType *ast.ClassType
@@ -68,8 +63,8 @@ func init() {
 				},
 				"newSObject": {
 					&ast.Method{
-						Name:      "newSObject",
-						Modifiers: []*ast.Modifier{ast.PublicModifier()},
+						Name:       "newSObject",
+						Modifiers:  []*ast.Modifier{ast.PublicModifier()},
 						Parameters: []*ast.Parameter{},
 						ReturnType: SObjectType,
 						NativeFunction: func(this *ast.Object, parameter []*ast.Object, extra map[string]interface{}) interface{} {
@@ -91,8 +86,7 @@ func init() {
 		"DescribeSObjectResult",
 		nil,
 		&ast.MethodMap{
-			Data: map[string][]*ast.Method{
-			},
+			Data: map[string][]*ast.Method{},
 		},
 		ast.NewMethodMap(),
 	)

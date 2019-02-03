@@ -118,7 +118,7 @@ func init() {
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					tm := this.Extra["value"].(time.Time)
-					return NewInteger(tm.Nanosecond()/1000)
+					return NewInteger(tm.Nanosecond() / 1000)
 				},
 			),
 		},

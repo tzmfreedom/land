@@ -270,13 +270,13 @@ func (v *TypeChecker) VisitEnhancedForControl(n *ast.EnhancedForControl) (interf
 	v.Context.Env.Set(n.VariableDeclaratorId, declClassType)
 
 	if expClassType.Name != "List" && expClassType.Name != "Set" {
-		v.AddError(fmt.Sprintf("expression <%s> must be List or Set expression", expClassType.Name), n)
+		v.AddError(fmt.Sprintf("expression <%s> must be List or Set expression", expClassType.String()), n)
 		return nil, nil
 	}
 
 	genericsType := expClassType.Generics[0]
 	if !builtin.Equals(declClassType, genericsType) {
-		v.AddError(fmt.Sprintf("expression <%s> must be <%s> expression", declClassType.Name, expClassType.Name), n)
+		v.AddError(fmt.Sprintf("expression <%s> must be <%s> expression", declClassType.String(), expClassType.String()), n)
 	}
 	return nil, nil
 }
@@ -404,16 +404,16 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 		for _, p := range n.Parameters {
 			binOp, ok := p.(*ast.BinaryOperator)
 			if !ok {
-				v.AddError(fmt.Sprintf("Type requires name=value pair construction: %s", n.Type.Name), n)
+				v.AddError(fmt.Sprintf("Type requires name=value pair construction: %s", n.Type.String()), n)
 				continue
 			}
 			if binOp.Op != "=" {
-				v.AddError(fmt.Sprintf("Type requires name=value pair construction: %s", n.Type.Name), n)
+				v.AddError(fmt.Sprintf("Type requires name=value pair construction: %s", n.Type.String()), n)
 				continue
 			}
 			name, ok := binOp.Left.(*ast.Name)
 			if !ok {
-				v.AddError(fmt.Sprintf("Type requires name=value pair construction: %s", n.Type.Name), n)
+				v.AddError(fmt.Sprintf("Type requires name=value pair construction: %s", n.Type.String()), n)
 				continue
 			}
 			if len(name.Value) > 1 {
@@ -422,7 +422,7 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 			}
 			f, ok := classType.InstanceFields.Get(name.Value[0])
 			if !ok {
-				v.AddError(fmt.Sprintf("Field does not exist: %s on %s", name.Value[0], n.Type.Name), n)
+				v.AddError(fmt.Sprintf("Field does not exist: %s on %s", name.Value[0], n.Type.String()), n)
 				continue
 			}
 			value, err := binOp.Right.Accept(v)
@@ -431,7 +431,7 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 			}
 			valueType := value.(*ast.ClassType)
 			if !builtin.Equals(f.Type, valueType) {
-				v.AddError(fmt.Sprintf("Ileegal assignment from %s to %s", valueType.Name, f.Type.Name), n)
+				v.AddError(fmt.Sprintf("Illegal assignment from %s to %s", valueType.String(), f.Type.String()), n)
 			}
 		}
 	} else {
@@ -454,7 +454,7 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 					return nil, err
 				}
 				if builtin.Equals(paramElemClass, elemClass) {
-					v.AddError(fmt.Sprintf("initialization is not match type %s != %s", elemClass.Name, paramElemClass.Name), n)
+					v.AddError(fmt.Sprintf("initialization is not match type %s != %s", elemClass.String(), paramElemClass.String()), n)
 				}
 			}
 		}
@@ -471,7 +471,7 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 					return nil, err
 				}
 				if builtin.Equals(paramKeyClass, keyClass) {
-					v.AddError(fmt.Sprintf("initialization is not match type %s != %s", keyClass.Name, paramKeyClass.Name), n)
+					v.AddError(fmt.Sprintf("initialization is not match type %s != %s", keyClass.String(), paramKeyClass.String()), n)
 				}
 				r, err = value.Accept(v)
 				paramValueClass := r.(*ast.ClassType)
@@ -479,14 +479,14 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 					return nil, err
 				}
 				if builtin.Equals(paramValueClass, valueClass) {
-					v.AddError(fmt.Sprintf("initialization is not match type %s != %s", valueClass.Name, paramValueClass.Name), n)
+					v.AddError(fmt.Sprintf("initialization is not match type %s != %s", valueClass.String(), paramValueClass.String()), n)
 				}
 			}
 		}
 	}
 
 	if classType.IsAbstract() || classType.Constructors == nil {
-		v.AddError(fmt.Sprintf("Type cannot be constructed: %s", classType.Name), n)
+		v.AddError(fmt.Sprintf("Type cannot be constructed: %s", classType.String()), n)
 		return n.Type, nil
 	}
 	if !classType.HasConstructor() || classType.SuperClass == builtin.SObjectType {
@@ -498,12 +498,12 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 		return nil, err
 	}
 	if method == nil {
-		v.AddError(fmt.Sprintf("constructor <%s> not found", classType.Name), n)
+		v.AddError(fmt.Sprintf("constructor <%s> not found", classType.String()), n)
 		return n.Type, nil
 	}
 	// TODO: for protected impl
 	if method.IsPrivate() && v.Context.CurrentClass != classType {
-		v.AddError(fmt.Sprintf("constructor <%s> not found", classType.Name), n)
+		v.AddError(fmt.Sprintf("constructor <%s> not found", classType.String()), n)
 	}
 	return n.Type, nil
 }
@@ -561,7 +561,7 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			l = left.(*ast.ClassType)
 		}
 		if r != nil && !builtin.Equals(l, r.(*ast.ClassType)) {
-			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", l.String(), r.(*ast.ClassType).String()), n.Left)
+			v.AddError(fmt.Sprintf("Illegal assignment from %s to %s", r.(*ast.ClassType).String(), l.String()), n.Left)
 		}
 		if soql, ok := n.Right.(*ast.Soql); ok {
 			if l.SuperClass == builtin.SObjectType {
@@ -644,12 +644,12 @@ func (v *TypeChecker) VisitThrow(n *ast.Throw) (interface{}, error) {
 	baseClass := r.(*ast.ClassType)
 	super := baseClass.SuperClass
 	if super == nil {
-		v.AddError(fmt.Sprintf("Throw expression must be of type exception: %s", baseClass.Name), n)
+		v.AddError(fmt.Sprintf("Throw expression must be of type exception: %s", baseClass.String()), n)
 	} else {
 		if err != nil {
 			v.AddError(err.Error(), n)
 		} else if super != builtin.ExceptionType {
-			v.AddError(fmt.Sprintf("Throw expression must be of type exception: %s", baseClass.Name), n)
+			v.AddError(fmt.Sprintf("Throw expression must be of type exception: %s", baseClass.String()), n)
 		}
 	}
 	return nil, nil
@@ -714,7 +714,7 @@ func (v *TypeChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (inte
 		}
 		v.Context.Env.Set(d.Name, n.Type)
 		if !builtin.Equals(n.Type, t.(*ast.ClassType)) {
-			v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", n.Type.String(), t.(*ast.ClassType).String()), n)
+			v.AddError(fmt.Sprintf("Illegal assignment from %s to %s", t.(*ast.ClassType).String(), n.Type.String()), n)
 		}
 		if soql, ok := d.Expression.(*ast.Soql); ok {
 			if n.Type.SuperClass == builtin.SObjectType {
@@ -762,7 +762,7 @@ func (v *TypeChecker) VisitCastExpression(n *ast.CastExpression) (interface{}, e
 	}
 	expClassType := exp.(*ast.ClassType)
 	if !builtin.Equals(expClassType, n.CastType) {
-		v.AddError(fmt.Sprintf("invalid cast (%s)%s", n.CastType.Name, expClassType.Name), n)
+		v.AddError(fmt.Sprintf("invalid cast (%s)%s", n.CastType.String(), expClassType.String()), n)
 	}
 	return n.CastType, nil
 }

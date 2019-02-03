@@ -44,7 +44,7 @@ func NewInterpreterWithBuiltin(classTypes []*ast.ClassType) *Interpreter {
 	return interpreter
 }
 
-var binaryOperator = map[string]func(*ast.Object, *ast.Object) *ast.Object {
+var binaryOperator = map[string]func(*ast.Object, *ast.Object) *ast.Object{
 	"=": func(lObj *ast.Object, rObj *ast.Object) *ast.Object {
 		return rObj
 	},
@@ -1094,7 +1094,7 @@ func (v *Interpreter) VisitCastExpression(n *ast.CastExpression) (interface{}, e
 	if !builtin.Equals(n.CastType, expObj.ClassType) {
 		return nil, fmt.Errorf("Cast type is not match %s != %s", n.CastType.Name, expObj.ClassType.Name)
 	}
-	return nil, nil
+	return expObj, nil
 }
 
 func (v *Interpreter) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) {

@@ -1,9 +1,10 @@
 package builtin
 
 import (
-	"github.com/tzmfreedom/go-soapforce"
 	"github.com/tzmfreedom/goland/ast"
 )
+
+var saveResultType *ast.ClassType
 
 func init() {
 	instanceMethods := ast.NewMethodMap()
@@ -48,48 +49,37 @@ func init() {
 	)
 
 	classMap := ast.NewClassMap()
-	saveResult := ast.CreateClass(
+	saveResultType = ast.CreateClass(
 		"SaveResult",
 		[]*ast.Method{},
 		instanceMethods,
 		ast.NewMethodMap(),
 	)
-	classMap.Set("SaveResult", saveResult)
+	classMap.Set("SaveResult", saveResultType)
 	nameSpaceStore.Set("Database", classMap)
 
 	staticMethods := ast.NewMethodMap()
 	method := ast.CreateMethod(
 		"insert",
-		saveResult,
+		saveResultType,
 		[]*ast.Parameter{objectTypeParameter}, // TODO: SObject or List<SObject>
 		func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-			sobj := params[0]
-			record := &soapforce.SObject{}
-			for k, v := range sobj.InstanceFields.All() {
-				record.Fields[k] = v.Value()
+			obj := params[0]
+			var records []*ast.Object
+			// TODO: check SObject class
+			if obj.ClassType.Name == "List" {
+				records = obj.Extra["records"].([]*ast.Object)
+			} else {
+				records = []*ast.Object{obj}
 			}
-			client := extra["client"].(*soapforce.Client)
-			rawSaveResults, err := client.Create([]*soapforce.SObject{record})
-			if err != nil {
-				panic(err)
-			}
-			retSaveResults := make([]*ast.Object, len(rawSaveResults))
-			for i, sr := range rawSaveResults {
-				obj := ast.CreateObject(saveResult)
-				obj.Extra["isSuccess"] = NewBoolean(sr.Success)
-				obj.Extra["id"] = NewString(sr.Id)
-				obj.Extra["errors"] = sr.Errors
-				retSaveResults[i] = obj
-			}
-			listObject := ast.CreateObject(ListType)
-			listObject.Extra["records"] = retSaveResults
-			return listObject
+			sObjectType := records[0].ClassType.Name
+			return DatabaseDriver.Execute("insert", sObjectType, records, "")
 		},
 	)
 	staticMethods.Set("insert", []*ast.Method{method})
 	method = ast.CreateMethod(
 		"setSavePoint",
-		saveResult, // TODO: implement
+		nil, // TODO: implement
 		[]*ast.Parameter{},
 		func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 			return Null

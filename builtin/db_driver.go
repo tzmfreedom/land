@@ -12,6 +12,7 @@ import (
 	"github.com/k0kubun/pp"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/tzmfreedom/goland/ast"
+	"strconv"
 )
 
 type databaseDriver struct {
@@ -90,8 +91,9 @@ func (d *databaseDriver) Rollback() {
 	d.db.Exec("ROLLBACK;")
 }
 
-func (d *databaseDriver) Execute(dmlType string, sObjectType string, records []*ast.Object, upsertKey string) {
-	for _, record := range records {
+func (d *databaseDriver) Execute(dmlType string, sObjectType string, records []*ast.Object, upsertKey string) *ast.Object {
+	saveResults := make([]*ast.Object, len(records))
+	for i, record := range records {
 		var query string
 
 		switch dmlType {
@@ -146,11 +148,26 @@ func (d *databaseDriver) Execute(dmlType string, sObjectType string, records []*
 				id.StringValue(),
 			)
 		}
-		_, err := d.db.Exec(query)
+		result, err := d.db.Exec(query)
 		if err != nil {
 			panic(err)
 		}
+		obj := ast.CreateObject(saveResultType)
+		obj.Extra["isSuccess"] = NewBoolean(err == nil)
+		if err == nil {
+			id, err := result.LastInsertId()
+			if err != nil {
+				panic(err)
+			}
+			obj.Extra["id"] = NewString(fmt.Sprintf("%d", id))
+		} else {
+			obj.Extra["errors"] = err.Error()
+		}
+		saveResults[i] = obj
 	}
+	listObject := ast.CreateObject(ListType)
+	listObject.Extra["records"] = saveResults
+	return listObject
 }
 
 func (d *databaseDriver) ExecuteRaw(query string, args ...interface{}) error {

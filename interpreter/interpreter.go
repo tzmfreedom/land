@@ -44,6 +44,120 @@ func NewInterpreterWithBuiltin(classTypes []*ast.ClassType) *Interpreter {
 	return interpreter
 }
 
+var binaryOperator = map[string]func(*ast.Object, *ast.Object) *ast.Object {
+	"=": func(lObj *ast.Object, rObj *ast.Object) *ast.Object {
+		return rObj
+	},
+	"+=": func(lObj *ast.Object, rObj *ast.Object) *ast.Object {
+		lType := lObj.ClassType
+		rType := rObj.ClassType
+		if lType == builtin.IntegerType {
+			l := lObj.IntegerValue()
+			if rType == builtin.IntegerType {
+				r := rObj.IntegerValue()
+				return builtin.NewInteger(l + r)
+			}
+			if rType == builtin.DoubleType {
+				r := rObj.DoubleValue()
+				return builtin.NewDouble(float64(l) + r)
+			}
+		} else if lType == builtin.DoubleType {
+			l := lObj.DoubleValue()
+			if rType == builtin.IntegerType {
+				r := rObj.IntegerValue()
+				return builtin.NewDouble(l + float64(r))
+			}
+			if rType == builtin.DoubleType {
+				r := rObj.DoubleValue()
+				return builtin.NewDouble(r + l)
+			}
+		} else if lType == builtin.StringType {
+			l := lObj.StringValue()
+			r := rObj.StringValue()
+			return builtin.NewString(l + r)
+		}
+		panic("not pass")
+	},
+	"-=": func(lObj *ast.Object, rObj *ast.Object) *ast.Object {
+		lType := lObj.ClassType
+		rType := rObj.ClassType
+		if lType == builtin.IntegerType {
+			l := lObj.IntegerValue()
+			if rType == builtin.IntegerType {
+				r := rObj.IntegerValue()
+				return builtin.NewInteger(l - r)
+			}
+			if rType == builtin.DoubleType {
+				r := rObj.DoubleValue()
+				return builtin.NewDouble(float64(l) - r)
+			}
+		} else if lType == builtin.DoubleType {
+			l := lObj.DoubleValue()
+			if rType == builtin.IntegerType {
+				r := rObj.IntegerValue()
+				return builtin.NewDouble(l - float64(r))
+			}
+			if rType == builtin.DoubleType {
+				r := rObj.DoubleValue()
+				return builtin.NewDouble(r - l)
+			}
+		}
+		panic("not pass")
+	},
+	"*=": func(lObj *ast.Object, rObj *ast.Object) *ast.Object {
+		lType := lObj.ClassType
+		rType := rObj.ClassType
+		if lType == builtin.IntegerType {
+			l := lObj.IntegerValue()
+			if rType == builtin.IntegerType {
+				r := rObj.IntegerValue()
+				return builtin.NewInteger(l * r)
+			}
+			if rType == builtin.DoubleType {
+				r := rObj.DoubleValue()
+				return builtin.NewDouble(float64(l) * r)
+			}
+		} else if lType == builtin.DoubleType {
+			l := lObj.DoubleValue()
+			if rType == builtin.IntegerType {
+				r := rObj.IntegerValue()
+				return builtin.NewDouble(l * float64(r))
+			}
+			if rType == builtin.DoubleType {
+				r := rObj.DoubleValue()
+				return builtin.NewDouble(r * l)
+			}
+		}
+		panic("not pass")
+	},
+	"/=": func(lObj *ast.Object, rObj *ast.Object) *ast.Object {
+		lType := lObj.ClassType
+		rType := rObj.ClassType
+		if lType == builtin.IntegerType {
+			l := lObj.IntegerValue()
+			if rType == builtin.IntegerType {
+				r := rObj.IntegerValue()
+				return builtin.NewInteger(l / r)
+			}
+			if rType == builtin.DoubleType {
+				r := rObj.DoubleValue()
+				return builtin.NewDouble(float64(l) / r)
+			}
+		} else if lType == builtin.DoubleType {
+			l := lObj.DoubleValue()
+			if rType == builtin.IntegerType {
+				r := rObj.IntegerValue()
+				return builtin.NewDouble(l / float64(r))
+			}
+			if rType == builtin.DoubleType {
+				r := rObj.DoubleValue()
+				return builtin.NewDouble(r / l)
+			}
+		}
+		panic("not pass")
+	},
+}
+
 func (v *Interpreter) LoadStaticField() {
 	v.Context.StaticField = NewStaticFieldMap()
 	for className, classType := range v.Context.ClassTypes.Data {
@@ -642,10 +756,6 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			}
 		}
 		panic("type error")
-	case "%":
-		l := lObj.IntegerValue()
-		r := rObj.IntegerValue()
-		return builtin.NewInteger(l % r), nil
 	case "<":
 		if lType == builtin.IntegerType {
 			l := lObj.IntegerValue()
@@ -764,7 +874,9 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			r := rObj.StringValue()
 			return builtin.NewBoolean(l == r), nil
 		}
-		panic("type error")
+		return builtin.NewBoolean(v.Equals(lObj, rObj)), nil
+	case "===":
+		return builtin.NewBoolean(lObj == rObj), nil
 	case "!=":
 		if lType == builtin.IntegerType {
 			l := lObj.IntegerValue()
@@ -791,19 +903,25 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			r := rObj.StringValue()
 			return builtin.NewBoolean(l != r), nil
 		}
-		panic("type error")
-	case "=":
-		// TODO: implement
+		return builtin.NewBoolean(!v.Equals(lObj, rObj)), nil
+	case "!==":
+		return builtin.NewBoolean(lObj != rObj), nil
+	case "&&":
+		return builtin.NewBoolean(lObj.BoolValue() && rObj.BoolValue()), nil
+	case "||":
+		return builtin.NewBoolean(lObj.BoolValue() || rObj.BoolValue()), nil
+	case "=", "+=", "-=", "*=", "/=":
+		value := binaryOperator[n.Op](lObj, rObj)
 		switch t := n.Left.(type) {
 		case *ast.Name:
 			resolver := NewTypeResolver(v.Context)
-			resolver.SetVariable(t.Value, rObj)
+			resolver.SetVariable(t.Value, value)
 		case *ast.FieldAccess:
 			exp, err := t.Expression.Accept(v)
 			if err != nil {
 				return nil, err
 			}
-			exp.(*ast.Object).InstanceFields.Set(t.FieldName, rObj)
+			exp.(*ast.Object).InstanceFields.Set(t.FieldName, value)
 		case *ast.ArrayAccess:
 			k, err := t.Key.Accept(v)
 			if err != nil {
@@ -816,91 +934,14 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 			}
 			receiver := r.(*ast.Object)
 			if receiver.ClassType.Name == "List" {
-				receiver.Extra["records"].([]*ast.Object)[key.IntegerValue()] = rObj
+				receiver.Extra["records"].([]*ast.Object)[key.IntegerValue()] = value
 			}
 			if receiver.ClassType.Name == "Map" {
-				receiver.Extra["values"].(map[string]*ast.Object)[key.StringValue()] = rObj
+				receiver.Extra["values"].(map[string]*ast.Object)[key.StringValue()] = value
 			}
 			// TODO: implment set type
 		}
 		return rObj, nil
-	case "+=":
-		// TODO: implement
-		var value *ast.Object
-		if lType == builtin.IntegerType {
-			l := lObj.IntegerValue()
-			if rType == builtin.IntegerType {
-				r := rObj.IntegerValue()
-				value = builtin.NewInteger(l + r)
-			}
-			if rType == builtin.DoubleType {
-				r := rObj.DoubleValue()
-				value = builtin.NewDouble(float64(l) + r)
-			}
-		} else if lType == builtin.DoubleType {
-			l := lObj.DoubleValue()
-			if rType == builtin.IntegerType {
-				r := rObj.IntegerValue()
-				value = builtin.NewDouble(l + float64(r))
-			}
-			if rType == builtin.DoubleType {
-				r := rObj.DoubleValue()
-				value = builtin.NewDouble(r + l)
-			}
-		} else if lType == builtin.StringType {
-			l := lObj.StringValue()
-			r := rObj.StringValue()
-			value = builtin.NewString(l + r)
-		}
-
-		switch t := n.Left.(type) {
-		case *ast.Name:
-			resolver := NewTypeResolver(v.Context)
-			resolver.SetVariable(t.Value, value)
-		case *ast.FieldAccess:
-			exp, err := t.Expression.Accept(v)
-			if err != nil {
-				return nil, err
-			}
-			exp.(*ast.Object).InstanceFields.Set(t.FieldName, value)
-		}
-		return value, nil
-	case "-=":
-		var value *ast.Object
-		if lType == builtin.IntegerType {
-			l := lObj.IntegerValue()
-			if rType == builtin.IntegerType {
-				r := rObj.IntegerValue()
-				value = builtin.NewInteger(l - r)
-			}
-			if rType == builtin.DoubleType {
-				r := rObj.DoubleValue()
-				value = builtin.NewDouble(float64(l) - r)
-			}
-		} else if lType == builtin.DoubleType {
-			l := lObj.DoubleValue()
-			if rType == builtin.IntegerType {
-				r := rObj.IntegerValue()
-				value = builtin.NewDouble(l - float64(r))
-			}
-			if rType == builtin.DoubleType {
-				r := rObj.DoubleValue()
-				value = builtin.NewDouble(r - l)
-			}
-		}
-
-		switch t := n.Left.(type) {
-		case *ast.Name:
-			resolver := NewTypeResolver(v.Context)
-			resolver.SetVariable(t.Value, value)
-		case *ast.FieldAccess:
-			exp, err := t.Expression.Accept(v)
-			if err != nil {
-				return nil, err
-			}
-			exp.(*ast.Object).InstanceFields.Set(t.FieldName, value)
-		}
-		return value, nil
 	}
 	return nil, nil
 }

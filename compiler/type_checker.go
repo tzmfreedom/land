@@ -27,6 +27,9 @@ func (v *TypeChecker) VisitClassType(n *ast.ClassType) (interface{}, error) {
 	v.Context.CurrentClass = n
 	if n.StaticFields != nil {
 		for _, f := range n.StaticFields.Data {
+			if f.Expression == nil {
+				continue
+			}
 			e, err := f.Expression.Accept(v)
 			if err != nil {
 				return nil, err
@@ -39,6 +42,9 @@ func (v *TypeChecker) VisitClassType(n *ast.ClassType) (interface{}, error) {
 
 	if n.InstanceFields != nil {
 		for _, f := range n.InstanceFields.Data {
+			if f.Expression == nil {
+				continue
+			}
 			e, err := f.Expression.Accept(v)
 			if err != nil {
 				return nil, err

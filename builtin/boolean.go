@@ -15,8 +15,9 @@ var BooleanType = &ast.ClassType{
 	},
 }
 
-var booleanTypeRef = &ast.TypeRef{
-	Name: []string{"Boolean"},
+var booleanTypeParameter = &ast.Parameter{
+	Type: BooleanType,
+	Name: "_",
 }
 
 func init() {

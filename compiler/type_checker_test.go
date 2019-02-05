@@ -351,10 +351,10 @@ func TestTypeChecker(t *testing.T) {
 			}),
 			[]*Error{
 				{
-					Message: "expression <Integer> does not match <String>",
+					Message: "Illegal assignment from Integer to String",
 				},
 				{
-					Message: "expression <String> does not match <Integer>",
+					Message: "Illegal assignment from String to Integer",
 				},
 			},
 		},

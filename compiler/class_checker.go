@@ -126,7 +126,7 @@ func checkImplements(t *ast.ClassType) error {
 				if !ok {
 					return fmt.Errorf("Class %s must implement the method: %s", t.Name, MethodSignature(impl, method))
 				}
-				matchedMethod = builtin.SearchMethod(nil, instanceMethods, ParameterClassTypes(method.Parameters))
+				matchedMethod = builtin.SearchMethod(impl, instanceMethods, ParameterClassTypes(method.Parameters))
 				if matchedMethod == nil {
 					return fmt.Errorf("Class %s must implement the method: %s", t.Name, MethodSignature(impl, method))
 				}
@@ -286,5 +286,9 @@ func MethodSignature(owner *ast.ClassType, m *ast.Method) string {
 	for i, param := range m.Parameters {
 		typeStrings[i] = param.Type.Name
 	}
-	return fmt.Sprintf("%s %s.%s(%s)", m.ReturnType.Name, owner.Name, m.Name, strings.Join(typeStrings, ", "))
+	returnTypeName := "void"
+	if m.ReturnType != nil {
+		returnTypeName = m.ReturnType.Name
+	}
+	return fmt.Sprintf("%s %s.%s(%s)", returnTypeName, owner.Name, m.Name, strings.Join(typeStrings, ", "))
 }

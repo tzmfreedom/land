@@ -127,20 +127,9 @@ func SearchMethod(receiverClass *ast.ClassType, methods []*ast.Method, parameter
 		match := true
 
 		for i, p := range m.Parameters {
-			inputParam := parameters[i]
-			classType := p.Type
+			inputParam := convertGenericsType(receiverClass, parameters[i])
+			methodParam := convertGenericsType(receiverClass, p.Type)
 
-			var methodParam *ast.ClassType
-			if classType == T1type || classType == T2type {
-				generics := receiverClass.Generics
-				if classType == T1type {
-					methodParam = generics[0]
-				} else {
-					methodParam = generics[1]
-				}
-			} else {
-				methodParam = classType
-			}
 			// TODO: implement
 			// extend, implements, Object
 			if methodParam == ObjectType {
@@ -156,4 +145,23 @@ func SearchMethod(receiverClass *ast.ClassType, methods []*ast.Method, parameter
 		}
 	}
 	return nil
+}
+
+func convertGenericsType(receiverClass *ast.ClassType, classType *ast.ClassType) *ast.ClassType {
+	generics := receiverClass.Generics
+	if classType == T1type {
+		return generics[0]
+	}
+	if classType == T2type {
+		return generics[1]
+	}
+	if classType.IsGenerics() {
+		newClassType := ast.CreateClass(classType.Name, classType.Constructors, classType.InstanceMethods, classType.StaticMethods)
+		newClassType.Generics = make([]*ast.ClassType, len(classType.Generics))
+		for i, g := range classType.Generics {
+			newClassType.Generics[i] = convertGenericsType(receiverClass, g)
+		}
+		return newClassType
+	}
+	return classType
 }

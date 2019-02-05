@@ -45,11 +45,11 @@ func init() {
 		},
 	)
 	staticMethods.Set(
-		"deserialize",
+		"deserializeUntyped",
 		[]*ast.Method{
 			ast.CreateMethod(
-				"deserialize",
-				StringType,
+				"deserializeUntyped",
+				ObjectType,
 				[]*ast.Parameter{stringTypeParameter},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					srcMap := map[string]interface{}{}

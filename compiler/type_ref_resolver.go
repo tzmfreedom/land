@@ -19,26 +19,27 @@ func NewTypeRefResolver(classTypes *ast.ClassMap, nameSpaceStore *builtin.NameSp
 }
 
 func (v *TypeRefResolver) Resolve(n *ast.ClassType) (*ast.ClassType, error) {
-	var err error
 	if n.SuperClassRef != nil {
-		n.SuperClass, err = v.resolver.ResolveType(n.SuperClassRef.Name)
+		superClass, err := n.SuperClassRef.Accept(v)
 		if err != nil {
 			return nil, err
 		}
+		n.SuperClass = superClass.(*ast.ClassType)
 	}
 
 	if n.ImplementClassRefs != nil {
 		n.ImplementClasses = make([]*ast.ClassType, len(n.ImplementClassRefs))
 		for i, impl := range n.ImplementClassRefs {
-			n.ImplementClasses[i], err = v.resolver.ResolveType(impl.Name)
+			implementClass, err := impl.Accept(v)
 			if err != nil {
 				return nil, err
 			}
+			n.ImplementClasses[i] = implementClass.(*ast.ClassType)
 		}
 	}
 
 	for _, c := range n.InnerClasses.Data {
-		_, err = v.Resolve(c)
+		_, err := v.Resolve(c)
 		if err != nil {
 			return nil, err
 		}
@@ -54,10 +55,11 @@ func (v *TypeRefResolver) Resolve(n *ast.ClassType) (*ast.ClassType, error) {
 	}
 
 	for _, f := range n.StaticFields.Data {
-		f.Type, err = v.resolver.ResolveType(f.TypeRef.Name)
+		classType, err := f.TypeRef.Accept(v)
 		if err != nil {
 			return nil, err
 		}
+		f.Type = classType.(*ast.ClassType)
 	}
 
 	for _, m := range n.Constructors {
@@ -396,7 +398,7 @@ func (v *TypeRefResolver) VisitType(n *ast.TypeRef) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if classType == builtin.ListType || classType == builtin.MapType {
+	if classType.IsGenerics() {
 		paramTypes := make([]*ast.ClassType, len(n.Parameters))
 		for i, param := range n.Parameters {
 			paramType, err := param.Accept(v)

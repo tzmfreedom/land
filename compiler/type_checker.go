@@ -89,14 +89,6 @@ func (v *TypeChecker) VisitClassType(n *ast.ClassType) (interface{}, error) {
 		}
 	}
 
-	if n.ImplementClassRefs != nil {
-		for _, impl := range n.ImplementClassRefs {
-			_, err := impl.Accept(v)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
 	v.Context.CurrentClass = nil
 	return nil, nil
 }

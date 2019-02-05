@@ -42,7 +42,8 @@ func (t *ClassType) IsVirtual() bool {
 func (t *ClassType) IsGenerics() bool {
 	return t.Name == "List" ||
 		t.Name == "Map" ||
-		t.Name == "Set"
+		t.Name == "Set" ||
+		t.Name == "Batchable"
 }
 
 func (t *ClassType) String() string {

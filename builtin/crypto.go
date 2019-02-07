@@ -1,18 +1,21 @@
 package builtin
 
 import (
+	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
 	"time"
 
-	"github.com/tzmfreedom/goland/ast"
-	"math/rand"
-	"crypto/sha256"
-	"hash"
 	"crypto/hmac"
-	"crypto/sha1"
-	"crypto/sha512"
 	"crypto/md5"
-	"strconv"
+	"crypto/sha1"
+	"crypto/sha256"
+	"crypto/sha512"
 	"fmt"
+	"hash"
+	"math/rand"
+
+	"github.com/tzmfreedom/goland/ast"
 )
 
 var cryptoType = ast.CreateClass(
@@ -36,8 +39,37 @@ func init() {
 					BlobTypeParameter,
 				},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-					// TODO: impl
-					return nil
+					algorithmName := params[0].StringValue()
+					privateKey := params[1].Value().([]byte)
+					initializationVector := params[2].Value().([]byte)
+					cipherText := params[3].Value().([]byte)
+
+					keyLengthMap := map[string]int{
+						"AES128": 128,
+						"AES192": 192,
+						"AES256": 256,
+					}
+					keyLength, ok := keyLengthMap[algorithmName]
+					if !ok {
+						panic("invalid algorithm: " + algorithmName)
+					}
+					if keyLength != len(privateKey) {
+						panic(fmt.Sprintf("private key length does not match to algorithm: %d", len(privateKey)))
+					}
+					if keyLength != len(initializationVector) {
+						panic(fmt.Sprintf("iv length does not match to algorithm: %d", len(privateKey)))
+					}
+					block, err := aes.NewCipher(privateKey)
+					if err != nil {
+						panic(err)
+					}
+
+					plain := make([]byte, len(cipherText))
+					decrypter := cipher.NewCBCDecrypter(block, initializationVector)
+					decrypter.CryptBlocks(plain, cipherText)
+					padSize := int(plain[len(plain)-1])
+
+					return NewBlob(plain[:len(plain)-padSize])
 				},
 			),
 		},
@@ -55,8 +87,33 @@ func init() {
 					BlobTypeParameter,
 				},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-					// TODO: impl
-					return nil
+					algorithmName := params[0].StringValue()
+					privateKey := params[1].Value().([]byte)
+					cipherText := params[2].Value().([]byte)
+
+					keyLengthMap := map[string]int{
+						"AES128": 128,
+						"AES192": 192,
+						"AES256": 256,
+					}
+					keyLength, ok := keyLengthMap[algorithmName]
+					if !ok {
+						panic("invalid algorithm: " + algorithmName)
+					}
+					if keyLength != len(privateKey) {
+						panic(fmt.Sprintf("private key length does not match to algorithm: %d", len(privateKey)))
+					}
+					block, err := aes.NewCipher(privateKey)
+					if err != nil {
+						panic(err)
+					}
+
+					plain := make([]byte, len(cipherText[aes.BlockSize:]))
+					decrypter := cipher.NewCBCDecrypter(block, cipherText[:aes.BlockSize])
+					decrypter.CryptBlocks(plain, cipherText[aes.BlockSize:])
+					padSize := int(plain[len(plain)-1])
+
+					return NewBlob(plain[:len(plain)-padSize])
 				},
 			),
 		},
@@ -75,8 +132,38 @@ func init() {
 					BlobTypeParameter,
 				},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-					// TODO: impl
-					return nil
+					algorithmName := params[0].StringValue()
+					privateKey := params[1].Value().([]byte)
+					initializationVector := params[2].Value().([]byte)
+					clearText := params[3].Value().([]byte)
+
+					keyLengthMap := map[string]int{
+						"AES128": 128,
+						"AES192": 192,
+						"AES256": 256,
+					}
+					keyLength, ok := keyLengthMap[algorithmName]
+					if !ok {
+						panic("invalid algorithm: " + algorithmName)
+					}
+					if keyLength != len(privateKey) {
+						panic(fmt.Sprintf("private key length does not match to algorithm: %d", len(privateKey)))
+					}
+					if keyLength != len(initializationVector) {
+						panic(fmt.Sprintf("iv length does not match to algorithm: %d", len(privateKey)))
+					}
+					block, err := aes.NewCipher(privateKey)
+					if err != nil {
+						panic(err)
+					}
+
+					paddedPlain := padPKCS7(clearText)
+					cipherText := make([]byte, len(paddedPlain))
+
+					encrypter := cipher.NewCBCEncrypter(block, initializationVector)
+					encrypter.CryptBlocks(cipherText, paddedPlain)
+
+					return NewBlob(cipherText)
 				},
 			),
 		},
@@ -94,8 +181,36 @@ func init() {
 					BlobTypeParameter,
 				},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-					// TODO: impl
-					return nil
+					algorithmName := params[0].StringValue()
+					privateKey := params[1].Value().([]byte)
+					clearText := params[2].Value().([]byte)
+
+					keyLengthMap := map[string]int{
+						"AES128": 128,
+						"AES192": 192,
+						"AES256": 256,
+					}
+					keyLength, ok := keyLengthMap[algorithmName]
+					if !ok {
+						panic("invalid algorithm: " + algorithmName)
+					}
+					if keyLength != len(privateKey) {
+						panic(fmt.Sprintf("private key length does not match to algorithm: %d", len(privateKey)))
+					}
+					block, err := aes.NewCipher(privateKey)
+					if err != nil {
+						panic(err)
+					}
+
+					paddedPlain := padPKCS7(clearText)
+					cipherText := make([]byte, aes.BlockSize+len(paddedPlain))
+					iv := cipherText[:aes.BlockSize]
+					rand.Read(iv)
+
+					encrypter := cipher.NewCBCEncrypter(block, iv)
+					encrypter.CryptBlocks(cipherText[aes.BlockSize:], paddedPlain)
+
+					return NewBlob(cipherText)
 				},
 			),
 		},
@@ -117,7 +232,7 @@ func init() {
 					}
 					_, ok := allowedSize[size]
 					if !ok {
-						panic(fmt.Sprintf("invalid size: %s", size))
+						panic(fmt.Sprintf("invalid size: %d", size))
 					}
 					key := make([]byte, size/8)
 					rand.Read(key)
@@ -140,11 +255,11 @@ func init() {
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					algorithmName := params[0].StringValue()
 					input := params[1].Value().([]byte)
-					algorithmFuncMap := map[string]func()hash.Hash {
-						"SHA1": sha1.New,
+					algorithmFuncMap := map[string]func() hash.Hash{
+						"SHA1":   sha1.New,
 						"SHA256": sha256.New,
 						"SHA512": sha512.New,
-						"MD5": md5.New,
+						"MD5":    md5.New,
 					}
 					algorithmFunc, ok := algorithmFuncMap[algorithmName]
 					if !ok {
@@ -174,11 +289,11 @@ func init() {
 					input := params[1].Value().([]byte)
 					privateKey := params[2].Value().([]byte)
 
-					algorithmFuncMap := map[string]func()hash.Hash {
-						"hmacSHA1": sha1.New,
+					algorithmFuncMap := map[string]func() hash.Hash{
+						"hmacSHA1":   sha1.New,
 						"hmacSHA256": sha256.New,
 						"hmacSHA512": sha512.New,
-						"hmacMD5": md5.New,
+						"hmacMD5":    md5.New,
 					}
 					algorithmFunc, ok := algorithmFuncMap[algorithmName]
 					if !ok {
@@ -226,4 +341,10 @@ func init() {
 	)
 
 	primitiveClassMap.Set("Date", DateType)
+}
+
+func padPKCS7(data []byte) []byte {
+	padSize := aes.BlockSize - len(data)%aes.BlockSize
+	appendChars := bytes.Repeat([]byte{byte(padSize)}, padSize)
+	return append(data, appendChars...)
 }

@@ -104,6 +104,10 @@ func LoadSObjectClass(src string) {
 }
 
 var SObjectType = &ast.ClassType{Name: "SObject"}
+var SObjectTypeParameter = &ast.Parameter{
+	Type: SObjectType,
+	Name: "_",
+}
 
 func init() {
 	instanceMethods := ast.NewMethodMap()

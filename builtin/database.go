@@ -14,26 +14,130 @@ var queryLocatorType = ast.CreateClass(
 
 func init() {
 	staticMethods := ast.NewMethodMap()
-	method := ast.CreateMethod(
-		"insert",
-		saveResultType,
-		[]*ast.Parameter{objectTypeParameter}, // TODO: SObject or List<SObject>
-		func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
-			obj := params[0]
-			var records []*ast.Object
-			// TODO: check SObject class
-			if obj.ClassType.Name == "List" {
-				records = obj.Extra["records"].([]*ast.Object)
-			} else {
-				records = []*ast.Object{obj}
-			}
-			sObjectType := records[0].ClassType.Name
-			return DatabaseDriver.Execute("insert", sObjectType, records, "")
-		},
-	)
-	staticMethods.Set("insert", []*ast.Method{method})
 
-	method = ast.CreateMethod(
+	staticMethods.Set("insert", []*ast.Method{
+		ast.CreateMethod(
+			"insert",
+			saveResultType,
+			[]*ast.Parameter{SObjectTypeParameter},
+			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+				obj := params[0]
+				records := []*ast.Object{obj}
+				return DatabaseDriver.Execute("insert", obj.ClassType.Name, records, "")
+			},
+		),
+		ast.CreateMethod(
+			"insert",
+			saveResultType,
+			[]*ast.Parameter{
+				{
+					Type: CreateListType(SObjectType),
+					Name: "_",
+				},
+			},
+			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+				obj := params[0]
+				records := obj.Extra["records"].([]*ast.Object)
+				sObjectType := records[0].ClassType.Name
+				return DatabaseDriver.Execute("insert", sObjectType, records, "")
+			},
+		),
+	})
+
+	staticMethods.Set("update", []*ast.Method{
+		ast.CreateMethod(
+			"update",
+			saveResultType,
+			[]*ast.Parameter{objectTypeParameter},
+			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+				obj := params[0]
+				records := []*ast.Object{obj}
+				return DatabaseDriver.Execute("update", obj.ClassType.Name, records, "")
+			},
+		),
+		ast.CreateMethod(
+			"update",
+			saveResultType,
+			[]*ast.Parameter{
+				{
+					Type: CreateListType(SObjectType),
+					Name: "_",
+				},
+			},
+			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+				obj := params[0]
+				records := obj.Extra["records"].([]*ast.Object)
+				sObjectType := records[0].ClassType.Name
+				return DatabaseDriver.Execute("update", sObjectType, records, "")
+			},
+		),
+	})
+
+	staticMethods.Set("delete", []*ast.Method{
+		ast.CreateMethod(
+			"delete",
+			saveResultType,
+			[]*ast.Parameter{objectTypeParameter},
+			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+				obj := params[0]
+				records := []*ast.Object{obj}
+				return DatabaseDriver.Execute("delete", obj.ClassType.Name, records, "")
+			},
+		),
+		ast.CreateMethod(
+			"delete",
+			saveResultType,
+			[]*ast.Parameter{
+				{
+					Type: CreateListType(SObjectType),
+					Name: "_",
+				},
+			},
+			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+				obj := params[0]
+				records := obj.Extra["records"].([]*ast.Object)
+				sObjectType := records[0].ClassType.Name
+				return DatabaseDriver.Execute("delete", sObjectType, records, "")
+			},
+		),
+	})
+
+	staticMethods.Set("upsert", []*ast.Method{
+		ast.CreateMethod(
+			"upsert",
+			saveResultType,
+			[]*ast.Parameter{
+				SObjectTypeParameter,
+				stringTypeParameter,
+			},
+			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+				obj := params[0]
+				key := params[1].StringValue()
+				records := []*ast.Object{obj}
+				return DatabaseDriver.Execute("upsert", obj.ClassType.Name, records, key)
+			},
+		),
+		ast.CreateMethod(
+			"upsert",
+			saveResultType,
+			[]*ast.Parameter{
+				{
+					Type: CreateListType(SObjectType),
+					Name: "_",
+				},
+				stringTypeParameter,
+			},
+			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+				obj := params[0]
+				key := params[1].StringValue()
+				records := obj.Extra["records"].([]*ast.Object)
+				sObjectType := records[0].ClassType.Name
+				return DatabaseDriver.Execute("upsert", sObjectType, records, key)
+			},
+		),
+	})
+
+	method := ast.CreateMethod(
 		"setSavePoint",
 		nil, // TODO: implement
 		[]*ast.Parameter{},
@@ -183,6 +287,7 @@ func init() {
 		instanceMethods,
 		nil,
 	)
+	batchable.Interface = true
 	classMap.Set("Batchable", batchable)
 
 	nameSpaceStore.Set("Database", classMap)

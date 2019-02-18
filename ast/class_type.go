@@ -392,6 +392,49 @@ func CreateField(
 	}
 }
 
+func CreateEnum(name string, enums []string) *ClassType {
+	classType := &ClassType{
+		Name:            name,
+		Modifiers:       []*Modifier{PublicModifier()},
+		InstanceFields:  NewFieldMap(),
+		InstanceMethods: NewMethodMap(),
+		StaticMethods:   NewMethodMap(),
+		InnerClasses:    NewClassMap(),
+	}
+	classType.Constructors = []*Method{
+		{
+			Modifiers: []*Modifier{PublicModifier()},
+			Parameters: []*Parameter{
+				{
+					Type: classType,
+					Name: "_",
+				},
+			},
+			NativeFunction: func(this *Object, params []*Object, extra map[string]interface{}) interface{} {
+				this.Extra["value"] = params[0]
+				return nil
+			},
+		},
+	}
+
+	fields := NewFieldMap()
+	for _, enum := range enums {
+		fields.Set(enum, &Field{
+			Name:      name,
+			Modifiers: []*Modifier{PublicModifier()},
+			Type:      classType,
+			Expression: &New{
+				Type:       classType,
+				Parameters: []Node{
+					&StringLiteral{Value: enum},
+				},
+			},
+		})
+	}
+	classType.StaticFields = fields
+	return classType
+}
+
 var publicModifier = &Modifier{Name: "public"}
 var privateModifier = &Modifier{Name: "private"}
 var protectedModifier = &Modifier{Name: "protected"}

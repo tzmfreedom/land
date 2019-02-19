@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/tzmfreedom/goland/ast"
 )
@@ -21,5 +22,33 @@ var booleanTypeParameter = &ast.Parameter{
 }
 
 func init() {
+	BooleanType.StaticMethods.Set(
+		"valueOf",
+		[]*ast.Method{
+			ast.CreateMethod(
+				"valueOf",
+				BooleanType,
+				[]*ast.Parameter{stringTypeParameter},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					return NewBoolean(strings.ToLower(params[0].StringValue()) == "true")
+				},
+			),
+			ast.CreateMethod(
+				"valueOf",
+				BooleanType,
+				[]*ast.Parameter{objectTypeParameter},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					switch this.ClassType {
+					case StringType:
+						return NewBoolean(strings.ToLower(params[0].StringValue()) == "true")
+					case BooleanType:
+						return NewBoolean(this.BoolValue())
+					}
+					panic("not expected argument")
+				},
+			),
+		},
+	)
+
 	primitiveClassMap.Set("Boolean", BooleanType)
 }

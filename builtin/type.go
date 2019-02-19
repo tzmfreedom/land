@@ -23,6 +23,12 @@ func NewInteger(value int) *ast.Object {
 	return t
 }
 
+func NewLong(value int) *ast.Object {
+	t := ast.CreateObject(LongType)
+	t.Extra["value"] = value
+	return t
+}
+
 func NewDouble(value float64) *ast.Object {
 	t := ast.CreateObject(DoubleType)
 	t.Extra["value"] = value

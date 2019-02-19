@@ -1,16 +1,14 @@
-[![Build Status](https://travis-ci.org/tzmfreedom/goland.svg?branch=master)](https://travis-ci.org/tzmfreedom/goland)
+[![Build Status](https://travis-ci.org/tzmfreedom/land.svg?branch=master)](https://travis-ci.org/tzmfreedom/land)
 
 # Land
 
 Salesforce Apex Execution Environment on Local System.
 
-*This is WIP Project*
-
 ## Installation
 
 For Golang User
 ```bash
-$ go get -u github.com/tzmfreedom/goland
+$ go get -u github.com/tzmfreedom/land
 ```
 
 For Linux
@@ -47,4 +45,4 @@ Just send pull request if needed or fill an issue!
 
 ## License
 
-The MIT License See [LICENSE](https://github.com/tzmfreedom/goland/blob/master/LICENSE) file.
+The MIT License See [LICENSE](https://github.com/tzmfreedom/land/blob/master/LICENSE) file.

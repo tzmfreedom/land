@@ -13,10 +13,10 @@ import (
 	"strings"
 
 	_ "github.com/lib/pq"
-	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
-	"github.com/tzmfreedom/goland/compiler"
-	"github.com/tzmfreedom/goland/interpreter"
+	"github.com/tzmfreedom/land/ast"
+	"github.com/tzmfreedom/land/builtin"
+	"github.com/tzmfreedom/land/compiler"
+	"github.com/tzmfreedom/land/interpreter"
 )
 
 type Server struct {

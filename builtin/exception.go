@@ -3,7 +3,7 @@ package builtin
 import (
 	"fmt"
 
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 var ExceptionType = &ast.ClassType{}

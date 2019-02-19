@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 func init() {

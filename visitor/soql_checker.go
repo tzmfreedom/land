@@ -3,7 +3,7 @@ package visitor
 import (
 	"errors"
 
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 type SoqlChecker struct{}

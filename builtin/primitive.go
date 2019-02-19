@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/k0kubun/pp"
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 var PrimitiveClasses []*ast.ClassType

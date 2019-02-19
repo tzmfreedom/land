@@ -11,9 +11,9 @@ import (
 	"fmt"
 
 	"github.com/k0kubun/pp"
-	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
-	"github.com/tzmfreedom/goland/compiler"
+	"github.com/tzmfreedom/land/ast"
+	"github.com/tzmfreedom/land/builtin"
+	"github.com/tzmfreedom/land/compiler"
 )
 
 type Interpreter struct {

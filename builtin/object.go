@@ -1,7 +1,7 @@
 package builtin
 
 import (
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 var ObjectType = ast.CreateClass(

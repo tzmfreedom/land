@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/tzmfreedom/go-soapforce"
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 type Sobject struct {

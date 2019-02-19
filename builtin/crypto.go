@@ -15,7 +15,7 @@ import (
 	"hash"
 	"math/rand"
 
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 var cryptoType = ast.CreateClass(

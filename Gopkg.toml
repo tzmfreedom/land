@@ -38,7 +38,7 @@
   version = "1.4.7"
 
 [metadata.heroku]
-  root-package = "github.com/tzmfreedom/goland"
+  root-package = "github.com/tzmfreedom/land"
   go-version = "go1.11"
   ensure = "true"
 

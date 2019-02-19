@@ -3,7 +3,7 @@ package builtin
 import (
 	"sort"
 
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 var ListType = &ast.ClassType{Name: "List"}

@@ -1,1 +1,1 @@
-web: goland eval-server
+web: land eval-server

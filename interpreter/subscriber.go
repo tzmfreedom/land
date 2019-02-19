@@ -1,7 +1,7 @@
 package interpreter
 
 import (
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 type Subscriber func(ctx *Context, n ast.Node)

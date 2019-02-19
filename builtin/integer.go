@@ -3,7 +3,7 @@ package builtin
 import (
 	"fmt"
 	"github.com/dustin/go-humanize"
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 	"strconv"
 )
 

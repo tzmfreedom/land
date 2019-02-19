@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 const (

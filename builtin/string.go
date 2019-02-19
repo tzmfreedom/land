@@ -5,7 +5,7 @@ import (
 
 	"regexp"
 
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 var stringTypeRef = &ast.TypeRef{

@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
-	"github.com/tzmfreedom/goland/parser"
+	"github.com/tzmfreedom/land/parser"
 )
 
 type Builder struct {

@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
+	"github.com/tzmfreedom/land/ast"
+	"github.com/tzmfreedom/land/builtin"
 )
 
 type TypeResolver struct {

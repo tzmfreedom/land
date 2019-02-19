@@ -3,7 +3,7 @@ package compiler
 import (
 	"fmt"
 
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 type ClassRegisterVisitor struct{}

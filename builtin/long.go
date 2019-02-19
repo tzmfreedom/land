@@ -5,11 +5,13 @@ import (
 	"strconv"
 
 	"github.com/dustin/go-humanize"
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 var LongType = &ast.ClassType{
 	Name: "Long",
+	InstanceMethods: ast.NewMethodMap(),
+	StaticMethods: ast.NewMethodMap(),
 	ToString: func(o *ast.Object) string {
 		return fmt.Sprintf("%d", o.IntegerValue())
 	},

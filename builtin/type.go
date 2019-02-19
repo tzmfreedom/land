@@ -3,7 +3,7 @@ package builtin
 import (
 	"strings"
 
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 var NullType = &ast.ClassType{

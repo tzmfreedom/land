@@ -12,10 +12,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 
-	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
-	"github.com/tzmfreedom/goland/compiler"
-	"github.com/tzmfreedom/goland/interpreter"
+	"github.com/tzmfreedom/land/ast"
+	"github.com/tzmfreedom/land/builtin"
+	"github.com/tzmfreedom/land/compiler"
+	"github.com/tzmfreedom/land/interpreter"
 )
 
 var renderFunction = map[string]func(n Node, c *ast.Object) string{}

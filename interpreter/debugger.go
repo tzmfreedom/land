@@ -11,8 +11,8 @@ import (
 	"strconv"
 
 	"github.com/chzyer/readline"
-	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
+	"github.com/tzmfreedom/land/ast"
+	"github.com/tzmfreedom/land/builtin"
 )
 
 var Debugger = &debugger{}

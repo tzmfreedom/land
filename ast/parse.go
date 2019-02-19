@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
-	"github.com/tzmfreedom/goland/parser"
+	"github.com/tzmfreedom/land/parser"
 )
 
 type PreProcessor func(string) string

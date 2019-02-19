@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 type ToStringer struct {

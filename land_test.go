@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 func setup() {

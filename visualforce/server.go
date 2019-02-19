@@ -8,9 +8,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 
-	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
-	"github.com/tzmfreedom/goland/interpreter"
+	"github.com/tzmfreedom/land/ast"
+	"github.com/tzmfreedom/land/builtin"
+	"github.com/tzmfreedom/land/interpreter"
 )
 
 func handleRequest(i *interpreter.Interpreter, r *http.Request, w http.ResponseWriter) {

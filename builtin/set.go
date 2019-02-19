@@ -1,6 +1,6 @@
 package builtin
 
-import "github.com/tzmfreedom/goland/ast"
+import "github.com/tzmfreedom/land/ast"
 
 var setType = createSetType()
 

@@ -7,8 +7,8 @@ import (
 
 	"errors"
 
-	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
+	"github.com/tzmfreedom/land/ast"
+	"github.com/tzmfreedom/land/builtin"
 )
 
 func CheckClass(t *ast.ClassType) error {

@@ -6,8 +6,8 @@ import (
 
 	"strings"
 
-	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
+	"github.com/tzmfreedom/land/ast"
+	"github.com/tzmfreedom/land/builtin"
 )
 
 type TypeChecker struct {

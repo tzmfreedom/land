@@ -5,7 +5,7 @@ import (
 
 	"net/url"
 
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 func init() {

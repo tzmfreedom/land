@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NAME="goland"
+NAME="land"
 BIN_NAME="land"
 VERSION="0.1.2"
 PREFIX="/usr/local"

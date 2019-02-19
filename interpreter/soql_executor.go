@@ -2,8 +2,8 @@ package interpreter
 
 import (
 	"github.com/tzmfreedom/go-soapforce"
-	"github.com/tzmfreedom/goland/ast"
-	"github.com/tzmfreedom/goland/builtin"
+	"github.com/tzmfreedom/land/ast"
+	"github.com/tzmfreedom/land/builtin"
 )
 
 type SoqlExecutor struct{}

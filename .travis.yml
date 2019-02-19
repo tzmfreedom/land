@@ -22,5 +22,5 @@ deploy:
   file_glob: true
   file: dist/*.{tar.gz}
   on:
-    repo: tzmfreedom/goland
+    repo: tzmfreedom/land
     tags: true

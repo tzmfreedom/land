@@ -3,7 +3,7 @@ package builtin
 import (
 	"time"
 
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 var dateTypeRef = &ast.TypeRef{

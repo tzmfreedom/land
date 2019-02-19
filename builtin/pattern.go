@@ -3,7 +3,7 @@ package builtin
 import (
 	"regexp"
 
-	"github.com/tzmfreedom/goland/ast"
+	"github.com/tzmfreedom/land/ast"
 )
 
 func init() {

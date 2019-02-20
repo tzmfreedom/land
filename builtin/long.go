@@ -9,9 +9,9 @@ import (
 )
 
 var LongType = &ast.ClassType{
-	Name: "Long",
+	Name:            "Long",
 	InstanceMethods: ast.NewMethodMap(),
-	StaticMethods: ast.NewMethodMap(),
+	StaticMethods:   ast.NewMethodMap(),
 	ToString: func(o *ast.Object) string {
 		return fmt.Sprintf("%d", o.IntegerValue())
 	},

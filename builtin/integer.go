@@ -2,9 +2,10 @@ package builtin
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/dustin/go-humanize"
 	"github.com/tzmfreedom/land/ast"
-	"strconv"
 )
 
 var IntegerType = &ast.ClassType{

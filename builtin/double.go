@@ -5,14 +5,14 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/tzmfreedom/land/ast"
 	"github.com/dustin/go-humanize"
+	"github.com/tzmfreedom/land/ast"
 )
 
 var DoubleType = &ast.ClassType{
-	Name: "Double",
+	Name:            "Double",
 	InstanceMethods: ast.NewMethodMap(),
-	StaticMethods: ast.NewMethodMap(),
+	StaticMethods:   ast.NewMethodMap(),
 	ToString: func(o *ast.Object) string {
 		return fmt.Sprintf("%f", o.Value().(float64))
 	},

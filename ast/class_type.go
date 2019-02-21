@@ -424,7 +424,7 @@ func CreateEnum(name string, enums []string) *ClassType {
 			Modifiers: []*Modifier{PublicModifier()},
 			Type:      classType,
 			Expression: &New{
-				Type:       classType,
+				Type: classType,
 				Parameters: []Node{
 					&StringLiteral{Value: enum},
 				},

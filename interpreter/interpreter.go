@@ -617,17 +617,51 @@ func (v *Interpreter) VisitNullLiteral(n *ast.NullLiteral) (interface{}, error) 
 	return builtin.Null, nil
 }
 
+func (v *Interpreter) assignValue(exp ast.Node, newValue *ast.Object) error {
+	switch t := exp.(type) {
+	case *ast.Name:
+		resolver := NewTypeResolver(v.Context)
+		resolver.SetVariable(t.Value, newValue)
+	case *ast.FieldAccess:
+		exp, err := t.Expression.Accept(v)
+		if err != nil {
+			return err
+		}
+		exp.(*ast.Object).InstanceFields.Set(t.FieldName, newValue)
+	case *ast.ArrayAccess:
+		k, err := t.Key.Accept(v)
+		if err != nil {
+			return err
+		}
+		key := k.(*ast.Object)
+		r, err := t.Receiver.Accept(v)
+		if err != nil {
+			return err
+		}
+		receiver := r.(*ast.Object)
+		if receiver.ClassType.Name == "List" {
+			receiver.Extra["records"].([]*ast.Object)[key.IntegerValue()] = newValue
+		}
+		if receiver.ClassType.Name == "Map" {
+			receiver.Extra["values"].(map[string]*ast.Object)[key.StringValue()] = newValue
+		}
+		// TODO: implment set type
+	}
+	return nil
+}
+
 func (v *Interpreter) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, error) {
 	if n.Op == "++" {
-		name := n.Expression.(*ast.Name)
-		l, err := name.Accept(v)
+		l, err := n.Expression.Accept(v)
 		if err != nil {
 			return nil, err
 		}
-		exp := builtin.NewInteger(l.(*ast.Object).IntegerValue() + 1)
-		// TODO: implement
-		v.Context.Env.Update(name.Value[0], exp)
-		return exp, nil
+		newValue := builtin.NewInteger(l.(*ast.Object).IntegerValue() + 1)
+		err = v.assignValue(n.Expression, newValue)
+		if err != nil {
+			return nil, err
+		}
+		return newValue, nil
 	}
 	if n.Op == "--" {
 		name := n.Expression.(*ast.Name)
@@ -635,10 +669,12 @@ func (v *Interpreter) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, err
 		if err != nil {
 			return nil, err
 		}
-		exp := builtin.NewInteger(l.(*ast.Object).IntegerValue() - 1)
-		// TODO: implement
-		v.Context.Env.Update(name.Value[0], exp)
-		return exp, nil
+		newValue := builtin.NewInteger(l.(*ast.Object).IntegerValue() - 1)
+		err = v.assignValue(n.Expression, newValue)
+		if err != nil {
+			return nil, err
+		}
+		return newValue, nil
 	}
 	panic("not pass")
 	return nil, nil
@@ -912,34 +948,9 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		return builtin.NewBoolean(lObj.BoolValue() || rObj.BoolValue()), nil
 	case "=", "+=", "-=", "*=", "/=":
 		value := binaryOperator[n.Op](lObj, rObj)
-		switch t := n.Left.(type) {
-		case *ast.Name:
-			resolver := NewTypeResolver(v.Context)
-			resolver.SetVariable(t.Value, value)
-		case *ast.FieldAccess:
-			exp, err := t.Expression.Accept(v)
-			if err != nil {
-				return nil, err
-			}
-			exp.(*ast.Object).InstanceFields.Set(t.FieldName, value)
-		case *ast.ArrayAccess:
-			k, err := t.Key.Accept(v)
-			if err != nil {
-				return nil, err
-			}
-			key := k.(*ast.Object)
-			r, err := t.Receiver.Accept(v)
-			if err != nil {
-				return nil, err
-			}
-			receiver := r.(*ast.Object)
-			if receiver.ClassType.Name == "List" {
-				receiver.Extra["records"].([]*ast.Object)[key.IntegerValue()] = value
-			}
-			if receiver.ClassType.Name == "Map" {
-				receiver.Extra["values"].(map[string]*ast.Object)[key.StringValue()] = value
-			}
-			// TODO: implment set type
+		err := v.assignValue(n.Left, value)
+		if err != nil {
+			return nil, err
 		}
 		return rObj, nil
 	}

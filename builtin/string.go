@@ -17,6 +17,20 @@ var StringType = &ast.ClassType{Name: "String"}
 
 func createStringType(c *ast.ClassType) *ast.ClassType {
 	instanceMethods := ast.NewMethodMap()
+	instanceMethods.Set("charAt", []*ast.Method{
+		ast.CreateMethod(
+			"charAt",
+			StringType,
+			[]*ast.Parameter{
+				IntegerTypeParameter,
+			},
+			func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+				index := params[0].IntegerValue()
+				src := this.StringValue()
+				return NewString(string(src[index]))
+			},
+		),
+	})
 	instanceMethods.Set("replace", []*ast.Method{
 		ast.CreateMethod(
 			"replace",

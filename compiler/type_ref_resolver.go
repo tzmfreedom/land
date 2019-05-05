@@ -334,7 +334,9 @@ func (v *TypeRefResolver) VisitVariableDeclaration(n *ast.VariableDeclaration) (
 }
 
 func (v *TypeRefResolver) VisitVariableDeclarator(n *ast.VariableDeclarator) (interface{}, error) {
-	n.Expression.Accept(v)
+	if n.Expression != nil {
+		n.Expression.Accept(v)
+	}
 	return nil, nil
 }
 

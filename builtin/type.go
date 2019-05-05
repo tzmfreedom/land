@@ -141,7 +141,7 @@ func SearchMethod(receiverClass *ast.ClassType, methods []*ast.Method, parameter
 			if methodParam == ObjectType {
 				continue
 			}
-			if !Equals(inputParam, methodParam) {
+			if !Equals(methodParam, inputParam) {
 				match = false
 				break
 			}

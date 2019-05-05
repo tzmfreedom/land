@@ -26,8 +26,8 @@ func (v *ToStringer) String(o *ast.Object) string {
 	if o.ClassType.ToString != nil {
 		return o.ClassType.ToString(o)
 	}
-	switch o.ClassType {
-	case ListType:
+	switch o.ClassType.Name {
+	case "List":
 		records := o.Extra["records"].([]*ast.Object)
 		recordExpressions := make([]string, len(records))
 		v.AddIndent(func() {

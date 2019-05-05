@@ -335,10 +335,6 @@ func (v *Interpreter) VisitFor(n *ast.For) (interface{}, error) {
 				}
 			}
 		case *ast.EnhancedForControl:
-			_, err := control.Accept(v)
-			if err != nil {
-				return nil, err
-			}
 			iterator, err := control.Expression.Accept(v)
 			if err != nil {
 				return nil, err
@@ -1204,8 +1200,8 @@ func (v *Interpreter) NewEnv(f func() (interface{}, error)) (interface{}, error)
 }
 
 func (v *Interpreter) Equals(o, other *ast.Object) bool {
-	if o == builtin.Null {
-		return other == builtin.Null
+	if o == builtin.Null || other == builtin.Null {
+		return o == builtin.Null && other == builtin.Null
 	}
 	m, ok := o.ClassType.InstanceMethods.Get("equals")
 	if !ok {

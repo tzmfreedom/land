@@ -3,7 +3,6 @@ package compiler
 import (
 	"errors"
 	"fmt"
-
 	"strings"
 
 	"github.com/tzmfreedom/land/ast"
@@ -34,6 +33,7 @@ func (v *TypeChecker) VisitClassType(n *ast.ClassType) (interface{}, error) {
 			if err != nil {
 				return nil, err
 			}
+
 			if !builtin.Equals(f.Type, e.(*ast.ClassType)) {
 				v.AddError(fmt.Sprintf("expression <%s> does not match <%s>", e.(*ast.ClassType).String(), f.Type.String()), f.Expression)
 			}
@@ -451,7 +451,7 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 				if err != nil {
 					return nil, err
 				}
-				if builtin.Equals(paramElemClass, elemClass) {
+				if !builtin.Equals(paramElemClass, elemClass) {
 					v.AddError(fmt.Sprintf("initialization is not match type %s != %s", elemClass.String(), paramElemClass.String()), n)
 				}
 			}

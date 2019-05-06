@@ -208,7 +208,7 @@ func NewMethod(owner *ClassType, decl *MethodDeclaration) *Method {
 
 func NewConstructor(owner *ClassType, decl *ConstructorDeclaration) *Method {
 	return &Method{
-		Name:          decl.GetParent().(*ClassDeclaration).Name,
+		Name:          decl.Name,
 		Modifiers:     decl.Modifiers,
 		Annotations:   decl.Annotations,
 		Parameters:    decl.Parameters,

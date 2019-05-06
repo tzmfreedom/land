@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"fmt"
-
 	"github.com/tzmfreedom/land/ast"
 )
 

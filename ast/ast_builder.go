@@ -41,7 +41,11 @@ func (v *Builder) VisitTypeDeclaration(ctx *parser.TypeDeclarationContext) inter
 	} else if n := ctx.TriggerDeclaration(); n != nil {
 		return n.Accept(v)
 	} else if n := ctx.InterfaceDeclaration(); n != nil {
-		return n.Accept(v)
+		cd := n.Accept(v)
+		decl := cd.(*InterfaceDeclaration)
+		decl.Modifiers = setParentNodeToModifiers(modifiers, decl)
+		decl.Annotations = setParentNodeToAnnotations(annotations, decl)
+		return decl
 	} else if n := ctx.EnumDeclaration(); n != nil {
 		return n.Accept(v)
 	}

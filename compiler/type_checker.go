@@ -3,6 +3,7 @@ package compiler
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/tzmfreedom/land/ast"
@@ -26,6 +27,9 @@ func (v *TypeChecker) VisitClassType(n *ast.ClassType) (interface{}, error) {
 	v.Context.CurrentClass = n
 	if n.StaticFields != nil {
 		for _, f := range n.StaticFields.Data {
+			if isInvalidIdentifier(f.Name) {
+				return nil, invalidIdentifier(f.Name)
+			}
 			if f.Expression == nil {
 				continue
 			}
@@ -42,6 +46,9 @@ func (v *TypeChecker) VisitClassType(n *ast.ClassType) (interface{}, error) {
 
 	if n.InstanceFields != nil {
 		for _, f := range n.InstanceFields.Data {
+			if isInvalidIdentifier(f.Name) {
+				return nil, invalidIdentifier(f.Name)
+			}
 			if f.Expression == nil {
 				continue
 			}
@@ -187,7 +194,7 @@ func (v *TypeChecker) VisitDoubleLiteral(n *ast.DoubleLiteral) (interface{}, err
 }
 
 func (v *TypeChecker) VisitFieldDeclaration(n *ast.FieldDeclaration) (interface{}, error) {
-	return ast.VisitFieldDeclaration(v, n)
+	panic("not pass")
 }
 
 func (v *TypeChecker) VisitTry(n *ast.Try) (interface{}, error) {
@@ -299,33 +306,7 @@ func (v *TypeChecker) VisitIf(n *ast.If) (interface{}, error) {
 }
 
 func (v *TypeChecker) VisitMethodDeclaration(n *ast.MethodDeclaration) (interface{}, error) {
-	panic(123)
-	// v.Context.CurrentMethod = n
-	env := newTypeEnv(nil)
-	v.Context.Env = env
-	classType, ok := v.Context.ClassTypes.Get(n.Parent.(*ast.ClassDeclaration).Name)
-	if !ok {
-		panic("not found")
-	}
-	v.Context.Env.Set("this", classType)
-	for _, param := range n.Parameters {
-		env.Set(param.Name, param.Type)
-	}
-	r, err := n.Statements.Accept(v)
-	if err != nil {
-		v.Context.CurrentMethod = nil
-		return nil, err
-	}
-	if n.ReturnType != nil && r == nil {
-		retType, err := n.ReturnType.Accept(v)
-		if err != nil {
-			return nil, err
-		}
-		v.AddError(fmt.Sprintf("return type <void> does not match %v", retType.(*ast.ClassType).String()), n)
-	}
-
-	v.Context.CurrentMethod = nil
-	return nil, nil
+	panic("not pass")
 }
 
 func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{}, error) {
@@ -483,7 +464,7 @@ func (v *TypeChecker) VisitNew(n *ast.New) (interface{}, error) {
 		}
 	}
 
-	if classType.IsAbstract() || classType.Constructors == nil {
+	if classType.IsInterface() || classType.IsAbstract() || classType.Constructors == nil {
 		v.AddError(fmt.Sprintf("Type cannot be constructed: %s", classType.String()), n)
 		return n.Type, nil
 	}
@@ -724,6 +705,9 @@ func (v *TypeChecker) VisitVariableDeclaration(n *ast.VariableDeclaration) (inte
 }
 
 func (v *TypeChecker) VisitVariableDeclarator(n *ast.VariableDeclarator) (interface{}, error) {
+	if isInvalidIdentifier(n.Name) {
+		return nil, invalidIdentifier(n.Name)
+	}
 	if n.Expression != nil {
 		return n.Expression.Accept(v)
 	}
@@ -871,6 +855,9 @@ func (v *TypeChecker) VisitConstructorDeclaration(n *ast.ConstructorDeclaration)
 }
 
 func (v *TypeChecker) VisitMethod(n *ast.Method) (interface{}, error) {
+	if isInvalidIdentifier(n.Name) {
+		return nil, invalidIdentifier(n.Name)
+	}
 	if n.Parent.IsInterface() {
 		return nil, nil
 	}
@@ -974,4 +961,15 @@ func isTypeSObjectField(classType *ast.ClassType) bool {
 		classType == builtin.BooleanType ||
 		classType == builtin.DateType ||
 		classType == builtin.DoubleType
+}
+
+
+func invalidIdentifier(name string) error {
+	return fmt.Errorf("Invalid character in identifier: %s", name)
+}
+
+var reg = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9]*$")
+
+func isInvalidIdentifier(name string) bool {
+	return !reg.MatchString(name)
 }

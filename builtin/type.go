@@ -77,10 +77,6 @@ func (m *NameSpaceStore) Get(k string) (*ast.ClassMap, bool) {
 	return n, ok
 }
 
-func TypeName(v interface{}) string {
-	return v.(*ast.ClassType).Name
-}
-
 func Equals(t, other *ast.ClassType) bool {
 	if other == NullType {
 		return true

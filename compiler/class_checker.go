@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"fmt"
-
 	"strings"
 
 	"errors"
@@ -12,6 +11,9 @@ import (
 )
 
 func CheckClass(t *ast.ClassType) error {
+	if err := checkTopLevelType(t); err != nil {
+		return err
+	}
 	if err := checkConstructorName(t); err != nil {
 		return err
 	}
@@ -57,6 +59,13 @@ func CheckClass(t *ast.ClassType) error {
 		return err
 	}
 	return nil
+}
+
+func checkTopLevelType(t *ast.ClassType) error {
+	if t.Is("public") || t.Is("global") {
+		return nil
+	}
+	return fmt.Errorf("Top-level type must have public or global visibility: %s", t.Name)
 }
 
 func checkSameParameterName(m *ast.MethodMap) error {

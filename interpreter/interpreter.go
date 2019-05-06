@@ -681,15 +681,22 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 	if err != nil {
 		return nil, err
 	}
-	right, err := n.Right.Accept(v)
-	if err != nil {
-		return nil, err
-	}
-
 	lObj := left.(*ast.Object)
 	lType := lObj.ClassType
-	rObj := right.(*ast.Object)
-	rType := rObj.ClassType
+
+	var right interface{}
+	var rObj *ast.Object
+	var rType *ast.ClassType
+	if n.Op != "&&" && n.Op != "||" {
+		var err error
+		right, err = n.Right.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+
+		rObj = right.(*ast.Object)
+		rType = rObj.ClassType
+	}
 
 	switch n.Op {
 	case "+":
@@ -938,10 +945,21 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		return builtin.NewBoolean(!v.Equals(lObj, rObj)), nil
 	case "!==":
 		return builtin.NewBoolean(lObj != rObj), nil
-	case "&&":
-		return builtin.NewBoolean(lObj.BoolValue() && rObj.BoolValue()), nil
-	case "||":
-		return builtin.NewBoolean(lObj.BoolValue() || rObj.BoolValue()), nil
+	case "&&", "||":
+		if n.Op == "&&" {
+			if !lObj.BoolValue() {
+				return builtin.NewBoolean(false), nil
+			}
+		} else {
+			if lObj.BoolValue() {
+				return builtin.NewBoolean(true), nil
+			}
+		}
+		right, err = n.Right.Accept(v)
+		if err != nil {
+			return nil, err
+		}
+		return builtin.NewBoolean(right.(*ast.Object).BoolValue()), nil
 	case "=", "+=", "-=", "*=", "/=":
 		value := binaryOperator[n.Op](lObj, rObj)
 		err := v.assignValue(n.Left, value)

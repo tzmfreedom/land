@@ -305,9 +305,12 @@ func FindInstanceField(classType *ast.ClassType, fieldName string, allowedModifi
 		if allowedModifier == MODIFIER_ALL_OK {
 			allowedModifier = MODIFIER_ALLOW_PROTECTED
 		}
-		return FindInstanceField(classType.SuperClass, fieldName, allowedModifier, checkSetter)
+		f, err := FindInstanceField(classType.SuperClass, fieldName, allowedModifier, checkSetter)
+		if err == nil {
+			return f, nil
+		}
 	}
-	return nil, nil
+	return nil, fieldNotFoundError(classType, fieldName)
 }
 
 func FindStaticField(classType *ast.ClassType, fieldName string, allowedModifier int, checkSetter bool) (*ast.Field, error) {
@@ -325,9 +328,12 @@ func FindStaticField(classType *ast.ClassType, fieldName string, allowedModifier
 		if allowedModifier == MODIFIER_ALL_OK {
 			allowedModifier = MODIFIER_ALLOW_PROTECTED
 		}
-		return FindStaticField(classType.SuperClass, fieldName, allowedModifier, checkSetter)
+		f, err := FindStaticField(classType.SuperClass, fieldName, allowedModifier, checkSetter)
+		if err == nil {
+			return f, nil
+		}
 	}
-	return nil, nil
+	return nil, fieldNotFoundError(classType, fieldName)
 }
 
 func (r *TypeResolver) SearchConstructor(classType *ast.ClassType, parameters []*ast.ClassType) (*ast.ClassType, *ast.Method, error) {
@@ -351,4 +357,8 @@ func methodNotFoundError(classType *ast.ClassType, methodName string, parameters
 		parameterStrings[i] = parameter.String()
 	}
 	return fmt.Errorf("Method not found: %s.%s(%s)", classType.Name, methodName, strings.Join(parameterStrings, ", "))
+}
+
+func fieldNotFoundError(classType *ast.ClassType, fieldName string) error {
+	return fmt.Errorf("Field not found: %s.%s", classType.Name, fieldName)
 }

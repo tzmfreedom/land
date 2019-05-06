@@ -527,10 +527,10 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 		return nil, err
 	}
 	if n.Op == "=" ||
-		n.Op == "=+" ||
-		n.Op == "=-" ||
-		n.Op == "=*" ||
-		n.Op == "=/" {
+		n.Op == "+=" ||
+		n.Op == "-=" ||
+		n.Op == "*=" ||
+		n.Op == "/=" {
 
 		var l *ast.ClassType
 		resolver := NewTypeResolver(v.Context)
@@ -599,11 +599,11 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 				return builtin.IntegerType, nil
 			}
 		}
-		if n.Op == "==" || n.Op == "!=" || n.Op == "<" || n.Op == "<=" || n.Op == ">" || n.Op == ">=" {
+		if n.Op == "==" || n.Op == "!=" || n.Op == "<" || n.Op == "<=" || n.Op == ">" || n.Op == ">=" || n.Op == "&&" || n.Op == "||" {
 			return builtin.BooleanType, nil
 		}
 	}
-	return nil, nil
+	return nil, errors.New("no implemented operator: " + n.Op)
 }
 
 func (v *TypeChecker) VisitReturn(n *ast.Return) (interface{}, error) {

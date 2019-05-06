@@ -52,6 +52,9 @@ func (v *TypeRefResolver) Resolve(n *ast.ClassType) (*ast.ClassType, error) {
 			return nil, err
 		}
 		f.Type = classType.(*ast.ClassType)
+		if f.Expression != nil {
+			f.Expression.Accept(v)
+		}
 	}
 
 	for _, f := range n.StaticFields.Data {
@@ -60,6 +63,9 @@ func (v *TypeRefResolver) Resolve(n *ast.ClassType) (*ast.ClassType, error) {
 			return nil, err
 		}
 		f.Type = classType.(*ast.ClassType)
+		if f.Expression != nil {
+			f.Expression.Accept(v)
+		}
 	}
 
 	for _, m := range n.Constructors {
@@ -86,10 +92,16 @@ func (v *TypeRefResolver) Resolve(n *ast.ClassType) (*ast.ClassType, error) {
 				}
 			}
 			for _, param := range m.Parameters {
-				param.Accept(v)
+				_, err := param.Accept(v)
+				if err != nil {
+					return nil, err
+				}
 			}
 			if !n.Interface && !m.IsAbstract() {
-				m.Statements.Accept(v)
+				_, err := m.Statements.Accept(v)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 	}
@@ -104,9 +116,15 @@ func (v *TypeRefResolver) Resolve(n *ast.ClassType) (*ast.ClassType, error) {
 				}
 			}
 			for _, param := range m.Parameters {
-				param.Accept(v)
+				_, err := param.Accept(v)
+				if err != nil {
+					return nil, err
+				}
 			}
-			m.Statements.Accept(v)
+			_, err := m.Statements.Accept(v)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	return n, nil
@@ -142,9 +160,11 @@ func (v *TypeRefResolver) VisitParameter(n *ast.Parameter) (interface{}, error) 
 }
 
 func (v *TypeRefResolver) VisitArrayAccess(n *ast.ArrayAccess) (interface{}, error) {
-	n.Key.Accept(v)
-	n.Receiver.Accept(v)
-	return nil, nil
+	_, err := n.Key.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	return n.Receiver.Accept(v)
 }
 
 func (v *TypeRefResolver) VisitBooleanLiteral(n *ast.BooleanLiteral) (interface{}, error) {
@@ -174,16 +194,28 @@ func (v *TypeRefResolver) VisitFieldDeclaration(n *ast.FieldDeclaration) (interf
 	}
 	n.Type = classType.(*ast.ClassType)
 	for _, d := range n.Declarators {
-		d.Accept(v)
+		_, err := d.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return nil, nil
 }
 
 func (v *TypeRefResolver) VisitTry(n *ast.Try) (interface{}, error) {
-	n.Block.Accept(v)
-	n.FinallyBlock.Accept(v)
+	_, err := n.Block.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	_, err = n.FinallyBlock.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	for _, c := range n.CatchClause {
-		c.Accept(v)
+		_, err := c.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return ast.VisitTry(v, n)
 }
@@ -194,8 +226,7 @@ func (v *TypeRefResolver) VisitCatch(n *ast.Catch) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	n.Block.Accept(v)
-	return nil, nil
+	return n.Block.Accept(v)
 }
 
 func (v *TypeRefResolver) VisitFinally(n *ast.Finally) (interface{}, error) {
@@ -203,37 +234,56 @@ func (v *TypeRefResolver) VisitFinally(n *ast.Finally) (interface{}, error) {
 }
 
 func (v *TypeRefResolver) VisitFor(n *ast.For) (interface{}, error) {
-	n.Statements.Accept(v)
-	n.Control.Accept(v)
-	return nil, nil
+	_, err := n.Statements.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	return n.Control.Accept(v)
 }
 
 func (v *TypeRefResolver) VisitForControl(n *ast.ForControl) (interface{}, error) {
-	n.Expression.Accept(v)
+	_, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	for _, init := range n.ForInit {
-		init.Accept(v)
+		_, err := init.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 	for _, update := range n.ForUpdate {
-		update.Accept(v)
+		_, err := update.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return nil, nil
 }
 
 func (v *TypeRefResolver) VisitEnhancedForControl(n *ast.EnhancedForControl) (interface{}, error) {
 	classType, err := n.TypeRef.Accept(v)
-	n.Type = classType.(*ast.ClassType)
 	if err != nil {
 		return nil, err
 	}
-	n.Expression.Accept(v)
-	return nil, nil
+	n.Type = classType.(*ast.ClassType)
+	return n.Expression.Accept(v)
 }
 
 func (v *TypeRefResolver) VisitIf(n *ast.If) (interface{}, error) {
-	n.Condition.Accept(v)
-	n.IfStatement.Accept(v)
+	_, err := n.Condition.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	_, err = n.IfStatement.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	if n.ElseStatement != nil {
-		n.ElseStatement.Accept(v)
+		_, err = n.ElseStatement.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return ast.VisitIf(v, n)
 }
@@ -243,21 +293,30 @@ func (v *TypeRefResolver) VisitMethodDeclaration(n *ast.MethodDeclaration) (inte
 }
 
 func (v *TypeRefResolver) VisitMethodInvocation(n *ast.MethodInvocation) (interface{}, error) {
-	n.NameOrExpression.Accept(v)
+	_, err := n.NameOrExpression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	for _, param := range n.Parameters {
-		param.Accept(v)
+		_, err = param.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return nil, nil
 }
 
 func (v *TypeRefResolver) VisitNew(n *ast.New) (interface{}, error) {
 	classType, err := n.TypeRef.Accept(v)
-	n.Type = classType.(*ast.ClassType)
 	if err != nil {
 		return nil, err
 	}
+	n.Type = classType.(*ast.ClassType)
 	for _, p := range n.Parameters {
-		p.Accept(v)
+		_, err := p.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return nil, nil
 }
@@ -267,26 +326,26 @@ func (v *TypeRefResolver) VisitNullLiteral(n *ast.NullLiteral) (interface{}, err
 }
 
 func (v *TypeRefResolver) VisitUnaryOperator(n *ast.UnaryOperator) (interface{}, error) {
-	n.Expression.Accept(v)
-	return nil, nil
+	return n.Expression.Accept(v)
 }
 
 func (v *TypeRefResolver) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, error) {
-	n.Left.Accept(v)
-	n.Right.Accept(v)
-	return nil, nil
+	_, err := n.Left.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	return n.Right.Accept(v)
 }
 
 func (v *TypeRefResolver) VisitReturn(n *ast.Return) (interface{}, error) {
 	if n.Expression != nil {
-		n.Expression.Accept(v)
+		return n.Expression.Accept(v)
 	}
 	return nil, nil
 }
 
 func (v *TypeRefResolver) VisitThrow(n *ast.Throw) (interface{}, error) {
-	n.Expression.Accept(v)
-	return nil, nil
+	return n.Expression.Accept(v)
 }
 
 func (v *TypeRefResolver) VisitSoql(n *ast.Soql) (interface{}, error) {
@@ -302,19 +361,24 @@ func (v *TypeRefResolver) VisitStringLiteral(n *ast.StringLiteral) (interface{},
 }
 
 func (v *TypeRefResolver) VisitSwitch(n *ast.Switch) (interface{}, error) {
-	n.Expression.Accept(v)
+	_, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	for _, w := range n.WhenStatements {
-		w.Accept(v)
+		_, err := w.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if n.ElseStatement != nil {
-		n.ElseStatement.Accept(v)
+		return n.ElseStatement.Accept(v)
 	}
 	return nil, nil
 }
 
 func (v *TypeRefResolver) VisitTrigger(n *ast.Trigger) (interface{}, error) {
-	n.Statements.Accept(v)
-	return nil, nil
+	return n.Statements.Accept(v)
 }
 
 func (v *TypeRefResolver) VisitTriggerTiming(n *ast.TriggerTiming) (interface{}, error) {
@@ -323,27 +387,36 @@ func (v *TypeRefResolver) VisitTriggerTiming(n *ast.TriggerTiming) (interface{},
 
 func (v *TypeRefResolver) VisitVariableDeclaration(n *ast.VariableDeclaration) (interface{}, error) {
 	classType, err := n.TypeRef.Accept(v)
-	n.Type = classType.(*ast.ClassType)
 	if err != nil {
 		return nil, err
 	}
+	n.Type = classType.(*ast.ClassType)
 	for _, d := range n.Declarators {
-		d.Accept(v)
+		_, err := d.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return nil, nil
 }
 
 func (v *TypeRefResolver) VisitVariableDeclarator(n *ast.VariableDeclarator) (interface{}, error) {
 	if n.Expression != nil {
-		n.Expression.Accept(v)
+		return n.Expression.Accept(v)
 	}
 	return nil, nil
 }
 
 func (v *TypeRefResolver) VisitWhen(n *ast.When) (interface{}, error) {
-	n.Statements.Accept(v)
+	_, err := n.Statements.Accept(v)
+	if err != nil {
+		return nil, err
+	}
 	for _, c := range n.Condition {
-		c.Accept(v)
+		_, err := c.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return nil, nil
 }
@@ -358,9 +431,11 @@ func (v *TypeRefResolver) VisitWhenType(n *ast.WhenType) (interface{}, error) {
 }
 
 func (v *TypeRefResolver) VisitWhile(n *ast.While) (interface{}, error) {
-	n.Statements.Accept(v)
-	n.Condition.Accept(v)
-	return nil, nil
+	_, err := n.Statements.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	return n.Condition.Accept(v)
 }
 
 func (v *TypeRefResolver) VisitNothingStatement(n *ast.NothingStatement) (interface{}, error) {
@@ -373,13 +448,11 @@ func (v *TypeRefResolver) VisitCastExpression(n *ast.CastExpression) (interface{
 		return nil, err
 	}
 	n.CastType = classType.(*ast.ClassType)
-	n.Expression.Accept(v)
-	return nil, nil
+	return n.Expression.Accept(v)
 }
 
 func (v *TypeRefResolver) VisitFieldAccess(n *ast.FieldAccess) (interface{}, error) {
-	n.Expression.Accept(v)
-	return nil, nil
+	return n.Expression.Accept(v)
 }
 
 func (v *TypeRefResolver) VisitType(n *ast.TypeRef) (interface{}, error) {
@@ -425,7 +498,10 @@ func (v *TypeRefResolver) VisitType(n *ast.TypeRef) (interface{}, error) {
 
 func (v *TypeRefResolver) VisitBlock(n *ast.Block) (interface{}, error) {
 	for _, stmt := range n.Statements {
-		stmt.Accept(v)
+		_, err := stmt.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return nil, nil
 }
@@ -445,17 +521,22 @@ func (v *TypeRefResolver) VisitPropertyDeclaration(n *ast.PropertyDeclaration) (
 
 func (v *TypeRefResolver) VisitArrayInitializer(n *ast.ArrayInitializer) (interface{}, error) {
 	for _, n := range n.Initializers {
-		n.Accept(v)
+		_, err := n.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return nil, nil
 }
 
 func (v *TypeRefResolver) VisitArrayCreator(n *ast.ArrayCreator) (interface{}, error) {
 	for _, exp := range n.Expressions {
-		exp.Accept(v)
+		_, err := exp.Accept(v)
+		if err != nil {
+			return nil, err
+		}
 	}
-	n.ArrayInitializer.Accept(v)
-	return nil, nil
+	return n.ArrayInitializer.Accept(v)
 }
 
 func (v *TypeRefResolver) VisitSoqlBindVariable(n *ast.SoqlBindVariable) (interface{}, error) {
@@ -463,10 +544,15 @@ func (v *TypeRefResolver) VisitSoqlBindVariable(n *ast.SoqlBindVariable) (interf
 }
 
 func (v *TypeRefResolver) VisitTernalyExpression(n *ast.TernalyExpression) (interface{}, error) {
-	n.Condition.Accept(v)
-	n.FalseExpression.Accept(v)
-	n.TrueExpression.Accept(v)
-	return nil, nil
+	_, err := n.Condition.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	_, err = n.FalseExpression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	return n.TrueExpression.Accept(v)
 }
 
 func (v *TypeRefResolver) VisitMapCreator(n *ast.MapCreator) (interface{}, error) {

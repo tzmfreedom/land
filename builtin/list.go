@@ -118,6 +118,29 @@ func createListType() {
 			),
 		},
 	)
+	instanceMethods.Set(
+		"contains",
+		[]*ast.Method{
+			ast.CreateMethod(
+				"contains",
+				BooleanType,
+				[]*ast.Parameter{
+					objectTypeParameter,
+				},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					checker := extra["interpreter"].(EqualChecker)
+					target := params[0]
+					records := this.Extra["records"].([]*ast.Object)
+					for _, record := range records {
+						if checker.Equals(record, target) {
+							return NewBoolean(true)
+						}
+					}
+					return NewBoolean(false)
+				},
+			),
+		},
+	)
 
 	ListType.Constructors = []*ast.Method{
 		{

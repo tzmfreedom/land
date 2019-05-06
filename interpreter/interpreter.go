@@ -996,7 +996,8 @@ func (v *Interpreter) VisitSosl(n *ast.Sosl) (interface{}, error) {
 }
 
 func (v *Interpreter) VisitStringLiteral(n *ast.StringLiteral) (interface{}, error) {
-	return builtin.NewString(n.Value), nil
+	value := strings.Replace(n.Value, "\\n", "\n", -1)
+	return builtin.NewString(value), nil
 }
 
 func (v *Interpreter) VisitSwitch(n *ast.Switch) (interface{}, error) {

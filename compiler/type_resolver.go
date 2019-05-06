@@ -57,7 +57,7 @@ func (r *TypeResolver) ResolveVariable(names []string, checkSetter bool) (*ast.C
 			var err error
 			for i, f := range names[1:] {
 				var allowedModifier int
-				if i == 0 && f == "this" {
+				if i == 0 && name == "this" {
 					allowedModifier = MODIFIER_ALL_OK
 				} else {
 					allowedModifier = MODIFIER_PUBLIC_ONLY

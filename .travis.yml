@@ -4,8 +4,6 @@ go:
 before_install:
 - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 - mv sobjects.yml.test sobjects.yml
-install:
-- make deps
 before_script:
 - make db/create
 script:

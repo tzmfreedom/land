@@ -972,7 +972,7 @@ func invalidIdentifier(name string) error {
 	return fmt.Errorf("Invalid character in identifier: %s", name)
 }
 
-var reg = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9]*$")
+var reg = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]*$")
 
 func isInvalidIdentifier(name string) bool {
 	return !reg.MatchString(name)

@@ -17,7 +17,7 @@ func TestClassChecker(t *testing.T) {
 		// different parameter type
 		{
 			&ast.ClassType{
-				Modifiers:      []*ast.Modifier{},
+				Modifiers:      []*ast.Modifier{ast.PublicModifier()},
 				Annotations:    []*ast.Annotation{},
 				Name:           "Foo",
 				SuperClassRef:  nil,
@@ -66,7 +66,7 @@ func TestClassChecker(t *testing.T) {
 		// same parameter and name signature, difference return type
 		{
 			&ast.ClassType{
-				Modifiers:      []*ast.Modifier{},
+				Modifiers:      []*ast.Modifier{ast.PublicModifier()},
 				Annotations:    []*ast.Annotation{},
 				Name:           "Foo",
 				SuperClassRef:  nil,
@@ -115,7 +115,7 @@ func TestClassChecker(t *testing.T) {
 		// different parameter number
 		{
 			&ast.ClassType{
-				Modifiers:      []*ast.Modifier{},
+				Modifiers:      []*ast.Modifier{ast.PublicModifier()},
 				Annotations:    []*ast.Annotation{},
 				Name:           "Foo",
 				SuperClassRef:  nil,
@@ -168,7 +168,7 @@ func TestClassChecker(t *testing.T) {
 		// same parameter name
 		{
 			&ast.ClassType{
-				Modifiers:      []*ast.Modifier{},
+				Modifiers:      []*ast.Modifier{ast.PublicModifier()},
 				Annotations:    []*ast.Annotation{},
 				Name:           "Foo",
 				SuperClass:     nil,

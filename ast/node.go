@@ -218,6 +218,15 @@ type BinaryOperator struct {
 	Parent   Node
 }
 
+type InstanceofOperator struct {
+	Op         string
+	Expression Node
+	TypeRef    *TypeRef
+	Type       *ClassType
+	Location   *Location
+	Parent     Node
+}
+
 type Return struct {
 	Expression Node
 	Location   *Location
@@ -517,6 +526,7 @@ type Visitor interface {
 	VisitNullLiteral(*NullLiteral) (interface{}, error)
 	VisitUnaryOperator(*UnaryOperator) (interface{}, error)
 	VisitBinaryOperator(*BinaryOperator) (interface{}, error)
+	VisitInstanceofOperator(*InstanceofOperator) (interface{}, error)
 	VisitReturn(*Return) (interface{}, error)
 	VisitThrow(*Throw) (interface{}, error)
 	VisitSoql(*Soql) (interface{}, error)
@@ -858,6 +868,18 @@ func (n *BinaryOperator) GetChildren() []interface{} {
 		n.Op,
 		n.Left,
 		n.Right,
+	}
+}
+
+func (n *InstanceofOperator) Accept(v Visitor) (interface{}, error) {
+	return v.VisitInstanceofOperator(n)
+}
+
+func (n *InstanceofOperator) GetChildren() []interface{} {
+	return []interface{}{
+		n.Op,
+		n.Expression,
+		n.TypeRef,
 	}
 }
 
@@ -1285,6 +1307,9 @@ func (n *UnaryOperator) GetType() string {
 func (n *BinaryOperator) GetType() string {
 	return "BinaryOperator"
 }
+func (n *InstanceofOperator) GetType() string {
+	return "InstanceofOperator"
+}
 func (n *Return) GetType() string {
 	return "Return"
 }
@@ -1466,6 +1491,9 @@ func (n *UnaryOperator) GetParent() Node {
 	return n.Parent
 }
 func (n *BinaryOperator) GetParent() Node {
+	return n.Parent
+}
+func (n *InstanceofOperator) GetParent() Node {
 	return n.Parent
 }
 func (n *Return) GetParent() Node {
@@ -1674,6 +1702,10 @@ func (n *UnaryOperator) SetParent(parent Node) {
 }
 
 func (n *BinaryOperator) SetParent(parent Node) {
+	n.Parent = parent
+}
+
+func (n *InstanceofOperator) SetParent(parent Node) {
 	n.Parent = parent
 }
 
@@ -1910,6 +1942,10 @@ func (n *UnaryOperator) GetLocation() *Location {
 }
 
 func (n *BinaryOperator) GetLocation() *Location {
+	return n.Location
+}
+
+func (n *InstanceofOperator) GetLocation() *Location {
 	return n.Location
 }
 

@@ -248,6 +248,21 @@ type apexVisitor interface {
 	// Visit a parse tree produced by apexParser#apexDbExpression.
 	VisitApexDbExpression(ctx *ApexDbExpressionContext) interface{}
 
+	// Visit a parse tree produced by apexParser#PrimaryExpression.
+	VisitPrimaryExpression(ctx *PrimaryExpressionContext) interface{}
+
+	// Visit a parse tree produced by apexParser#UnaryExpression.
+	VisitUnaryExpression(ctx *UnaryExpressionContext) interface{}
+
+	// Visit a parse tree produced by apexParser#MethodInvocation.
+	VisitMethodInvocation(ctx *MethodInvocationContext) interface{}
+
+	// Visit a parse tree produced by apexParser#ShiftExpression.
+	VisitShiftExpression(ctx *ShiftExpressionContext) interface{}
+
+	// Visit a parse tree produced by apexParser#NewObjectExpression.
+	VisitNewObjectExpression(ctx *NewObjectExpressionContext) interface{}
+
 	// Visit a parse tree produced by apexParser#TernalyExpression.
 	VisitTernalyExpression(ctx *TernalyExpressionContext) interface{}
 
@@ -260,29 +275,17 @@ type apexVisitor interface {
 	// Visit a parse tree produced by apexParser#PostUnaryExpression.
 	VisitPostUnaryExpression(ctx *PostUnaryExpressionContext) interface{}
 
-	// Visit a parse tree produced by apexParser#PrimaryExpression.
-	VisitPrimaryExpression(ctx *PrimaryExpressionContext) interface{}
-
 	// Visit a parse tree produced by apexParser#OpExpression.
 	VisitOpExpression(ctx *OpExpressionContext) interface{}
 
-	// Visit a parse tree produced by apexParser#UnaryExpression.
-	VisitUnaryExpression(ctx *UnaryExpressionContext) interface{}
-
-	// Visit a parse tree produced by apexParser#MethodInvocation.
-	VisitMethodInvocation(ctx *MethodInvocationContext) interface{}
+	// Visit a parse tree produced by apexParser#InstanceofExpression.
+	VisitInstanceofExpression(ctx *InstanceofExpressionContext) interface{}
 
 	// Visit a parse tree produced by apexParser#CastExpression.
 	VisitCastExpression(ctx *CastExpressionContext) interface{}
 
-	// Visit a parse tree produced by apexParser#ShiftExpression.
-	VisitShiftExpression(ctx *ShiftExpressionContext) interface{}
-
 	// Visit a parse tree produced by apexParser#FieldAccess.
 	VisitFieldAccess(ctx *FieldAccessContext) interface{}
-
-	// Visit a parse tree produced by apexParser#NewObjectExpression.
-	VisitNewObjectExpression(ctx *NewObjectExpressionContext) interface{}
 
 	// Visit a parse tree produced by apexParser#primary.
 	VisitPrimary(ctx *PrimaryContext) interface{}

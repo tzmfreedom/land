@@ -971,6 +971,16 @@ func (v *Interpreter) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 	return nil, nil
 }
 
+func (v *Interpreter) VisitInstanceofOperator(n *ast.InstanceofOperator) (interface{}, error) {
+	obj, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: strict check
+	value := obj.(*ast.Object).ClassType.Name == n.Type.Name
+	return builtin.NewBoolean(value), nil
+}
+
 func (v *Interpreter) VisitReturn(n *ast.Return) (interface{}, error) {
 	if n.Expression != nil {
 		res, err := n.Expression.Accept(v)

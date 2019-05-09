@@ -470,7 +470,7 @@ expression
     |   expression op=('+'|'-') expression                      # OpExpression
     |   expression (op+='<' op+='<' | op+='>' op+='>' op+='>' | op+='>' op+='>') expression # ShiftExpression
     |   expression op=('<=' | '>=' | '>' | '<') expression      # OpExpression
-    |   expression op=INSTANCEOF apexType                           # OpExpression
+    |   expression op=INSTANCEOF apexType                       # InstanceofExpression
     |   expression op=('===' | '==' | '!=') expression          # OpExpression
     |   expression op='&' expression                            # OpExpression
     |   expression op='^' expression                            # OpExpression

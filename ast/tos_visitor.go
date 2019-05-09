@@ -543,6 +543,18 @@ func (v *TosVisitor) VisitBinaryOperator(n *BinaryOperator) (interface{}, error)
 	return fmt.Sprintf("%s %s %s", l.(string), n.Op, r.(string)), nil
 }
 
+func (v *TosVisitor) VisitInstanceofOperator(n *InstanceofOperator) (interface{}, error) {
+	l, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	r, err := n.TypeRef.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	return fmt.Sprintf("%s instanceof %s", l.(string), r.(string)), nil
+}
+
 func (v *TosVisitor) VisitReturn(n *Return) (interface{}, error) {
 	if n.Expression != nil {
 		exp, err := n.Expression.Accept(v)

@@ -965,6 +965,14 @@ func (v *Builder) VisitOpExpression(ctx *parser.OpExpressionContext) interface{}
 	return n
 }
 
+func (v *Builder) VisitInstanceofExpression(ctx *parser.InstanceofExpressionContext) interface{} {
+	n := &InstanceofOperator{Location: v.newLocation(ctx)}
+	n.Op = ctx.GetOp().GetText()
+	n.Expression = ctx.Expression().Accept(v).(Node)
+	n.TypeRef = ctx.ApexType().Accept(v).(*TypeRef)
+	return n
+}
+
 func (v *Builder) VisitNewObjectExpression(ctx *parser.NewObjectExpressionContext) interface{} {
 	return ctx.Creator().Accept(v)
 }

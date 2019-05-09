@@ -328,6 +328,26 @@ func (v *BaseapexVisitor) VisitApexDbExpression(ctx *ApexDbExpressionContext) in
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseapexVisitor) VisitPrimaryExpression(ctx *PrimaryExpressionContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseapexVisitor) VisitUnaryExpression(ctx *UnaryExpressionContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseapexVisitor) VisitMethodInvocation(ctx *MethodInvocationContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseapexVisitor) VisitShiftExpression(ctx *ShiftExpressionContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseapexVisitor) VisitNewObjectExpression(ctx *NewObjectExpressionContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseapexVisitor) VisitTernalyExpression(ctx *TernalyExpressionContext) interface{} {
 	return v.VisitChildren(ctx)
 }
@@ -344,19 +364,11 @@ func (v *BaseapexVisitor) VisitPostUnaryExpression(ctx *PostUnaryExpressionConte
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseapexVisitor) VisitPrimaryExpression(ctx *PrimaryExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
 func (v *BaseapexVisitor) VisitOpExpression(ctx *OpExpressionContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseapexVisitor) VisitUnaryExpression(ctx *UnaryExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseapexVisitor) VisitMethodInvocation(ctx *MethodInvocationContext) interface{} {
+func (v *BaseapexVisitor) VisitInstanceofExpression(ctx *InstanceofExpressionContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
@@ -364,15 +376,7 @@ func (v *BaseapexVisitor) VisitCastExpression(ctx *CastExpressionContext) interf
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseapexVisitor) VisitShiftExpression(ctx *ShiftExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
 func (v *BaseapexVisitor) VisitFieldAccess(ctx *FieldAccessContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseapexVisitor) VisitNewObjectExpression(ctx *NewObjectExpressionContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 

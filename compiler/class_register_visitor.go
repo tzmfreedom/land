@@ -144,6 +144,10 @@ func (v *ClassRegisterVisitor) VisitBinaryOperator(n *ast.BinaryOperator) (inter
 	return ast.VisitBinaryOperator(v, n)
 }
 
+func (v *ClassRegisterVisitor) VisitInstanceofOperator(n *ast.InstanceofOperator) (interface{}, error) {
+	return ast.VisitInstanceofOperator(v, n)
+}
+
 func (v *ClassRegisterVisitor) VisitReturn(n *ast.Return) (interface{}, error) {
 	return ast.VisitReturn(v, n)
 }

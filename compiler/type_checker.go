@@ -587,6 +587,10 @@ func (v *TypeChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 	return nil, errors.New("no implemented operator: " + n.Op)
 }
 
+func (v *TypeChecker) VisitInstanceofOperator(n *ast.InstanceofOperator) (interface{}, error) {
+	return n.Expression.Accept(v)
+}
+
 func (v *TypeChecker) VisitReturn(n *ast.Return) (interface{}, error) {
 	if v.Context.CurrentMethod.ReturnType == nil {
 		if n.Expression != nil {

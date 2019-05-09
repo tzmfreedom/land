@@ -132,6 +132,10 @@ func (v *SoqlChecker) VisitBinaryOperator(n *ast.BinaryOperator) (interface{}, e
 	return ast.VisitBinaryOperator(v, n)
 }
 
+func (v *SoqlChecker) VisitInstanceofOperator(n *ast.InstanceofOperator) (interface{}, error) {
+	return ast.VisitInstanceofOperator(v, n)
+}
+
 func (v *SoqlChecker) VisitReturn(n *ast.Return) (interface{}, error) {
 	return ast.VisitReturn(v, n)
 }

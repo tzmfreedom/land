@@ -337,6 +337,19 @@ func (v *TypeRefResolver) VisitBinaryOperator(n *ast.BinaryOperator) (interface{
 	return n.Right.Accept(v)
 }
 
+func (v *TypeRefResolver) VisitInstanceofOperator(n *ast.InstanceofOperator) (interface{}, error) {
+	_, err := n.Expression.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	classType, err := n.TypeRef.Accept(v)
+	if err != nil {
+		return nil, err
+	}
+	n.Type = classType.(*ast.ClassType)
+	return nil, nil
+}
+
 func (v *TypeRefResolver) VisitReturn(n *ast.Return) (interface{}, error) {
 	if n.Expression != nil {
 		return n.Expression.Accept(v)

@@ -127,6 +127,10 @@ func VisitBinaryOperator(v Visitor, n *BinaryOperator) (interface{}, error) {
 	return visitChildren(v, n)
 }
 
+func VisitInstanceofOperator(v Visitor, n *InstanceofOperator) (interface{}, error) {
+	return VisitInstanceofOperator(v, n)
+}
+
 func VisitReturn(v Visitor, n *Return) (interface{}, error) {
 	return visitChildren(v, n)
 }

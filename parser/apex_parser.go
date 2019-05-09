@@ -13628,6 +13628,303 @@ func (s *ExpressionContext) ToStringTree(ruleNames []string, recog antlr.Recogni
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+type PrimaryExpressionContext struct {
+	*ExpressionContext
+}
+
+func NewPrimaryExpressionContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *PrimaryExpressionContext {
+	var p = new(PrimaryExpressionContext)
+
+	p.ExpressionContext = NewEmptyExpressionContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExpressionContext))
+
+	return p
+}
+
+func (s *PrimaryExpressionContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *PrimaryExpressionContext) Primary() IPrimaryContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IPrimaryContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IPrimaryContext)
+}
+
+func (s *PrimaryExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(apexListener); ok {
+		listenerT.EnterPrimaryExpression(s)
+	}
+}
+
+func (s *PrimaryExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(apexListener); ok {
+		listenerT.ExitPrimaryExpression(s)
+	}
+}
+
+func (s *PrimaryExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case apexVisitor:
+		return t.VisitPrimaryExpression(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
+type UnaryExpressionContext struct {
+	*ExpressionContext
+	op antlr.Token
+}
+
+func NewUnaryExpressionContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *UnaryExpressionContext {
+	var p = new(UnaryExpressionContext)
+
+	p.ExpressionContext = NewEmptyExpressionContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExpressionContext))
+
+	return p
+}
+
+func (s *UnaryExpressionContext) GetOp() antlr.Token { return s.op }
+
+func (s *UnaryExpressionContext) SetOp(v antlr.Token) { s.op = v }
+
+func (s *UnaryExpressionContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *UnaryExpressionContext) Expression() IExpressionContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExpressionContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExpressionContext)
+}
+
+func (s *UnaryExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(apexListener); ok {
+		listenerT.EnterUnaryExpression(s)
+	}
+}
+
+func (s *UnaryExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(apexListener); ok {
+		listenerT.ExitUnaryExpression(s)
+	}
+}
+
+func (s *UnaryExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case apexVisitor:
+		return t.VisitUnaryExpression(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
+type MethodInvocationContext struct {
+	*ExpressionContext
+}
+
+func NewMethodInvocationContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *MethodInvocationContext {
+	var p = new(MethodInvocationContext)
+
+	p.ExpressionContext = NewEmptyExpressionContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExpressionContext))
+
+	return p
+}
+
+func (s *MethodInvocationContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *MethodInvocationContext) Expression() IExpressionContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExpressionContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExpressionContext)
+}
+
+func (s *MethodInvocationContext) ExpressionList() IExpressionListContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExpressionListContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExpressionListContext)
+}
+
+func (s *MethodInvocationContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(apexListener); ok {
+		listenerT.EnterMethodInvocation(s)
+	}
+}
+
+func (s *MethodInvocationContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(apexListener); ok {
+		listenerT.ExitMethodInvocation(s)
+	}
+}
+
+func (s *MethodInvocationContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case apexVisitor:
+		return t.VisitMethodInvocation(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
+type ShiftExpressionContext struct {
+	*ExpressionContext
+	s121 antlr.Token
+	op   []antlr.Token
+	s120 antlr.Token
+}
+
+func NewShiftExpressionContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *ShiftExpressionContext {
+	var p = new(ShiftExpressionContext)
+
+	p.ExpressionContext = NewEmptyExpressionContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExpressionContext))
+
+	return p
+}
+
+func (s *ShiftExpressionContext) GetS121() antlr.Token { return s.s121 }
+
+func (s *ShiftExpressionContext) GetS120() antlr.Token { return s.s120 }
+
+func (s *ShiftExpressionContext) SetS121(v antlr.Token) { s.s121 = v }
+
+func (s *ShiftExpressionContext) SetS120(v antlr.Token) { s.s120 = v }
+
+func (s *ShiftExpressionContext) GetOp() []antlr.Token { return s.op }
+
+func (s *ShiftExpressionContext) SetOp(v []antlr.Token) { s.op = v }
+
+func (s *ShiftExpressionContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *ShiftExpressionContext) AllExpression() []IExpressionContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExpressionContext)(nil)).Elem())
+	var tst = make([]IExpressionContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(IExpressionContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *ShiftExpressionContext) Expression(i int) IExpressionContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExpressionContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExpressionContext)
+}
+
+func (s *ShiftExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(apexListener); ok {
+		listenerT.EnterShiftExpression(s)
+	}
+}
+
+func (s *ShiftExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(apexListener); ok {
+		listenerT.ExitShiftExpression(s)
+	}
+}
+
+func (s *ShiftExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case apexVisitor:
+		return t.VisitShiftExpression(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
+type NewObjectExpressionContext struct {
+	*ExpressionContext
+}
+
+func NewNewObjectExpressionContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *NewObjectExpressionContext {
+	var p = new(NewObjectExpressionContext)
+
+	p.ExpressionContext = NewEmptyExpressionContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExpressionContext))
+
+	return p
+}
+
+func (s *NewObjectExpressionContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *NewObjectExpressionContext) NEW() antlr.TerminalNode {
+	return s.GetToken(apexParserNEW, 0)
+}
+
+func (s *NewObjectExpressionContext) Creator() ICreatorContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ICreatorContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ICreatorContext)
+}
+
+func (s *NewObjectExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(apexListener); ok {
+		listenerT.EnterNewObjectExpression(s)
+	}
+}
+
+func (s *NewObjectExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(apexListener); ok {
+		listenerT.ExitNewObjectExpression(s)
+	}
+}
+
+func (s *NewObjectExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case apexVisitor:
+		return t.VisitNewObjectExpression(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 type TernalyExpressionContext struct {
 	*ExpressionContext
 	op antlr.Token
@@ -13869,56 +14166,6 @@ func (s *PostUnaryExpressionContext) Accept(visitor antlr.ParseTreeVisitor) inte
 	}
 }
 
-type PrimaryExpressionContext struct {
-	*ExpressionContext
-}
-
-func NewPrimaryExpressionContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *PrimaryExpressionContext {
-	var p = new(PrimaryExpressionContext)
-
-	p.ExpressionContext = NewEmptyExpressionContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExpressionContext))
-
-	return p
-}
-
-func (s *PrimaryExpressionContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *PrimaryExpressionContext) Primary() IPrimaryContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IPrimaryContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IPrimaryContext)
-}
-
-func (s *PrimaryExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(apexListener); ok {
-		listenerT.EnterPrimaryExpression(s)
-	}
-}
-
-func (s *PrimaryExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(apexListener); ok {
-		listenerT.ExitPrimaryExpression(s)
-	}
-}
-
-func (s *PrimaryExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
-	switch t := visitor.(type) {
-	case apexVisitor:
-		return t.VisitPrimaryExpression(s)
-
-	default:
-		return t.VisitChildren(s)
-	}
-}
-
 type OpExpressionContext struct {
 	*ExpressionContext
 	op antlr.Token
@@ -13975,20 +14222,6 @@ func (s *OpExpressionContext) ExplicitGenericInvocation() IExplicitGenericInvoca
 	return t.(IExplicitGenericInvocationContext)
 }
 
-func (s *OpExpressionContext) ApexType() IApexTypeContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IApexTypeContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IApexTypeContext)
-}
-
-func (s *OpExpressionContext) INSTANCEOF() antlr.TerminalNode {
-	return s.GetToken(apexParserINSTANCEOF, 0)
-}
-
 func (s *OpExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(apexListener); ok {
 		listenerT.EnterOpExpression(s)
@@ -14011,13 +14244,13 @@ func (s *OpExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{}
 	}
 }
 
-type UnaryExpressionContext struct {
+type InstanceofExpressionContext struct {
 	*ExpressionContext
 	op antlr.Token
 }
 
-func NewUnaryExpressionContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *UnaryExpressionContext {
-	var p = new(UnaryExpressionContext)
+func NewInstanceofExpressionContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *InstanceofExpressionContext {
+	var p = new(InstanceofExpressionContext)
 
 	p.ExpressionContext = NewEmptyExpressionContext()
 	p.parser = parser
@@ -14026,15 +14259,15 @@ func NewUnaryExpressionContext(parser antlr.Parser, ctx antlr.ParserRuleContext)
 	return p
 }
 
-func (s *UnaryExpressionContext) GetOp() antlr.Token { return s.op }
+func (s *InstanceofExpressionContext) GetOp() antlr.Token { return s.op }
 
-func (s *UnaryExpressionContext) SetOp(v antlr.Token) { s.op = v }
+func (s *InstanceofExpressionContext) SetOp(v antlr.Token) { s.op = v }
 
-func (s *UnaryExpressionContext) GetRuleContext() antlr.RuleContext {
+func (s *InstanceofExpressionContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
-func (s *UnaryExpressionContext) Expression() IExpressionContext {
+func (s *InstanceofExpressionContext) Expression() IExpressionContext {
 	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExpressionContext)(nil)).Elem(), 0)
 
 	if t == nil {
@@ -14044,82 +14277,36 @@ func (s *UnaryExpressionContext) Expression() IExpressionContext {
 	return t.(IExpressionContext)
 }
 
-func (s *UnaryExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(apexListener); ok {
-		listenerT.EnterUnaryExpression(s)
-	}
-}
-
-func (s *UnaryExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(apexListener); ok {
-		listenerT.ExitUnaryExpression(s)
-	}
-}
-
-func (s *UnaryExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
-	switch t := visitor.(type) {
-	case apexVisitor:
-		return t.VisitUnaryExpression(s)
-
-	default:
-		return t.VisitChildren(s)
-	}
-}
-
-type MethodInvocationContext struct {
-	*ExpressionContext
-}
-
-func NewMethodInvocationContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *MethodInvocationContext {
-	var p = new(MethodInvocationContext)
-
-	p.ExpressionContext = NewEmptyExpressionContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExpressionContext))
-
-	return p
-}
-
-func (s *MethodInvocationContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *MethodInvocationContext) Expression() IExpressionContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExpressionContext)(nil)).Elem(), 0)
+func (s *InstanceofExpressionContext) ApexType() IApexTypeContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IApexTypeContext)(nil)).Elem(), 0)
 
 	if t == nil {
 		return nil
 	}
 
-	return t.(IExpressionContext)
+	return t.(IApexTypeContext)
 }
 
-func (s *MethodInvocationContext) ExpressionList() IExpressionListContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExpressionListContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IExpressionListContext)
+func (s *InstanceofExpressionContext) INSTANCEOF() antlr.TerminalNode {
+	return s.GetToken(apexParserINSTANCEOF, 0)
 }
 
-func (s *MethodInvocationContext) EnterRule(listener antlr.ParseTreeListener) {
+func (s *InstanceofExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(apexListener); ok {
-		listenerT.EnterMethodInvocation(s)
+		listenerT.EnterInstanceofExpression(s)
 	}
 }
 
-func (s *MethodInvocationContext) ExitRule(listener antlr.ParseTreeListener) {
+func (s *InstanceofExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(apexListener); ok {
-		listenerT.ExitMethodInvocation(s)
+		listenerT.ExitInstanceofExpression(s)
 	}
 }
 
-func (s *MethodInvocationContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+func (s *InstanceofExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 	switch t := visitor.(type) {
 	case apexVisitor:
-		return t.VisitMethodInvocation(s)
+		return t.VisitInstanceofExpression(s)
 
 	default:
 		return t.VisitChildren(s)
@@ -14186,84 +14373,6 @@ func (s *CastExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface
 	}
 }
 
-type ShiftExpressionContext struct {
-	*ExpressionContext
-	s121 antlr.Token
-	op   []antlr.Token
-	s120 antlr.Token
-}
-
-func NewShiftExpressionContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *ShiftExpressionContext {
-	var p = new(ShiftExpressionContext)
-
-	p.ExpressionContext = NewEmptyExpressionContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExpressionContext))
-
-	return p
-}
-
-func (s *ShiftExpressionContext) GetS121() antlr.Token { return s.s121 }
-
-func (s *ShiftExpressionContext) GetS120() antlr.Token { return s.s120 }
-
-func (s *ShiftExpressionContext) SetS121(v antlr.Token) { s.s121 = v }
-
-func (s *ShiftExpressionContext) SetS120(v antlr.Token) { s.s120 = v }
-
-func (s *ShiftExpressionContext) GetOp() []antlr.Token { return s.op }
-
-func (s *ShiftExpressionContext) SetOp(v []antlr.Token) { s.op = v }
-
-func (s *ShiftExpressionContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *ShiftExpressionContext) AllExpression() []IExpressionContext {
-	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExpressionContext)(nil)).Elem())
-	var tst = make([]IExpressionContext, len(ts))
-
-	for i, t := range ts {
-		if t != nil {
-			tst[i] = t.(IExpressionContext)
-		}
-	}
-
-	return tst
-}
-
-func (s *ShiftExpressionContext) Expression(i int) IExpressionContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExpressionContext)(nil)).Elem(), i)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IExpressionContext)
-}
-
-func (s *ShiftExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(apexListener); ok {
-		listenerT.EnterShiftExpression(s)
-	}
-}
-
-func (s *ShiftExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(apexListener); ok {
-		listenerT.ExitShiftExpression(s)
-	}
-}
-
-func (s *ShiftExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
-	switch t := visitor.(type) {
-	case apexVisitor:
-		return t.VisitShiftExpression(s)
-
-	default:
-		return t.VisitChildren(s)
-	}
-}
-
 type FieldAccessContext struct {
 	*ExpressionContext
 }
@@ -14318,60 +14427,6 @@ func (s *FieldAccessContext) Accept(visitor antlr.ParseTreeVisitor) interface{} 
 	switch t := visitor.(type) {
 	case apexVisitor:
 		return t.VisitFieldAccess(s)
-
-	default:
-		return t.VisitChildren(s)
-	}
-}
-
-type NewObjectExpressionContext struct {
-	*ExpressionContext
-}
-
-func NewNewObjectExpressionContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *NewObjectExpressionContext {
-	var p = new(NewObjectExpressionContext)
-
-	p.ExpressionContext = NewEmptyExpressionContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExpressionContext))
-
-	return p
-}
-
-func (s *NewObjectExpressionContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *NewObjectExpressionContext) NEW() antlr.TerminalNode {
-	return s.GetToken(apexParserNEW, 0)
-}
-
-func (s *NewObjectExpressionContext) Creator() ICreatorContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ICreatorContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(ICreatorContext)
-}
-
-func (s *NewObjectExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(apexListener); ok {
-		listenerT.EnterNewObjectExpression(s)
-	}
-}
-
-func (s *NewObjectExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(apexListener); ok {
-		listenerT.ExitNewObjectExpression(s)
-	}
-}
-
-func (s *NewObjectExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
-	switch t := visitor.(type) {
-	case apexVisitor:
-		return t.VisitNewObjectExpression(s)
 
 	default:
 		return t.VisitChildren(s)
@@ -15000,7 +15055,7 @@ func (p *apexParser) expression(_p int) (localctx IExpressionContext) {
 				}
 
 			case 18:
-				localctx = NewOpExpressionContext(p, NewExpressionContext(p, _parentctx, _parentState))
+				localctx = NewInstanceofExpressionContext(p, NewExpressionContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, apexParserRULE_expression)
 				p.SetState(1051)
 
@@ -15012,7 +15067,7 @@ func (p *apexParser) expression(_p int) (localctx IExpressionContext) {
 
 					var _m = p.Match(apexParserINSTANCEOF)
 
-					localctx.(*OpExpressionContext).op = _m
+					localctx.(*InstanceofExpressionContext).op = _m
 				}
 				{
 					p.SetState(1053)

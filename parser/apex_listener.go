@@ -248,6 +248,21 @@ type apexListener interface {
 	// EnterApexDbExpression is called when entering the apexDbExpression production.
 	EnterApexDbExpression(c *ApexDbExpressionContext)
 
+	// EnterPrimaryExpression is called when entering the PrimaryExpression production.
+	EnterPrimaryExpression(c *PrimaryExpressionContext)
+
+	// EnterUnaryExpression is called when entering the UnaryExpression production.
+	EnterUnaryExpression(c *UnaryExpressionContext)
+
+	// EnterMethodInvocation is called when entering the MethodInvocation production.
+	EnterMethodInvocation(c *MethodInvocationContext)
+
+	// EnterShiftExpression is called when entering the ShiftExpression production.
+	EnterShiftExpression(c *ShiftExpressionContext)
+
+	// EnterNewObjectExpression is called when entering the NewObjectExpression production.
+	EnterNewObjectExpression(c *NewObjectExpressionContext)
+
 	// EnterTernalyExpression is called when entering the TernalyExpression production.
 	EnterTernalyExpression(c *TernalyExpressionContext)
 
@@ -260,29 +275,17 @@ type apexListener interface {
 	// EnterPostUnaryExpression is called when entering the PostUnaryExpression production.
 	EnterPostUnaryExpression(c *PostUnaryExpressionContext)
 
-	// EnterPrimaryExpression is called when entering the PrimaryExpression production.
-	EnterPrimaryExpression(c *PrimaryExpressionContext)
-
 	// EnterOpExpression is called when entering the OpExpression production.
 	EnterOpExpression(c *OpExpressionContext)
 
-	// EnterUnaryExpression is called when entering the UnaryExpression production.
-	EnterUnaryExpression(c *UnaryExpressionContext)
-
-	// EnterMethodInvocation is called when entering the MethodInvocation production.
-	EnterMethodInvocation(c *MethodInvocationContext)
+	// EnterInstanceofExpression is called when entering the InstanceofExpression production.
+	EnterInstanceofExpression(c *InstanceofExpressionContext)
 
 	// EnterCastExpression is called when entering the CastExpression production.
 	EnterCastExpression(c *CastExpressionContext)
 
-	// EnterShiftExpression is called when entering the ShiftExpression production.
-	EnterShiftExpression(c *ShiftExpressionContext)
-
 	// EnterFieldAccess is called when entering the FieldAccess production.
 	EnterFieldAccess(c *FieldAccessContext)
-
-	// EnterNewObjectExpression is called when entering the NewObjectExpression production.
-	EnterNewObjectExpression(c *NewObjectExpressionContext)
 
 	// EnterPrimary is called when entering the primary production.
 	EnterPrimary(c *PrimaryContext)
@@ -662,6 +665,21 @@ type apexListener interface {
 	// ExitApexDbExpression is called when exiting the apexDbExpression production.
 	ExitApexDbExpression(c *ApexDbExpressionContext)
 
+	// ExitPrimaryExpression is called when exiting the PrimaryExpression production.
+	ExitPrimaryExpression(c *PrimaryExpressionContext)
+
+	// ExitUnaryExpression is called when exiting the UnaryExpression production.
+	ExitUnaryExpression(c *UnaryExpressionContext)
+
+	// ExitMethodInvocation is called when exiting the MethodInvocation production.
+	ExitMethodInvocation(c *MethodInvocationContext)
+
+	// ExitShiftExpression is called when exiting the ShiftExpression production.
+	ExitShiftExpression(c *ShiftExpressionContext)
+
+	// ExitNewObjectExpression is called when exiting the NewObjectExpression production.
+	ExitNewObjectExpression(c *NewObjectExpressionContext)
+
 	// ExitTernalyExpression is called when exiting the TernalyExpression production.
 	ExitTernalyExpression(c *TernalyExpressionContext)
 
@@ -674,29 +692,17 @@ type apexListener interface {
 	// ExitPostUnaryExpression is called when exiting the PostUnaryExpression production.
 	ExitPostUnaryExpression(c *PostUnaryExpressionContext)
 
-	// ExitPrimaryExpression is called when exiting the PrimaryExpression production.
-	ExitPrimaryExpression(c *PrimaryExpressionContext)
-
 	// ExitOpExpression is called when exiting the OpExpression production.
 	ExitOpExpression(c *OpExpressionContext)
 
-	// ExitUnaryExpression is called when exiting the UnaryExpression production.
-	ExitUnaryExpression(c *UnaryExpressionContext)
-
-	// ExitMethodInvocation is called when exiting the MethodInvocation production.
-	ExitMethodInvocation(c *MethodInvocationContext)
+	// ExitInstanceofExpression is called when exiting the InstanceofExpression production.
+	ExitInstanceofExpression(c *InstanceofExpressionContext)
 
 	// ExitCastExpression is called when exiting the CastExpression production.
 	ExitCastExpression(c *CastExpressionContext)
 
-	// ExitShiftExpression is called when exiting the ShiftExpression production.
-	ExitShiftExpression(c *ShiftExpressionContext)
-
 	// ExitFieldAccess is called when exiting the FieldAccess production.
 	ExitFieldAccess(c *FieldAccessContext)
-
-	// ExitNewObjectExpression is called when exiting the NewObjectExpression production.
-	ExitNewObjectExpression(c *NewObjectExpressionContext)
 
 	// ExitPrimary is called when exiting the primary production.
 	ExitPrimary(c *PrimaryContext)

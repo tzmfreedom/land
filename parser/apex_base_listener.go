@@ -505,6 +505,36 @@ func (s *BaseapexListener) EnterApexDbExpression(ctx *ApexDbExpressionContext) {
 // ExitApexDbExpression is called when production apexDbExpression is exited.
 func (s *BaseapexListener) ExitApexDbExpression(ctx *ApexDbExpressionContext) {}
 
+// EnterPrimaryExpression is called when production PrimaryExpression is entered.
+func (s *BaseapexListener) EnterPrimaryExpression(ctx *PrimaryExpressionContext) {}
+
+// ExitPrimaryExpression is called when production PrimaryExpression is exited.
+func (s *BaseapexListener) ExitPrimaryExpression(ctx *PrimaryExpressionContext) {}
+
+// EnterUnaryExpression is called when production UnaryExpression is entered.
+func (s *BaseapexListener) EnterUnaryExpression(ctx *UnaryExpressionContext) {}
+
+// ExitUnaryExpression is called when production UnaryExpression is exited.
+func (s *BaseapexListener) ExitUnaryExpression(ctx *UnaryExpressionContext) {}
+
+// EnterMethodInvocation is called when production MethodInvocation is entered.
+func (s *BaseapexListener) EnterMethodInvocation(ctx *MethodInvocationContext) {}
+
+// ExitMethodInvocation is called when production MethodInvocation is exited.
+func (s *BaseapexListener) ExitMethodInvocation(ctx *MethodInvocationContext) {}
+
+// EnterShiftExpression is called when production ShiftExpression is entered.
+func (s *BaseapexListener) EnterShiftExpression(ctx *ShiftExpressionContext) {}
+
+// ExitShiftExpression is called when production ShiftExpression is exited.
+func (s *BaseapexListener) ExitShiftExpression(ctx *ShiftExpressionContext) {}
+
+// EnterNewObjectExpression is called when production NewObjectExpression is entered.
+func (s *BaseapexListener) EnterNewObjectExpression(ctx *NewObjectExpressionContext) {}
+
+// ExitNewObjectExpression is called when production NewObjectExpression is exited.
+func (s *BaseapexListener) ExitNewObjectExpression(ctx *NewObjectExpressionContext) {}
+
 // EnterTernalyExpression is called when production TernalyExpression is entered.
 func (s *BaseapexListener) EnterTernalyExpression(ctx *TernalyExpressionContext) {}
 
@@ -529,29 +559,17 @@ func (s *BaseapexListener) EnterPostUnaryExpression(ctx *PostUnaryExpressionCont
 // ExitPostUnaryExpression is called when production PostUnaryExpression is exited.
 func (s *BaseapexListener) ExitPostUnaryExpression(ctx *PostUnaryExpressionContext) {}
 
-// EnterPrimaryExpression is called when production PrimaryExpression is entered.
-func (s *BaseapexListener) EnterPrimaryExpression(ctx *PrimaryExpressionContext) {}
-
-// ExitPrimaryExpression is called when production PrimaryExpression is exited.
-func (s *BaseapexListener) ExitPrimaryExpression(ctx *PrimaryExpressionContext) {}
-
 // EnterOpExpression is called when production OpExpression is entered.
 func (s *BaseapexListener) EnterOpExpression(ctx *OpExpressionContext) {}
 
 // ExitOpExpression is called when production OpExpression is exited.
 func (s *BaseapexListener) ExitOpExpression(ctx *OpExpressionContext) {}
 
-// EnterUnaryExpression is called when production UnaryExpression is entered.
-func (s *BaseapexListener) EnterUnaryExpression(ctx *UnaryExpressionContext) {}
+// EnterInstanceofExpression is called when production InstanceofExpression is entered.
+func (s *BaseapexListener) EnterInstanceofExpression(ctx *InstanceofExpressionContext) {}
 
-// ExitUnaryExpression is called when production UnaryExpression is exited.
-func (s *BaseapexListener) ExitUnaryExpression(ctx *UnaryExpressionContext) {}
-
-// EnterMethodInvocation is called when production MethodInvocation is entered.
-func (s *BaseapexListener) EnterMethodInvocation(ctx *MethodInvocationContext) {}
-
-// ExitMethodInvocation is called when production MethodInvocation is exited.
-func (s *BaseapexListener) ExitMethodInvocation(ctx *MethodInvocationContext) {}
+// ExitInstanceofExpression is called when production InstanceofExpression is exited.
+func (s *BaseapexListener) ExitInstanceofExpression(ctx *InstanceofExpressionContext) {}
 
 // EnterCastExpression is called when production CastExpression is entered.
 func (s *BaseapexListener) EnterCastExpression(ctx *CastExpressionContext) {}
@@ -559,23 +577,11 @@ func (s *BaseapexListener) EnterCastExpression(ctx *CastExpressionContext) {}
 // ExitCastExpression is called when production CastExpression is exited.
 func (s *BaseapexListener) ExitCastExpression(ctx *CastExpressionContext) {}
 
-// EnterShiftExpression is called when production ShiftExpression is entered.
-func (s *BaseapexListener) EnterShiftExpression(ctx *ShiftExpressionContext) {}
-
-// ExitShiftExpression is called when production ShiftExpression is exited.
-func (s *BaseapexListener) ExitShiftExpression(ctx *ShiftExpressionContext) {}
-
 // EnterFieldAccess is called when production FieldAccess is entered.
 func (s *BaseapexListener) EnterFieldAccess(ctx *FieldAccessContext) {}
 
 // ExitFieldAccess is called when production FieldAccess is exited.
 func (s *BaseapexListener) ExitFieldAccess(ctx *FieldAccessContext) {}
-
-// EnterNewObjectExpression is called when production NewObjectExpression is entered.
-func (s *BaseapexListener) EnterNewObjectExpression(ctx *NewObjectExpressionContext) {}
-
-// ExitNewObjectExpression is called when production NewObjectExpression is exited.
-func (s *BaseapexListener) ExitNewObjectExpression(ctx *NewObjectExpressionContext) {}
 
 // EnterPrimary is called when production primary is entered.
 func (s *BaseapexListener) EnterPrimary(ctx *PrimaryContext) {}

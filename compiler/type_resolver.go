@@ -243,7 +243,7 @@ func (r *TypeResolver) ResolveType(names []string) (*ast.ClassType, error) {
 
 func FindInstanceMethod(classType *ast.ClassType, methodName string, parameters []*ast.ClassType, allowedModifier int) (*ast.ClassType, *ast.Method, error) {
 	if classType == builtin.NullType {
-		return nil, nil, fmt.Errorf("null pointer exception")
+		return nil, nil, builtin.NewNullPointerException(methodName)
 	}
 	methods, ok := classType.InstanceMethods.Get(methodName)
 	if ok {

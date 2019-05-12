@@ -124,7 +124,7 @@ func (r *TypeResolver) ResolveVariable(names []string) (*ast.Object, error) {
 		if val, ok := r.Context.Env.Get("this"); ok {
 			if val, ok = val.InstanceFields.Get(names[0]); ok {
 				if val == nil {
-					return nil, errors.Errorf("null pointer exception: %s", names[0])
+					return nil, builtin.NewNullPointerException(names[0])
 				}
 				return val, nil
 			}
@@ -135,7 +135,7 @@ func (r *TypeResolver) ResolveVariable(names []string) (*ast.Object, error) {
 		if val, ok := r.Context.Env.Get(name); ok {
 			for _, f := range names[1:] {
 				if val == builtin.Null {
-					return nil, errors.Errorf("null pointer exception: %s", f)
+					return nil, builtin.NewNullPointerException(f)
 				}
 				val, ok = val.InstanceFields.Get(f)
 				if !ok {
@@ -152,7 +152,7 @@ func (r *TypeResolver) ResolveVariable(names []string) (*ast.Object, error) {
 					return nil, errors.Errorf("%s is not found in this scope", f)
 				}
 				if val == nil {
-					return nil, errors.Errorf("null pointer exception: %s", f)
+					return nil, builtin.NewNullPointerException(f)
 				}
 			}
 			return val, nil
@@ -165,7 +165,7 @@ func (r *TypeResolver) ResolveVariable(names []string) (*ast.Object, error) {
 						return nil, errors.Errorf("%s is not found in this scope", f)
 					}
 					if val == nil {
-						return nil, errors.Errorf("null pointer exception: %s", f)
+						return nil, builtin.NewNullPointerException(f)
 					}
 				}
 				return val, nil
@@ -179,7 +179,7 @@ func (r *TypeResolver) ResolveVariable(names []string) (*ast.Object, error) {
 						return nil, errors.Errorf("%s is not found in this scope", f)
 					}
 					if val == nil {
-						return nil, errors.Errorf("null pointer exception: %s", f)
+						return nil, builtin.NewNullPointerException(f)
 					}
 				}
 				return val, nil

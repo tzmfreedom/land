@@ -385,7 +385,6 @@ func (v *Interpreter) VisitIf(n *ast.If) (interface{}, error) {
 
 func (v *Interpreter) VisitMethodDeclaration(n *ast.MethodDeclaration) (interface{}, error) {
 	panic("not pass")
-	return ast.VisitMethodDeclaration(v, n)
 }
 
 func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{}, error) {
@@ -430,6 +429,10 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		resolver := NewTypeResolver(v.Context)
 		receiver, m, err = resolver.ResolveMethod(exp.Value, evaluated)
 		if err != nil {
+			if npe, ok := err.(*builtin.NullPointerException); ok {
+				location := n.Location
+				return nil, fmt.Errorf("null pointer exception: %s at %d:%d", npe.GetName(), location.Line, location.Column)
+			}
 			return nil, err
 		}
 	}
@@ -1213,7 +1216,14 @@ func (v *Interpreter) VisitSetCreator(n *ast.SetCreator) (interface{}, error) {
 
 func (v *Interpreter) VisitName(n *ast.Name) (interface{}, error) {
 	resolver := NewTypeResolver(v.Context)
-	return resolver.ResolveVariable(n.Value)
+	_, err := resolver.ResolveVariable(n.Value)
+	if err != nil {
+		if npe, ok := err.(*builtin.NullPointerException); ok {
+			location := n.Location
+			return nil, fmt.Errorf("null pointer exception: %s at %d:%d", npe.GetName(), location.Line, location.Column)
+		}
+	}
+	return nil, err
 }
 
 func (v *Interpreter) VisitConstructorDeclaration(n *ast.ConstructorDeclaration) (interface{}, error) {

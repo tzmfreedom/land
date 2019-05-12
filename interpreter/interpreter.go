@@ -411,7 +411,11 @@ func (v *Interpreter) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		// TODO: extend
 		_, m, err = FindInstanceMethod(receiver.(*ast.Object), exp.FieldName, evaluated, compiler.MODIFIER_ALL_OK)
 		if err != nil {
-			panic("not found")
+			if npe, ok := err.(*builtin.NullPointerException); ok {
+				location := n.Location
+				return nil, fmt.Errorf("null pointer exception: %s at %d:%d", npe.GetName(), location.Line, location.Column)
+			}
+			return nil, err
 		}
 	case *ast.Name:
 		// TODO: implement

@@ -49,7 +49,7 @@ generate:
 	$(ANTLR) -Dlanguage=Go -visitor apex.g4
 
 .PHONY: cross-build
-cross-build: deps
+cross-build:
 	-@goimports -w $(SRCS)
 	@gofmt -w $(SRCS)
 	@for os in darwin linux windows; do \

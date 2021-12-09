@@ -1220,14 +1220,14 @@ func (v *Interpreter) VisitSetCreator(n *ast.SetCreator) (interface{}, error) {
 
 func (v *Interpreter) VisitName(n *ast.Name) (interface{}, error) {
 	resolver := NewTypeResolver(v.Context)
-	_, err := resolver.ResolveVariable(n.Value)
+	r, err := resolver.ResolveVariable(n.Value)
 	if err != nil {
 		if npe, ok := err.(*builtin.NullPointerException); ok {
 			location := n.Location
 			return nil, fmt.Errorf("null pointer exception: %s at %d:%d", npe.GetName(), location.Line, location.Column)
 		}
 	}
-	return nil, err
+	return r, err
 }
 
 func (v *Interpreter) VisitConstructorDeclaration(n *ast.ConstructorDeclaration) (interface{}, error) {

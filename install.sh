@@ -31,7 +31,7 @@ parse_options $@
 
 UNAME=$(uname -s)
 if [ "$UNAME" != "Linux" -a "$UNAME" != "Darwin" ] ; then
-    echo "Sorry, OS not supported: ${UNAME}. Download binary from https://github.com/${USERNAME}/${NAME}/releases"
+    echo "Sorry, OS not supported: ${UNAME}. Download binary from https://github.com/${GITHUB_USER}/${NAME}/releases"
     exit 1
 fi
 
@@ -43,7 +43,7 @@ if [ "${UNAME}" = "Darwin" ] ; then
   if [ "${OSX_ARCH}" = "x86_64" ] ; then
     ARCH="amd64"
   else
-    echo "Sorry, architecture not supported: ${OSX_ARCH}. Download binary from https://github.com/${USERNAME}/${NAME}/releases"
+    echo "Sorry, architecture not supported: ${OSX_ARCH}. Download binary from https://github.com/${GITHUB_USER}/${NAME}/releases"
     exit 1
   fi
 elif [ "${UNAME}" = "Linux" ] ; then
@@ -55,7 +55,7 @@ elif [ "${UNAME}" = "Linux" ] ; then
   elif [ "${LINUX_ARCH}" = "x86_64" ] ; then
     ARCH="amd64"
   else
-    echo "Sorry, architecture not supported: ${LINUX_ARCH}. Download binary from https://github.com/${USERNAME}/${NAME}/releases"
+    echo "Sorry, architecture not supported: ${LINUX_ARCH}. Download binary from https://github.com/${GITHUB_USER}/${NAME}/releases"
     exit 1
   fi
 fi

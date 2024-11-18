@@ -335,6 +335,17 @@ func (v *TypeChecker) VisitMethodInvocation(n *ast.MethodInvocation) (interface{
 		}
 		if method.ReturnType != nil {
 			retType := method.ReturnType
+			if retType.IsGenerics() {
+				for i, g := range retType.Generics {
+					if g == builtin.T1type {
+						retType.Generics[i] = receiverType.Generics[0]
+					}
+					if g == builtin.T2type {
+						retType.Generics[i] = receiverType.Generics[1]
+					}
+				}
+				return retType, nil
+			}
 			if retType == builtin.T1type {
 				return receiverType.Generics[0], nil
 			}
@@ -966,7 +977,6 @@ func isTypeSObjectField(classType *ast.ClassType) bool {
 		classType == builtin.DateType ||
 		classType == builtin.DoubleType
 }
-
 
 func invalidIdentifier(name string) error {
 	return fmt.Errorf("Invalid character in identifier: %s", name)

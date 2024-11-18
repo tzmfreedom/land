@@ -4,6 +4,20 @@ import "github.com/tzmfreedom/land/ast"
 
 var setType = createSetType()
 
+func CreateSetType(keyClass *ast.ClassType) *ast.ClassType {
+	return &ast.ClassType{
+		Name:            "Set",
+		Modifiers:       setType.Modifiers,
+		Constructors:    setType.Constructors,
+		InstanceFields:  setType.InstanceFields,
+		InstanceMethods: setType.InstanceMethods,
+		StaticFields:    setType.StaticFields,
+		StaticMethods:   setType.StaticMethods,
+		Generics:        []*ast.ClassType{keyClass},
+		ToString:        setType.ToString,
+	}
+}
+
 func createSetType() *ast.ClassType {
 	instanceMethods := ast.NewMethodMap()
 	instanceMethods.Set(

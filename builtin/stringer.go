@@ -27,6 +27,25 @@ func (v *ToStringer) String(o *ast.Object) string {
 		return o.ClassType.ToString(o)
 	}
 	switch o.ClassType.Name {
+	case "Set":
+		values := o.Extra["values"].(map[string]struct{})
+		valueExpressions := make([]string, len(values))
+		v.AddIndent(func() {
+			i := 0
+			for value := range values {
+				valueExpressions[i] = v.withIndent(value)
+				i++
+			}
+		})
+		recordsString := ""
+		if len(valueExpressions) != 0 {
+			recordsString = "\n" + strings.Join(valueExpressions, ",\n") + "\n"
+		}
+		return fmt.Sprintf(
+			`<Set> {%s%s`,
+			recordsString,
+			v.withIndent("}"),
+		)
 	case "List":
 		records := o.Extra["records"].([]*ast.Object)
 		recordExpressions := make([]string, len(records))

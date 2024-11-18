@@ -77,20 +77,37 @@ func createMapType() *ast.ClassType {
 		[]*ast.Method{
 			ast.CreateMethod(
 				"keySet",
-				nil,
+				CreateSetType(T1type),
 				[]*ast.Parameter{},
 				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
 					keySets := map[string]struct{}{}
 					for key, _ := range this.Extra["values"].(map[string]*ast.Object) {
 						keySets[key] = struct{}{}
 					}
-					setClass, ok := PrimitiveClassMap().Get("Set")
-					if !ok {
-						panic("Set is not defined")
-					}
-					object := ast.CreateObject(setClass)
+					object := ast.CreateObject(CreateSetType(this.ClassType.Generics[0]))
 					object.Extra["values"] = keySets
-					object.Extra["generices"] = nil // TODO: implement
+					return object
+				},
+			),
+		},
+	)
+	instanceMethods.Set(
+		"values",
+		[]*ast.Method{
+			ast.CreateMethod(
+				"values",
+				CreateListType(T2type),
+				[]*ast.Parameter{},
+				func(this *ast.Object, params []*ast.Object, extra map[string]interface{}) interface{} {
+					values := this.Extra["values"].(map[string]*ast.Object)
+					records := make([]*ast.Object, len(values))
+					i := 0
+					for _, v := range this.Extra["values"].(map[string]*ast.Object) {
+						records[i] = v
+						i++
+					}
+					object := ast.CreateObject(CreateListType(this.ClassType.Generics[1]))
+					object.Extra["records"] = records
 					return object
 				},
 			),
